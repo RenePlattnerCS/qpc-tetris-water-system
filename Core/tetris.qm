@@ -13,7 +13,9 @@
   <operation name="Main_App_ctor" type="void" visibility="0x00" properties="0x00">
    <!--${Shared::Main_App_ctor::me}-->
    <parameter name="me" type="MainApp * const"/>
-   <code>QActive_ctor(&amp;me-&gt;super, Q_STATE_CAST(&amp;MainApp_initial));</code>
+   <code>QActive_ctor(&amp;me-&gt;super, Q_STATE_CAST(&amp;MainApp_initial));
+QTimeEvt_ctorX(&amp;me-&gt;tempPollEvt, &amp;me-&gt;super, TEMP_POLL_SIG, 0U);
+me-&gt;currentTemp = 0.0f;</code>
   </operation>
  </package>
  <!--${AOs}-->
@@ -22,24 +24,47 @@
   <class name="MainApp" superclass="qpc::QActive">
    <!--${AOs::MainApp::inst}-->
    <attribute name="inst" type="MainApp" visibility="0x02" properties="0x01"/>
+   <!--${AOs::MainApp::tempPollEvt}-->
+   <attribute name="tempPollEvt" type="QTimeEvt " visibility="0x00" properties="0x00"/>
+   <!--${AOs::MainApp::currentTemp}-->
+   <attribute name="currentTemp" type="uint8_t" visibility="0x00" properties="0x00"/>
    <!--${AOs::MainApp::SM}-->
    <statechart properties="0x00">
     <!--${AOs::MainApp::SM::initial}-->
     <initial target="../1/1">
-     <initial_glyph conn="41,6,5,0,-11,19">
+     <initial_glyph conn="41,6,5,0,-13,19">
       <action box="0,-2,10,2"/>
      </initial_glyph>
     </initial>
     <!--${AOs::MainApp::SM::display_Stats}-->
     <state name="display_Stats">
-     <!--${AOs::MainApp::SM::display_Stats::temperature}-->
-     <state name="temperature">
-      <state_glyph node="14,49,28,7"/>
-     </state>
      <!--${AOs::MainApp::SM::display_Stats::dryness}-->
      <state name="dryness">
-      <entry brief="display temp">printf(&quot;enter\n&quot;);</entry>
-      <state_glyph node="14,25,29,10">
+      <state_glyph node="15,56,28,7"/>
+     </state>
+     <!--${AOs::MainApp::SM::display_Stats::temperature}-->
+     <state name="temperature">
+      <entry brief="start poll temp">printf(&quot;enter, arming timer\n&quot;);
+QTimeEvt_armX(&amp;me-&gt;tempPollEvt, 
+              400U,    // Fire after 10 seconds
+              400U);   // Then repeat every 10 seconds</entry>
+      <!--${AOs::MainApp::SM::display_Stats::temperature::TEMP_POLL}-->
+      <tran trig="TEMP_POLL">
+       <action>DHT11_Read(&amp;me-&gt;currentTemp);
+uint16_t temp = me-&gt;currentTemp;
+printf(&quot;Temperature: %u\n&quot; , temp);
+display_temp(temp);</action>
+       <tran_glyph conn="14,33,3,-1,11">
+        <action box="0,-2,10,2"/>
+       </tran_glyph>
+      </tran>
+      <!--${AOs::MainApp::SM::display_Stats::temperature::BTN_RELEASE}-->
+      <tran trig="BTN_RELEASE" target="../../0">
+       <tran_glyph conn="28,43,2,0,13">
+        <action box="0,0,10,2"/>
+       </tran_glyph>
+      </tran>
+      <state_glyph node="14,25,29,18">
        <entry box="0,3,16,2"/>
       </state_glyph>
      </state>
@@ -54,6 +79,8 @@
   <!--${Inc::main_app.h}-->
   <file name="main_app.h">
    <text>#include &quot;qpc.h&quot;
+#include &quot;temp_sensor.h&quot;
+#include &quot;display.h&quot;
 
 $declare${AOs::MainApp}
 $declare${Shared::Main_App_ctor}
@@ -61,6 +88,7 @@ $declare${Shared::Main_App_ctor}
 enum MenuGameSignals {
     BUTTON_PRESS_SIG = Q_USER_SIG,
     TEMP_POLL_SIG,
+    BTN_RELEASE_SIG,
     MAX_SIG  // Keep last for validation
 };</text>
   </file>

@@ -2,13 +2,16 @@
 #include "temp_sensor.h"
 #include "stm32c0xx_hal.h"        // includes core HAL headers
 #include "stm32c0xx_hal_gpio.h"   // specific GPIO macros/structs
-
+#include "bsp.h"
 
 static void DHT11_SetPinOutput(void);
 static void DHT11_SetPinInput(void);
+static void Delay_us(uint16_t us);
+
+extern TIM_HandleTypeDef  htim14;
 
 
-uint8_t DHT11_Read(DHT11_Data_t *data)
+uint8_t DHT11_Read(uint8_t *temp_data)
 {
     uint8_t bits[5] = {0};
     uint8_t i, j;
@@ -16,15 +19,21 @@ uint8_t DHT11_Read(DHT11_Data_t *data)
     // Start signal
     DHT11_SetPinOutput();
     HAL_GPIO_WritePin(DHT11_PORT, DHT11_PIN, GPIO_PIN_RESET);
-    HAL_Delay(20); // Pull low for ≥18ms
+    //HAL_Delay(20); // Pull low for ≥18ms
+    BSP_delayMs(2);
     HAL_GPIO_WritePin(DHT11_PORT, DHT11_PIN, GPIO_PIN_SET);
+    //BSP_delayMs(30);
     Delay_us(30);
     DHT11_SetPinInput();
 
     // Wait for DHT11 response
     uint32_t timeout = 0;
     while (HAL_GPIO_ReadPin(DHT11_PORT, DHT11_PIN) == GPIO_PIN_SET) {
-        if (++timeout > 100) return 1;
+        if (++timeout > 100)
+		{
+        	printf("timeout\n");
+        	return 1;
+		}
         Delay_us(1);
     }
     timeout = 0;
@@ -55,8 +64,7 @@ uint8_t DHT11_Read(DHT11_Data_t *data)
     if ((uint8_t)(bits[0] + bits[1] + bits[2] + bits[3]) != bits[4])
         return 2; // checksum error
 
-    data->Humidity = bits[0];
-    data->Temperature = bits[2];
+    *temp_data = bits[2];
 
     return 0; // success
 }
@@ -79,6 +87,17 @@ static void DHT11_SetPinInput(void)
     GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     HAL_GPIO_Init(DHT11_PORT, &GPIO_InitStruct);
+}
+
+static void Delay_us(uint16_t us)
+{
+    __HAL_TIM_SET_COUNTER(&htim14, 0);  // Reset counter
+
+    // Wait for reset to take effect (important!)
+        while (__HAL_TIM_GET_COUNTER(&htim14) > 100);
+
+    while (__HAL_TIM_GET_COUNTER(&htim14) < us);
+
 }
 
 

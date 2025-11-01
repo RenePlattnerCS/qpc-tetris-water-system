@@ -54,7 +54,7 @@ MainApp MainApp_inst;
 //${AOs::MainApp::SM} ........................................................
 QState MainApp_initial(MainApp * const me, void const * const par) {
     //${AOs::MainApp::SM::initial}
-    return Q_TRAN(&MainApp_dryness);
+    return Q_TRAN(&MainApp_temperature);
 }
 
 //${AOs::MainApp::SM::display_Stats} .........................................
@@ -69,8 +69,8 @@ QState MainApp_display_Stats(MainApp * const me, QEvt const * const e) {
     return status_;
 }
 
-//${AOs::MainApp::SM::display_Stats::temperature} ............................
-QState MainApp_temperature(MainApp * const me, QEvt const * const e) {
+//${AOs::MainApp::SM::display_Stats::dryness} ................................
+QState MainApp_dryness(MainApp * const me, QEvt const * const e) {
     QState status_;
     switch (e->sig) {
         default: {
@@ -81,14 +81,31 @@ QState MainApp_temperature(MainApp * const me, QEvt const * const e) {
     return status_;
 }
 
-//${AOs::MainApp::SM::display_Stats::dryness} ................................
-QState MainApp_dryness(MainApp * const me, QEvt const * const e) {
+//${AOs::MainApp::SM::display_Stats::temperature} ............................
+QState MainApp_temperature(MainApp * const me, QEvt const * const e) {
     QState status_;
     switch (e->sig) {
-        //${AOs::MainApp::SM::display_Stats::dryness}
+        //${AOs::MainApp::SM::display_Stats::temperature}
         case Q_ENTRY_SIG: {
-            printf("enter\n");
+            printf("enter, arming timer\n");
+            QTimeEvt_armX(&me->tempPollEvt,
+                          400U,    // Fire after 10 seconds
+                          400U);   // Then repeat every 10 seconds
             status_ = Q_HANDLED();
+            break;
+        }
+        //${AOs::MainApp::SM::display_Stats::temperature::TEMP_POLL}
+        case TEMP_POLL_SIG: {
+            DHT11_Read(&me->currentTemp);
+            uint16_t temp = me->currentTemp;
+            printf("Temperature: %u\n" , temp);
+            display_temp(temp);
+            status_ = Q_HANDLED();
+            break;
+        }
+        //${AOs::MainApp::SM::display_Stats::temperature::BTN_RELEASE}
+        case BTN_RELEASE_SIG: {
+            status_ = Q_TRAN(&MainApp_dryness);
             break;
         }
         default: {
@@ -104,5 +121,7 @@ QState MainApp_dryness(MainApp * const me, QEvt const * const e) {
 //${Shared::Main_App_ctor} ...................................................
 void Main_App_ctor(MainApp * const me) {
     QActive_ctor(&me->super, Q_STATE_CAST(&MainApp_initial));
+    QTimeEvt_ctorX(&me->tempPollEvt, &me->super, TEMP_POLL_SIG, 0U);
+    me->currentTemp = 0.0f;
 }
 //$enddef${Shared::Main_App_ctor} ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

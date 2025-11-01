@@ -13,12 +13,8 @@
 
 #include <stdint.h>
 
-typedef struct {
-    uint8_t Temperature;
-    uint8_t Humidity;
-} DHT11_Data_t;
 
-uint8_t DHT11_Read(DHT11_Data_t *data);
+uint8_t DHT11_Read(uint8_t *temp_data);
 
 
 

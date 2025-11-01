@@ -25,6 +25,7 @@ SUBDIRS := \
 Core/Src \
 Core/Startup \
 Drivers/STM32C0xx_HAL_Driver/Src \
+Middlewares/Third_Party/OLED_SSD1306 \
 Middlewares/Third_Party/QuantumLeaps_RTEF_qpc/ports/arm-cm/qk/gnu \
 Middlewares/Third_Party/QuantumLeaps_RTEF_qpc/src/qf \
 Middlewares/Third_Party/QuantumLeaps_RTEF_qpc/src/qk \

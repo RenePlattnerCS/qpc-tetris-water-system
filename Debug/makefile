@@ -13,6 +13,7 @@ RM := rm -rf
 -include Middlewares/Third_Party/QuantumLeaps_RTEF_qpc/src/qk/subdir.mk
 -include Middlewares/Third_Party/QuantumLeaps_RTEF_qpc/src/qf/subdir.mk
 -include Middlewares/Third_Party/QuantumLeaps_RTEF_qpc/ports/arm-cm/qk/gnu/subdir.mk
+-include Middlewares/Third_Party/OLED_SSD1306/subdir.mk
 -include Drivers/STM32C0xx_HAL_Driver/Src/subdir.mk
 -include Core/Startup/subdir.mk
 -include Core/Src/subdir.mk

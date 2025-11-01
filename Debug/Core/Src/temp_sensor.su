@@ -1,3 +1,4 @@
-../Core/Src/temp_sensor.c:11:9:DHT11_Read	40	static
-../Core/Src/temp_sensor.c:65:13:DHT11_SetPinOutput	32	static
-../Core/Src/temp_sensor.c:75:13:DHT11_SetPinInput	32	static
+../Core/Src/temp_sensor.c:14:9:DHT11_Read	40	static
+../Core/Src/temp_sensor.c:73:13:DHT11_SetPinOutput	32	static
+../Core/Src/temp_sensor.c:83:13:DHT11_SetPinInput	32	static
+../Core/Src/temp_sensor.c:92:13:Delay_us	16	static

@@ -33,9 +33,12 @@
 //============================================================================
 #include "qpc.h"                 // QP/C real-time event framework
 #include "bsp.h"                 // Board Support Package
-
 #include "stm32c0xx.h"  // CMSIS-compliant header file for the MCU used
+#include "ssd1306.h"
 // add other drivers if necessary...
+
+extern TIM_HandleTypeDef  htim14;
+
 
 Q_DEFINE_THIS_FILE  // define the name of this file for assertions
 
@@ -96,11 +99,14 @@ void assert_failed(char const * const module, int_t const id) {
 
 // ISRs used in the application ============================================
 
+static volatile uint32_t sysTickCounter = 0;
+
 void SysTick_Handler(void); // prototype
 void SysTick_Handler(void) {
     QK_ISR_ENTRY();   // inform QK about entering an ISR
-
-    QTIMEEVT_TICK_X(0U, &l_SysTick_Handler); // time events at rate 0
+    sysTickCounter++;
+    QF_TICK_X(0U, (void *)0);
+    //QTIMEEVT_TICK_X(0U, &l_SysTick_Handler); // time events at rate 0
 
 #ifdef Q_SPY
     uint32_t volatile tmp = SysTick->CTRL; // clear CTRL_COUNTFLAG
@@ -109,6 +115,24 @@ void SysTick_Handler(void) {
 #endif
 
     QK_ISR_EXIT();    // inform QK about exiting an ISR
+}
+
+void BSP_delayMs(uint32_t ms) {
+    uint32_t start = sysTickCounter;
+    while ((sysTickCounter - start) < ms ); // *10 cause my systick fires slower since i deivide by 100 not 1000
+}
+
+void EXTI0_IRQHandler(void)
+{
+  HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_0);
+}
+
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
+{
+    if (GPIO_Pin == GPIO_PIN_0)
+    {
+        print("btn pressed! \");
+    }
 }
 //............................................................................
 
@@ -151,7 +175,14 @@ void BSP_init(void) {
     // Initialize LEDs, buttons, UART, etc.
     HAL_Init();
     SystemClock_Config();  // configure system clock
-    HAL_SYSTICK_Config(HAL_RCC_GetHCLKFreq() / 1000U); // 1 ms tick
+    HAL_SYSTICK_Config(HAL_RCC_GetHCLKFreq() / 100U); // 100Hz -> 100ticks per sec
+
+    // start TIM14
+	if (HAL_TIM_Base_Start(&htim14) != HAL_OK) {
+		Error_Handler();
+	}
+
+	ssd1306_Init();
 }
 //............................................................................
 void BSP_start(void)

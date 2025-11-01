@@ -36,6 +36,8 @@
 //
 //$endhead${Inc::main_app.h} ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 #include "qpc.h"
+#include "temp_sensor.h"
+#include "display.h"
 
 //$declare${AOs::MainApp} vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 
@@ -45,6 +47,10 @@ typedef struct MainApp {
     QActive super;
 
 // private:
+
+// public:
+    QTimeEvt  tempPollEvt;
+    uint8_t currentTemp;
 } MainApp;
 
 extern MainApp MainApp_inst;
@@ -52,8 +58,8 @@ extern MainApp MainApp_inst;
 // protected:
 QState MainApp_initial(MainApp * const me, void const * const par);
 QState MainApp_display_Stats(MainApp * const me, QEvt const * const e);
-QState MainApp_temperature(MainApp * const me, QEvt const * const e);
 QState MainApp_dryness(MainApp * const me, QEvt const * const e);
+QState MainApp_temperature(MainApp * const me, QEvt const * const e);
 //$enddecl${AOs::MainApp} ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //$declare${Shared::Main_App_ctor} vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 
@@ -64,5 +70,6 @@ void Main_App_ctor(MainApp * const me);
 enum MenuGameSignals {
     BUTTON_PRESS_SIG = Q_USER_SIG,
     TEMP_POLL_SIG,
+    BTN_RELEASE_SIG,
     MAX_SIG  // Keep last for validation
 };
