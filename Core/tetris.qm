@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<model version="7.0.2" links="1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://www.state-machine.com/qm/qm7.xsd">
+ <documentation>Dining Philosopher Problem example</documentation>
+ <!--${qpc}-->
+ <framework name="qpc"/>
+ <!--${Shared}-->
+ <package name="Shared" stereotype="0x01"/>
+ <!--${AOs}-->
+ <package name="AOs" stereotype="0x02">
+  <!--${AOs::MainApp}-->
+  <class name="MainApp" superclass="qpc::QActive">
+   <!--${AOs::MainApp::SM}-->
+   <statechart properties="0x00">
+    <!--${AOs::MainApp::SM::display_Stats}-->
+    <state name="display_Stats">
+     <!--${AOs::MainApp::SM::display_Stats::initial}-->
+     <initial target="../2">
+      <initial_glyph conn="40,20,5,0,-10,5">
+       <action box="0,-2,10,2"/>
+      </initial_glyph>
+     </initial>
+     <!--${AOs::MainApp::SM::display_Stats::temperature}-->
+     <state name="temperature">
+      <state_glyph node="14,49,28,7"/>
+     </state>
+     <!--${AOs::MainApp::SM::display_Stats::dryness}-->
+     <state name="dryness">
+      <entry brief="display temp">printf(&quot;enter\n&quot;);</entry>
+      <state_glyph node="14,25,29,10">
+       <entry box="0,3,16,2"/>
+      </state_glyph>
+     </state>
+     <state_glyph node="9,12,60,64"/>
+    </state>
+    <state_diagram size="128,134"/>
+   </statechart>
+  </class>
+ </package>
+ <!--${Inc}-->
+ <directory name="Inc">
+  <!--${Inc::game.h}-->
+  <file name="game.h">
+   <text>#ifndef GAME_H
+#define GAME_H
+
+
+
+#endif</text>
+  </file>
+ </directory>
+ <!--${Src}-->
+ <directory name="Src"/>
+</model>

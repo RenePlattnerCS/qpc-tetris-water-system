@@ -1,0 +1,3 @@
+../Core/Src/temp_sensor.c:11:9:DHT11_Read	13
+../Core/Src/temp_sensor.c:65:13:DHT11_SetPinOutput	1
+../Core/Src/temp_sensor.c:75:13:DHT11_SetPinInput	1

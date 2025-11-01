@@ -32,7 +32,6 @@
 // <info@state-machine.com>
 //============================================================================
 #include "qpc.h"                 // QP/C real-time event framework
-#include "dpp.h"                 // DPP Application interface
 #include "bsp.h"                 // Board Support Package
 
 #include "stm32c0xx.h"  // CMSIS-compliant header file for the MCU used
@@ -103,51 +102,16 @@ void SysTick_Handler(void) {
 
     QTIMEEVT_TICK_X(0U, &l_SysTick_Handler); // time events at rate 0
 
-    // Perform the debouncing of buttons. The algorithm for debouncing
-    // adapted from the book "Embedded Systems Dictionary" by Jack Ganssle
-    // and Michael Barr, page 71.
-    static struct {
-        uint32_t depressed;
-        uint32_t previous;
-    } buttons = { 0U, 0U };
-
-    uint32_t current = ~GPIOC->IDR; // read Port C with state of Button B1
-    uint32_t tmp = buttons.depressed; // save the depressed buttons
-    buttons.depressed |= (buttons.previous & current); // set depressed
-    buttons.depressed &= (buttons.previous | current); // clear released
-    buttons.previous   = current; // update the history
-    tmp ^= buttons.depressed;     // changed debounced depressed
-    current = buttons.depressed;
-
-    if ((tmp & (1U << B1_PIN)) != 0U) { // debounced B1 state changed?
-        if ((current & (1U << B1_PIN)) != 0U) { // is B1 depressed?
-            static QEvt const pauseEvt = QEVT_INITIALIZER(PAUSE_SIG);
-            QACTIVE_PUBLISH(&pauseEvt, &l_SysTick_Handler);
-        }
-        else { // the button is released
-            static QEvt const serveEvt = QEVT_INITIALIZER(SERVE_SIG);
-            QACTIVE_PUBLISH(&serveEvt, &l_SysTick_Handler);
-        }
-    }
-
 #ifdef Q_SPY
-    tmp = SysTick->CTRL; // clear CTRL_COUNTFLAG
+    uint32_t volatile tmp = SysTick->CTRL; // clear CTRL_COUNTFLAG
     QS_tickTime_ += QS_tickPeriod_; // account for the clock rollover
+    Q_UNUSED_PAR(tmp);
 #endif
-
-    QK_ISR_EXIT();  // inform QK about exiting an ISR
-}
-//............................................................................
-// interrupt handler for testing preemptions in QK
-void EXTI0_1_IRQHandler(void); // prototype
-void EXTI0_1_IRQHandler(void) {
-    QK_ISR_ENTRY();   // inform QK about entering an ISR
-
-    static QEvt const testEvt = QEVT_INITIALIZER(TEST_SIG);
-    QACTIVE_POST(AO_Table, &testEvt, &l_EXTI0_1_IRQHandler);
 
     QK_ISR_EXIT();    // inform QK about exiting an ISR
 }
+//............................................................................
+
 
 //............................................................................
 #ifdef Q_SPY
@@ -184,94 +148,22 @@ void QF_onContextSw(QActive *prev, QActive *next) {
 // BSP functions...
 
 void BSP_init(void) {
-    // Configure the MPU to prevent NULL-pointer dereferencing ...
-    MPU->RBAR = 0x0U                          // base address (NULL)
-                | MPU_RBAR_VALID_Msk          // valid region
-                | (MPU_RBAR_REGION_Msk & 7U); // region #7
-    MPU->RASR = (7U << MPU_RASR_SIZE_Pos)     // 2^(7+1) region
-                | (0x0U << MPU_RASR_AP_Pos)   // no-access region
-                | MPU_RASR_ENABLE_Msk;        // region enable
-    MPU->CTRL = MPU_CTRL_PRIVDEFENA_Msk       // enable background region
-                | MPU_CTRL_ENABLE_Msk;        // enable the MPU
-    __ISB();
-    __DSB();
-
-    // NOTE: SystemInit() has been already called from the startup code
-    // but SystemCoreClock needs to be updated
-    SystemCoreClockUpdate();
-
-    // enable GPIOA clock port for the LED LD4
-    RCC->IOPENR |= (1U << 0U);
-
-    // set all used GPIOA pins as push-pull output, no pull-up, pull-down
-    GPIOA->MODER   &= ~(3U << 2U*LD4_PIN);
-    GPIOA->MODER   |=  (1U << 2U*LD4_PIN);
-    GPIOA->OTYPER  &= ~(1U <<    LD4_PIN);
-    GPIOA->OSPEEDR &= ~(3U << 2U*LD4_PIN);
-    GPIOA->OSPEEDR |=  (1U << 2U*LD4_PIN);
-    GPIOA->PUPDR   &= ~(3U << 2U*LD4_PIN);
-
-    // enable GPIOC clock port for the Button B1
-    RCC->IOPENR |=  (1U << 2U);
-
-    // configure Button B1 pin on GPIOC as input, no pull-up, pull-down
-    GPIOC->MODER &= ~(3U << 2U*B1_PIN);
-    GPIOC->PUPDR &= ~(3U << 2U*B1_PIN);
-
-    BSP_randomSeed(1234U); // seed the random number generator
-
-    // initialize the QS software tracing...
-    if (!QS_INIT((void *)0)) {
-        Q_ERROR();
-    }
-
-    // dictionaries...
-    QS_OBJ_DICTIONARY(&l_SysTick_Handler);
-    QS_USR_DICTIONARY(PHILO_STAT);
-    QS_USR_DICTIONARY(PAUSED_STAT);
-    QS_USR_DICTIONARY(CONTEXT_SW);
-
-    QS_ONLY(produce_sig_dict());
-
-    // setup the QS filters...
-    QS_GLB_FILTER(QS_GRP_ALL);   // all records
-    QS_GLB_FILTER(-QS_QF_TICK);      // exclude the clock tick
+    // Initialize LEDs, buttons, UART, etc.
+    HAL_Init();
+    SystemClock_Config();  // configure system clock
+    HAL_SYSTICK_Config(HAL_RCC_GetHCLKFreq() / 1000U); // 1 ms tick
 }
 //............................................................................
-void BSP_start(void) {
-    // initialize event pools
-    static QF_MPOOL_EL(TableEvt) smlPoolSto[2*N_PHILO];
-    QF_poolInit(smlPoolSto, sizeof(smlPoolSto), sizeof(smlPoolSto[0]));
+void BSP_start(void)
+{
+    // Optional: initialize LEDs or other board indicators
+    // BSP_ledInit();
 
-    // initialize publish-subscribe
-    static QSubscrList subscrSto[MAX_PUB_SIG];
-    QActive_psInit(subscrSto, Q_DIM(subscrSto));
+    // Optional: initialize QSPY (if using tracing)
+    // QS_initBuf(qsBuf, sizeof(qsBuf));
 
-    // instantiate and start AOs/threads...
-
-    static QEvtPtr philoQueueSto[N_PHILO][10];
-    for (uint8_t n = 0U; n < N_PHILO; ++n) {
-        Philo_ctor(n);
-        QActive_start(AO_Philo[n],
-
-            // NOTE: set the preemption-threshold of all Philos to
-            // the same level, so that they cannot preempt each other.
-            Q_PRIO(n + 3U, N_PHILO + 2U), // QF-prio/pre-thre.
-
-            philoQueueSto[n],        // event queue storage
-            Q_DIM(philoQueueSto[n]), // queue length [events]
-            (void *)0, 0U,           // no stack storage
-            (void *)0);              // no initialization param
-    }
-
-    static QEvtPtr tableQueueSto[N_PHILO];
-    Table_ctor();
-    QActive_start(AO_Table,
-        N_PHILO + 7U,                // QP prio. of the AO
-        tableQueueSto,               // event queue storage
-        Q_DIM(tableQueueSto),        // queue length [events]
-        (void *)0, 0U,               // no stack storage
-        (void *)0);                  // no initialization param
+    // Enter the QP event loop
+    (void)QF_run();  // never returns
 }
 //............................................................................
 void BSP_displayPhilStat(uint8_t n, char const *stat) {
@@ -311,16 +203,9 @@ void BSP_randomSeed(uint32_t seed) {
 }
 //............................................................................
 uint32_t BSP_random(void) { // a very cheap pseudo-random-number generator
+	//TODO
 
-    QSchedStatus lockStat = QK_schedLock(N_PHILO); // N_PHILO prio. ceiling
-    // "Super-Duper" Linear Congruential Generator (LCG)
-    // LCG(2^32, 3*7*11*13*23, 0, seed)
-    //
-    uint32_t rnd = l_rndSeed * (3U*7U*11U*13U*23U);
-    l_rndSeed = rnd; // set for the next time
-    QK_schedUnlock(lockStat);
-
-    return (rnd >> 8U);
+    return 0;
 }
 //............................................................................
 void BSP_ledOn(void) {

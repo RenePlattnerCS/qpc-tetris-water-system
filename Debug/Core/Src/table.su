@@ -1,7 +1,0 @@
-../Core/Src/table.c:69:23:right	16	static
-../Core/Src/table.c:74:23:left	16	static
-../Core/Src/table.c:96:6:Table_ctor	16	static
-../Core/Src/table.c:116:15:Table_initial	32	static
-../Core/Src/table.c:141:15:Table_active	24	static
-../Core/Src/table.c:164:15:Table_serving	64	static
-../Core/Src/table.c:289:15:Table_paused	40	static

@@ -8,7 +8,7 @@ Core/Src/bsp.o: ../Core/Src/bsp.c \
  ../Middlewares/Third_Party/QuantumLeaps_RTEF_qpc/include/qk.h \
  ../Middlewares/Third_Party/QuantumLeaps_RTEF_qpc/include/qsafe.h \
  ../Middlewares/Third_Party/QuantumLeaps_RTEF_qpc/include/qs_dummy.h \
- ../Core/Inc/dpp.h ../Core/Inc/bsp.h \
+ ../Core/Inc/bsp.h \
  ../Drivers/CMSIS/Device/ST/STM32C0xx/Include/stm32c0xx.h \
  ../Drivers/CMSIS/Device/ST/STM32C0xx/Include/stm32c031xx.h \
  ../Drivers/CMSIS/Include/core_cm0plus.h \
@@ -34,7 +34,9 @@ Core/Src/bsp.o: ../Core/Src/bsp.c \
  ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_flash.h \
  ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_flash_ex.h \
  ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_pwr.h \
- ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_pwr_ex.h
+ ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_pwr_ex.h \
+ ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_uart.h \
+ ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_uart_ex.h
 ../Middlewares/Third_Party/QuantumLeaps_RTEF_qpc/include/qpc.h:
 ../Middlewares/Third_Party/QuantumLeaps_RTEF_qpc/ports/arm-cm/qk/gnu/qp_port.h:
 ../Middlewares/Third_Party/QuantumLeaps_RTEF_qpc/ports/arm-cm/config/qp_config.h:
@@ -44,7 +46,6 @@ Core/Src/bsp.o: ../Core/Src/bsp.c \
 ../Middlewares/Third_Party/QuantumLeaps_RTEF_qpc/include/qk.h:
 ../Middlewares/Third_Party/QuantumLeaps_RTEF_qpc/include/qsafe.h:
 ../Middlewares/Third_Party/QuantumLeaps_RTEF_qpc/include/qs_dummy.h:
-../Core/Inc/dpp.h:
 ../Core/Inc/bsp.h:
 ../Drivers/CMSIS/Device/ST/STM32C0xx/Include/stm32c0xx.h:
 ../Drivers/CMSIS/Device/ST/STM32C0xx/Include/stm32c031xx.h:
@@ -72,3 +73,5 @@ Core/Src/bsp.o: ../Core/Src/bsp.c \
 ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_flash_ex.h:
 ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_pwr.h:
 ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_pwr_ex.h:
+../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_uart.h:
+../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_uart_ex.h:
