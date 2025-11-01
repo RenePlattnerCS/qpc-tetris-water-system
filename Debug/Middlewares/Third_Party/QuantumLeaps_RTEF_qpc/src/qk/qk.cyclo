@@ -1,8 +1,8 @@
 ../Middlewares/Third_Party/QuantumLeaps_RTEF_qpc/src/qk/qk.c:52:14:QK_schedLock	2
-../Middlewares/Third_Party/QuantumLeaps_RTEF_qpc/src/qk/qk.c:80:6:QK_schedUnlock	3
 ../Middlewares/Third_Party/QuantumLeaps_RTEF_qpc/src/qk/qk.c:112:14:QK_sched_	4
 ../Middlewares/Third_Party/QuantumLeaps_RTEF_qpc/src/qk/qk.c:140:14:QK_sched_act_	5
-../Middlewares/Third_Party/QuantumLeaps_RTEF_qpc/src/qk/qk.c:176:6:QK_activate_	4
+../Middlewares/Third_Party/QuantumLeaps_RTEF_qpc/src/qk/qk.c:176:6:QK_activate_	3
+../Middlewares/Third_Party/QuantumLeaps_RTEF_qpc/src/qk/qk.c:80:6:QK_schedUnlock	3
 ../Middlewares/Third_Party/QuantumLeaps_RTEF_qpc/src/qk/qk.c:284:6:QF_init	1
 ../Middlewares/Third_Party/QuantumLeaps_RTEF_qpc/src/qk/qk.c:299:6:QF_stop	1
 ../Middlewares/Third_Party/QuantumLeaps_RTEF_qpc/src/qk/qk.c:306:7:QF_run	2

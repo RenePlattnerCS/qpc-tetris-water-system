@@ -76,6 +76,8 @@ void Error_Handler(void);
 #define VCP_USART2_TX_GPIO_Port GPIOA
 #define VCP_USART2_RX_Pin GPIO_PIN_3
 #define VCP_USART2_RX_GPIO_Port GPIOA
+#define ADC_MOIST_Pin GPIO_PIN_4
+#define ADC_MOIST_GPIO_Port GPIOA
 #define Led_Pin GPIO_PIN_5
 #define Led_GPIO_Port GPIOA
 #define DEBUG_SWDIO_Pin GPIO_PIN_13

@@ -2,7 +2,7 @@
 ../Middlewares/Third_Party/QuantumLeaps_RTEF_qpc/ports/arm-cm/qk/gnu/qk_port.c:110:6:QF_int_enable_	0	static,ignoring_inline_asm
 ../Middlewares/Third_Party/QuantumLeaps_RTEF_qpc/ports/arm-cm/qk/gnu/qk_port.c:145:6:QF_crit_entry_	0	static,ignoring_inline_asm
 ../Middlewares/Third_Party/QuantumLeaps_RTEF_qpc/ports/arm-cm/qk/gnu/qk_port.c:176:6:QF_crit_exit_	0	static,ignoring_inline_asm
-../Middlewares/Third_Party/QuantumLeaps_RTEF_qpc/ports/arm-cm/qk/gnu/qk_port.c:215:6:QK_init	8	static
+../Middlewares/Third_Party/QuantumLeaps_RTEF_qpc/ports/arm-cm/qk/gnu/qk_port.c:215:6:QK_init	0	static
 ../Middlewares/Third_Party/QuantumLeaps_RTEF_qpc/ports/arm-cm/qk/gnu/qk_port.c:276:6:PendSV_Handler	0	static,ignoring_inline_asm
 ../Middlewares/Third_Party/QuantumLeaps_RTEF_qpc/ports/arm-cm/qk/gnu/qk_port.c:342:6:QK_thread_ret	0	static,ignoring_inline_asm
 ../Middlewares/Third_Party/QuantumLeaps_RTEF_qpc/ports/arm-cm/qk/gnu/qk_port.c:444:6:NMI_Handler	0	static,ignoring_inline_asm

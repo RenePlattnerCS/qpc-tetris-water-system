@@ -24,6 +24,10 @@ Middlewares/Third_Party/OLED_SSD1306/ssd1306_fonts.o: \
  ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_dma.h \
  ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_dma_ex.h \
  ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_cortex.h \
+ ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_adc.h \
+ ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_adc.h \
+ ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_adc_ex.h \
+ ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_adc_ex.h \
  ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_exti.h \
  ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_flash.h \
  ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_flash_ex.h \
@@ -59,6 +63,10 @@ M:/embedded/stm32C0_Nucleus/qpc-tetris-water-system/Middlewares/Third_Party/OLED
 ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_dma.h:
 ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_dma_ex.h:
 ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_cortex.h:
+../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_adc.h:
+../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_adc.h:
+../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_adc_ex.h:
+../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_adc_ex.h:
 ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_exti.h:
 ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_flash.h:
 ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_flash_ex.h:

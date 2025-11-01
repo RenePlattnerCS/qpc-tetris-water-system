@@ -1,11 +1,8 @@
-../Drivers/CMSIS/Include/core_cm0plus.h:741:22:__NVIC_EnableIRQ	2
-../Drivers/CMSIS/Include/core_cm0plus.h:850:22:__NVIC_SetPriority	2
-../Drivers/CMSIS/Include/core_cm0plus.h:1058:26:SysTick_Config	2
 ../Core/Src/bsp.c:77:12:Q_onError	1
-../Core/Src/bsp.c:98:6:assert_failed	0
+../Core/Src/bsp.c:98:6:assert_failed	1
 ../Core/Src/bsp.c:107:6:SysTick_Handler	2
 ../Core/Src/bsp.c:122:6:BSP_delayMs	2
-../Core/Src/bsp.c:132:6:EXTI0_1_IRQHandler	7
+../Core/Src/bsp.c:132:6:EXTI0_1_IRQHandler	6
 ../Core/Src/bsp.c:215:6:BSP_init	2
 ../Core/Src/bsp.c:229:6:BSP_start	1
 ../Core/Src/bsp.c:241:6:BSP_displayPhilStat	2
@@ -15,6 +12,6 @@
 ../Core/Src/bsp.c:283:6:BSP_ledOn	1
 ../Core/Src/bsp.c:287:6:BSP_ledOff	1
 ../Core/Src/bsp.c:291:6:BSP_terminate	1
-../Core/Src/bsp.c:297:6:QF_onStartup	1
+../Core/Src/bsp.c:297:6:QF_onStartup	2
 ../Core/Src/bsp.c:319:6:QF_onCleanup	1
 ../Core/Src/bsp.c:323:6:QK_onIdle	1
