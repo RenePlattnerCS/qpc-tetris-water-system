@@ -23,6 +23,7 @@
 /* USER CODE BEGIN Includes */
 #include "qpc.h"
 #include "bsp.h"
+#include "main_app.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -58,7 +59,8 @@ static void MX_USART2_UART_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-
+static QEvt const *menuGameQueueSto[10]; // Storage for event queue
+extern MainApp MainApp_inst; // Storage for the AO instance
 /* USER CODE END 0 */
 
 /**
@@ -97,23 +99,22 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  	  QF_init();       // initialize the framework and the underlying RT kernel
-  	  BSP_init();      // initialize the BSP
+  QF_init();       // initialize the framework and the underlying RT kernel
+  BSP_init();      // initialize the BSP
 
-	// init publish-subscribe...
-	//static QSubscrList subscrSto[MAX_PUB_SIG];
-	//QActive_psInit(subscrSto, Q_DIM(subscrSto));
+  Main_App_ctor(&MainApp_inst);
 
-	// initialize the event pools
-  	//static QF_MPOOL_EL(ObjectImageEvt) medPoolSto[2*GAME_MINES_MAX + 20];
-  	//QF_poolInit(medPoolSto, sizeof(medPoolSto), sizeof(medPoolSto[0]));
+  // 4. Start the Active Object
+      QACTIVE_START(&MainApp_inst,           // AO pointer
+                    1U,                     // Priority
+                    menuGameQueueSto,       // Event queue storage
+                    Q_DIM(menuGameQueueSto), // Queue length
+                    (void *)0,              // Stack storage (0 for bare-metal)
+                    0U,                     // Stack size (0 for bare-metal)
+                    (void *)0);             // Initial event (optional)
 
-  	// start the active objects..
-
-
-
-  	  //BSP_start();     // start the AOs/Threads
-  	  return QF_run(); // run the QF application
+  //BSP_start();     // start the AOs/Threads
+  return QF_run(); // run the QF application
 
   while (1)
   {

@@ -1,0 +1,5 @@
+../Core/Src/main_app.c:55:8:MainApp_initial	1
+../Core/Src/main_app.c:61:8:MainApp_display_Stats	1
+../Core/Src/main_app.c:73:8:MainApp_temperature	1
+../Core/Src/main_app.c:85:8:MainApp_dryness	2
+../Core/Src/main_app.c:105:6:Main_App_ctor	1

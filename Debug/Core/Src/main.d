@@ -36,7 +36,7 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
  ../Middlewares/Third_Party/QuantumLeaps_RTEF_qpc/include/qk.h \
  ../Middlewares/Third_Party/QuantumLeaps_RTEF_qpc/include/qsafe.h \
  ../Middlewares/Third_Party/QuantumLeaps_RTEF_qpc/include/qs_dummy.h \
- ../Core/Inc/bsp.h
+ ../Core/Inc/bsp.h ../Core/Inc/main_app.h
 ../Core/Inc/main.h:
 ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal.h:
 ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_system.h:
@@ -76,3 +76,4 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
 ../Middlewares/Third_Party/QuantumLeaps_RTEF_qpc/include/qsafe.h:
 ../Middlewares/Third_Party/QuantumLeaps_RTEF_qpc/include/qs_dummy.h:
 ../Core/Inc/bsp.h:
+../Core/Inc/main_app.h:

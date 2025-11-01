@@ -1,5 +1,6 @@
 "./Core/Src/bsp.o"
 "./Core/Src/main.o"
+"./Core/Src/main_app.o"
 "./Core/Src/stm32c0xx_hal_msp.o"
 "./Core/Src/stm32c0xx_it.o"
 "./Core/Src/syscalls.o"

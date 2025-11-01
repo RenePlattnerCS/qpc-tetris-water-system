@@ -4,21 +4,34 @@
  <!--${qpc}-->
  <framework name="qpc"/>
  <!--${Shared}-->
- <package name="Shared" stereotype="0x01"/>
+ <package name="Shared" stereotype="0x01">
+  <!--${Shared::AO_Main_App}-->
+  <attribute name="AO_Main_App" type="QActive * const" visibility="0x00" properties="0x00">
+   <code>= &amp;Main_App_inst.super;</code>
+  </attribute>
+  <!--${Shared::Main_App_ctor}-->
+  <operation name="Main_App_ctor" type="void" visibility="0x00" properties="0x00">
+   <!--${Shared::Main_App_ctor::me}-->
+   <parameter name="me" type="MainApp * const"/>
+   <code>QActive_ctor(&amp;me-&gt;super, Q_STATE_CAST(&amp;MainApp_initial));</code>
+  </operation>
+ </package>
  <!--${AOs}-->
  <package name="AOs" stereotype="0x02">
   <!--${AOs::MainApp}-->
   <class name="MainApp" superclass="qpc::QActive">
+   <!--${AOs::MainApp::inst}-->
+   <attribute name="inst" type="MainApp" visibility="0x02" properties="0x01"/>
    <!--${AOs::MainApp::SM}-->
    <statechart properties="0x00">
+    <!--${AOs::MainApp::SM::initial}-->
+    <initial target="../1/1">
+     <initial_glyph conn="41,6,5,0,-11,19">
+      <action box="0,-2,10,2"/>
+     </initial_glyph>
+    </initial>
     <!--${AOs::MainApp::SM::display_Stats}-->
     <state name="display_Stats">
-     <!--${AOs::MainApp::SM::display_Stats::initial}-->
-     <initial target="../2">
-      <initial_glyph conn="40,20,5,0,-10,5">
-       <action box="0,-2,10,2"/>
-      </initial_glyph>
-     </initial>
      <!--${AOs::MainApp::SM::display_Stats::temperature}-->
      <state name="temperature">
       <state_glyph node="14,49,28,7"/>
@@ -38,16 +51,31 @@
  </package>
  <!--${Inc}-->
  <directory name="Inc">
-  <!--${Inc::game.h}-->
-  <file name="game.h">
-   <text>#ifndef GAME_H
-#define GAME_H
+  <!--${Inc::main_app.h}-->
+  <file name="main_app.h">
+   <text>#include &quot;qpc.h&quot;
 
-
-
-#endif</text>
+$declare${AOs::MainApp}
+$declare${Shared::Main_App_ctor}
+// Signals
+enum MenuGameSignals {
+    BUTTON_PRESS_SIG = Q_USER_SIG,
+    TEMP_POLL_SIG,
+    MAX_SIG  // Keep last for validation
+};</text>
   </file>
  </directory>
  <!--${Src}-->
- <directory name="Src"/>
+ <directory name="Src">
+  <!--${Src::main_app.c}-->
+  <file name="main_app.c">
+   <text>
+
+#include &quot;main_app.h&quot;
+#include &lt;stdio.h&gt;
+
+$define${AOs::MainApp}
+$define${Shared::Main_App_ctor}</text>
+  </file>
+ </directory>
 </model>
