@@ -1,5 +1,5 @@
 ../Core/Src/main_app.c:55:8:MainApp_initial	1
 ../Core/Src/main_app.c:61:8:MainApp_display_Stats	1
-../Core/Src/main_app.c:73:8:MainApp_dryness	1
-../Core/Src/main_app.c:85:8:MainApp_temperature	5
-../Core/Src/main_app.c:122:6:Main_App_ctor	1
+../Core/Src/main_app.c:73:8:MainApp_dryness	7
+../Core/Src/main_app.c:111:8:MainApp_temperature	7
+../Core/Src/main_app.c:154:6:Main_App_ctor	1

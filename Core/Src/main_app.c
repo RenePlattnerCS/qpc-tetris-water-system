@@ -73,6 +73,32 @@ QState MainApp_display_Stats(MainApp * const me, QEvt const * const e) {
 QState MainApp_dryness(MainApp * const me, QEvt const * const e) {
     QState status_;
     switch (e->sig) {
+        //${AOs::MainApp::SM::display_Stats::dryness}
+        case Q_ENTRY_SIG: {
+            printf("Hello entering dryness\n");
+            QTimeEvt_armX(&me->tempPollEvt,
+                          400U,    // Fire after 10 seconds
+                          400U);   // Then repeat every 10 seconds
+            status_ = Q_HANDLED();
+            break;
+        }
+        //${AOs::MainApp::SM::display_Stats::dryness}
+        case Q_EXIT_SIG: {
+            QTimeEvt_disarm(&me->tempPollEvt);
+            status_ = Q_HANDLED();
+            break;
+        }
+        //${AOs::MainApp::SM::display_Stats::dryness::TEMP_POLL}
+        case TEMP_POLL_SIG: {
+            printf("hahahah\n");
+            status_ = Q_HANDLED();
+            break;
+        }
+        //${AOs::MainApp::SM::display_Stats::dryness::BUTTON_LONG}
+        case BUTTON_LONG_SIG: {
+            status_ = Q_TRAN(&MainApp_temperature);
+            break;
+        }
         default: {
             status_ = Q_SUPER(&MainApp_display_Stats);
             break;
@@ -87,10 +113,16 @@ QState MainApp_temperature(MainApp * const me, QEvt const * const e) {
     switch (e->sig) {
         //${AOs::MainApp::SM::display_Stats::temperature}
         case Q_ENTRY_SIG: {
-            printf("enter, arming timer\n");
+            printf("enter, arming timer for temperature \n");
             QTimeEvt_armX(&me->tempPollEvt,
                           400U,    // Fire after 10 seconds
                           400U);   // Then repeat every 10 seconds
+            status_ = Q_HANDLED();
+            break;
+        }
+        //${AOs::MainApp::SM::display_Stats::temperature}
+        case Q_EXIT_SIG: {
+            QTimeEvt_disarm(&me->tempPollEvt);
             status_ = Q_HANDLED();
             break;
         }
@@ -103,8 +135,8 @@ QState MainApp_temperature(MainApp * const me, QEvt const * const e) {
             status_ = Q_HANDLED();
             break;
         }
-        //${AOs::MainApp::SM::display_Stats::temperature::BTN_RELEASE}
-        case BTN_RELEASE_SIG: {
+        //${AOs::MainApp::SM::display_Stats::temperature::BUTTON_SHORT}
+        case BUTTON_SHORT_SIG: {
             status_ = Q_TRAN(&MainApp_dryness);
             break;
         }

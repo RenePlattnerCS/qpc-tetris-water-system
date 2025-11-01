@@ -40,14 +40,36 @@ me-&gt;currentTemp = 0.0f;</code>
     <state name="display_Stats">
      <!--${AOs::MainApp::SM::display_Stats::dryness}-->
      <state name="dryness">
-      <state_glyph node="15,56,28,7"/>
-     </state>
-     <!--${AOs::MainApp::SM::display_Stats::temperature}-->
-     <state name="temperature">
-      <entry brief="start poll temp">printf(&quot;enter, arming timer\n&quot;);
+      <entry brief="Hello">printf(&quot;Hello entering dryness\n&quot;);
 QTimeEvt_armX(&amp;me-&gt;tempPollEvt, 
               400U,    // Fire after 10 seconds
               400U);   // Then repeat every 10 seconds</entry>
+      <exit>QTimeEvt_disarm(&amp;me-&gt;tempPollEvt);</exit>
+      <!--${AOs::MainApp::SM::display_Stats::dryness::TEMP_POLL}-->
+      <tran trig="TEMP_POLL">
+       <action>printf(&quot;hahahah\n&quot;);</action>
+       <tran_glyph conn="14,65,3,-1,12,-1">
+        <action box="0,-2,10,2"/>
+       </tran_glyph>
+      </tran>
+      <!--${AOs::MainApp::SM::display_Stats::dryness::BUTTON_LONG}-->
+      <tran trig="BUTTON_LONG" target="../../1">
+       <tran_glyph conn="24,56,0,2,-13">
+        <action box="-10,-2,10,2"/>
+       </tran_glyph>
+      </tran>
+      <state_glyph node="14,56,29,15">
+       <entry box="0,3,6,2"/>
+       <exit box="0,5,6,2"/>
+      </state_glyph>
+     </state>
+     <!--${AOs::MainApp::SM::display_Stats::temperature}-->
+     <state name="temperature">
+      <entry brief="start poll temp">printf(&quot;enter, arming timer for temperature \n&quot;);
+QTimeEvt_armX(&amp;me-&gt;tempPollEvt, 
+              400U,    // Fire after 10 seconds
+              400U);   // Then repeat every 10 seconds</entry>
+      <exit>QTimeEvt_disarm(&amp;me-&gt;tempPollEvt);</exit>
       <!--${AOs::MainApp::SM::display_Stats::temperature::TEMP_POLL}-->
       <tran trig="TEMP_POLL">
        <action>DHT11_Read(&amp;me-&gt;currentTemp);
@@ -58,14 +80,15 @@ display_temp(temp);</action>
         <action box="0,-2,10,2"/>
        </tran_glyph>
       </tran>
-      <!--${AOs::MainApp::SM::display_Stats::temperature::BTN_RELEASE}-->
-      <tran trig="BTN_RELEASE" target="../../0">
+      <!--${AOs::MainApp::SM::display_Stats::temperature::BUTTON_SHORT}-->
+      <tran trig="BUTTON_SHORT" target="../../0">
        <tran_glyph conn="28,43,2,0,13">
         <action box="0,0,10,2"/>
        </tran_glyph>
       </tran>
       <state_glyph node="14,25,29,18">
        <entry box="0,3,16,2"/>
+       <exit box="0,5,6,2"/>
       </state_glyph>
      </state>
      <state_glyph node="9,12,60,64"/>
@@ -88,7 +111,8 @@ $declare${Shared::Main_App_ctor}
 enum MenuGameSignals {
     BUTTON_PRESS_SIG = Q_USER_SIG,
     TEMP_POLL_SIG,
-    BTN_RELEASE_SIG,
+    BUTTON_SHORT_SIG,
+    BUTTON_LONG_SIG,
     MAX_SIG  // Keep last for validation
 };</text>
   </file>

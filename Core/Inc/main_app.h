@@ -70,6 +70,7 @@ void Main_App_ctor(MainApp * const me);
 enum MenuGameSignals {
     BUTTON_PRESS_SIG = Q_USER_SIG,
     TEMP_POLL_SIG,
-    BTN_RELEASE_SIG,
+    BUTTON_SHORT_SIG,
+    BUTTON_LONG_SIG,
     MAX_SIG  // Keep last for validation
 };

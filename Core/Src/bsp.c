@@ -35,8 +35,10 @@
 #include "bsp.h"                 // Board Support Package
 #include "stm32c0xx.h"  // CMSIS-compliant header file for the MCU used
 #include "ssd1306.h"
+#include "app_config.h"
+#include "main_app.h"
 // add other drivers if necessary...
-
+extern MainApp MainApp_inst;
 extern TIM_HandleTypeDef  htim14;
 
 
@@ -122,18 +124,57 @@ void BSP_delayMs(uint32_t ms) {
     while ((sysTickCounter - start) < ms ); // *10 cause my systick fires slower since i deivide by 100 not 1000
 }
 
-void EXTI0_IRQHandler(void)
+
+static uint32_t buttonPressTime = 0;
+static uint8_t buttonPressed = 0;
+
+void EXTI0_1_IRQHandler(void);
+void EXTI0_1_IRQHandler(void)
 {
-  HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_0);
+	QK_ISR_ENTRY();
+
+	__HAL_GPIO_EXTI_CLEAR_IT(TEST_BUTTON_PIN);
+
+
+
+	if (HAL_GPIO_ReadPin(TEST_BUTTON_PORT, TEST_BUTTON_PIN) == GPIO_PIN_RESET) {
+				// Button pressed (assuming active low)
+				buttonPressed = 1;
+				buttonPressTime = sysTickCounter;
+			}
+	else
+	{
+	if (buttonPressed) {
+	                uint32_t pressDuration = sysTickCounter - buttonPressTime;
+
+	                // Check if it was debounced press
+	                if (pressDuration > (DEBOUNCE_TIME_MS / 10)) {  // /10 because 100Hz tick
+	                	bool posted;
+
+	                    static QEvt const buttonShortEvt = {BUTTON_SHORT_SIG, 0U, 0U};
+	                    static QEvt const buttonLongEvt = {BUTTON_LONG_SIG, 0U, 0U};
+
+	                    if (pressDuration > (LONG_PRESS_TIME_MS / 10)) {
+	                        // Long press
+	                    	posted = QACTIVE_POST_X(&MainApp_inst, &buttonLongEvt,0U, &l_EXTI_IRQHandler);
+	                    } else {
+	                        // Short press
+	                    	posted = QACTIVE_POST_X(&MainApp_inst, &buttonShortEvt,0U, &l_EXTI_IRQHandler);
+	                    }
+
+	                    if (!posted) {
+	                    					buttonPressed = 0;
+	                    				}
+	                }
+	                buttonPressed = 0;
+	            }
+
+	        }
+
+	    QK_ISR_EXIT();
 }
 
-void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
-{
-    if (GPIO_Pin == GPIO_PIN_0)
-    {
-        print("btn pressed! \");
-    }
-}
+
 //............................................................................
 
 
