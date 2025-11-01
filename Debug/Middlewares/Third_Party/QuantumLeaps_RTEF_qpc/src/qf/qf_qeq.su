@@ -1,0 +1,8 @@
+../Middlewares/Third_Party/QuantumLeaps_RTEF_qpc/src/qf/qf_qeq.c:44:6:QEQueue_init	24	static
+../Middlewares/Third_Party/QuantumLeaps_RTEF_qpc/src/qf/qf_qeq.c:71:6:QEQueue_post	32	static
+../Middlewares/Third_Party/QuantumLeaps_RTEF_qpc/src/qf/qf_qeq.c:156:6:QEQueue_postLIFO	32	static
+../Middlewares/Third_Party/QuantumLeaps_RTEF_qpc/src/qf/qf_qeq.c:214:21:QEQueue_get	32	static
+../Middlewares/Third_Party/QuantumLeaps_RTEF_qpc/src/qf/qf_qeq.c:279:10:QEQueue_getUse	24	static
+../Middlewares/Third_Party/QuantumLeaps_RTEF_qpc/src/qf/qf_qeq.c:290:10:QEQueue_getFree	16	static
+../Middlewares/Third_Party/QuantumLeaps_RTEF_qpc/src/qf/qf_qeq.c:297:10:QEQueue_getMin	16	static
+../Middlewares/Third_Party/QuantumLeaps_RTEF_qpc/src/qf/qf_qeq.c:304:6:QEQueue_isEmpty	16	static

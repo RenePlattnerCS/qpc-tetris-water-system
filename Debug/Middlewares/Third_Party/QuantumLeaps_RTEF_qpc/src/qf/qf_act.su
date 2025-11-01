@@ -1,0 +1,4 @@
+../Middlewares/Third_Party/QuantumLeaps_RTEF_qpc/src/qf/qf_act.c:47:6:QEvt_ctor	16	static
+../Middlewares/Third_Party/QuantumLeaps_RTEF_qpc/src/qf/qf_act.c:54:7:QEvt_init	16	static
+../Middlewares/Third_Party/QuantumLeaps_RTEF_qpc/src/qf/qf_act.c:61:6:QEvt_refCtr_inc_	24	static
+../Middlewares/Third_Party/QuantumLeaps_RTEF_qpc/src/qf/qf_act.c:73:6:QEvt_refCtr_dec_	24	static

@@ -1,0 +1,6 @@
+../Middlewares/Third_Party/QuantumLeaps_RTEF_qpc/src/qf/qf_mem.c:44:6:QMPool_init	40	static
+../Middlewares/Third_Party/QuantumLeaps_RTEF_qpc/src/qf/qf_mem.c:108:8:QMPool_get	40	static
+../Middlewares/Third_Party/QuantumLeaps_RTEF_qpc/src/qf/qf_mem.c:188:6:QMPool_put	40	static
+../Middlewares/Third_Party/QuantumLeaps_RTEF_qpc/src/qf/qf_mem.c:240:10:QMPool_getUse	16	static
+../Middlewares/Third_Party/QuantumLeaps_RTEF_qpc/src/qf/qf_mem.c:247:10:QMPool_getFree	16	static
+../Middlewares/Third_Party/QuantumLeaps_RTEF_qpc/src/qf/qf_mem.c:254:10:QMPool_getMin	16	static

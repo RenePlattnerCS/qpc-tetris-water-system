@@ -1,0 +1,7 @@
+../Core/Src/philo.c:70:27:think_time	1
+../Core/Src/philo.c:77:27:eat_time	1
+../Core/Src/philo.c:92:6:Philo_ctor	1
+../Core/Src/philo.c:116:15:Philo_initial	1
+../Core/Src/philo.c:134:15:Philo_thinking	7
+../Core/Src/philo.c:176:15:Philo_hungry	6
+../Core/Src/philo.c:218:15:Philo_eating	7

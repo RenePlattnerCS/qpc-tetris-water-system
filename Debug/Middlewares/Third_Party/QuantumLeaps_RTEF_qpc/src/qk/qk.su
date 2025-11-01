@@ -1,0 +1,9 @@
+../Middlewares/Third_Party/QuantumLeaps_RTEF_qpc/src/qk/qk.c:52:14:QK_schedLock	24	static,ignoring_inline_asm
+../Middlewares/Third_Party/QuantumLeaps_RTEF_qpc/src/qk/qk.c:80:6:QK_schedUnlock	24	static,ignoring_inline_asm
+../Middlewares/Third_Party/QuantumLeaps_RTEF_qpc/src/qk/qk.c:112:14:QK_sched_	16	static
+../Middlewares/Third_Party/QuantumLeaps_RTEF_qpc/src/qk/qk.c:140:14:QK_sched_act_	24	static
+../Middlewares/Third_Party/QuantumLeaps_RTEF_qpc/src/qk/qk.c:176:6:QK_activate_	40	static
+../Middlewares/Third_Party/QuantumLeaps_RTEF_qpc/src/qk/qk.c:284:6:QF_init	8	static
+../Middlewares/Third_Party/QuantumLeaps_RTEF_qpc/src/qk/qk.c:299:6:QF_stop	8	static
+../Middlewares/Third_Party/QuantumLeaps_RTEF_qpc/src/qk/qk.c:306:7:QF_run	8	static
+../Middlewares/Third_Party/QuantumLeaps_RTEF_qpc/src/qk/qk.c:341:6:QActive_start	24	static
