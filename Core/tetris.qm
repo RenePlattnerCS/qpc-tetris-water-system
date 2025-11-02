@@ -32,6 +32,17 @@ me-&gt;currentTemp = 0.0f;</code>
 
 </code>
   </operation>
+  <!--${Shared::AO_RFButton}-->
+  <attribute name="AO_RFButton" type="QActive * const" visibility="0x00" properties="0x00">
+   <code>= &amp;RFButton_inst.super;</code>
+  </attribute>
+  <!--${Shared::RFButton_ctor}-->
+  <operation name="RFButton_ctor" type="void" visibility="0x00" properties="0x00">
+   <!--${Shared::RFButton_ctor::me}-->
+   <parameter name="me" type="RFButton * const"/>
+   <code>QActive_ctor(&amp;me-&gt;super, Q_STATE_CAST(&amp;RFButton_initial));
+</code>
+  </operation>
  </package>
  <!--${AOs}-->
  <package name="AOs" stereotype="0x02">
@@ -108,13 +119,13 @@ switch(me-&gt;currentState)
 {
     case TEMPERATURE:
     display_temp(me-&gt;currentTemp);
-    printf(&quot;display temp: u%&quot;,me-&gt;currentTemp );
+    printf(&quot;display temp: u% \n&quot;,me-&gt;currentTemp );
     break;
     
     case DRYNESS:
         uint8_t p = MainApp_calc_dryness_percent(me-&gt;currentDryness);
         display_dry(p);
-        printf(&quot;Dry: u%&quot;, p );
+        printf(&quot;Dry: u% \n&quot;, p );
     break;
     default:
             // error
@@ -151,32 +162,7 @@ QTimeEvt_armX(&amp;me-&gt;longPressEvt, LONG_PRESS_TIME_MS / 10, 0U);</action>
 QTimeEvt_disarm(&amp;me-&gt;debounceEvt);
 printf(&quot;released button inside\n&quot;);
 
-if(me-&gt;currentState == TEMPERATURE)
-{
-    me-&gt;currentState = DRYNESS;
-    
-} 
-else
-{
-    me-&gt;currentState = TEMPERATURE;
-}
 
-switch(me-&gt;currentState)
-{
-    case TEMPERATURE:
-    display_temp(me-&gt;currentTemp);
-    printf(&quot;display temp: u%&quot;,me-&gt;currentTemp );
-    break;
-    
-    case DRYNESS:
-        uint8_t p = MainApp_calc_dryness_percent(me-&gt;currentDryness);
-        display_dry(p);
-    break;
-    default:
-            // error
-            break;
-
-}
 </action>
       <tran_glyph conn="106,65,1,-1,-22">
        <action box="-19,-4,18,5"/>
@@ -193,7 +179,7 @@ QTimeEvt_armX(&amp;me-&gt;debounceEvt, 3U, 0U);</action>
      <!--${AOs::MainApp::SM::display::BUTTON_TIMEOUT}-->
      <tran trig="BUTTON_TIMEOUT">
       <action>// Debounce time elapsed — check stable pin state
-GPIO_PinState state = HAL_GPIO_ReadPin(TEST_BUTTON_PORT, TEST_BUTTON_PIN);
+GPIO_PinState state = HAL_GPIO_ReadPin(RF_BUTTON_PORT, RF_BUTTON_PIN);
 
 if (state == GPIO_PIN_RESET) {
     // Button is stably pressed
@@ -213,7 +199,7 @@ HAL_NVIC_EnableIRQ(EXTI0_1_IRQn);</action>
      </tran>
      <!--${AOs::MainApp::SM::display::display_stats}-->
      <state name="display_stats">
-      <entry brief="poll">display_temp(me-&gt;currentTemp);</entry>
+      <entry>display_temp(me-&gt;currentTemp);</entry>
       <exit>QTimeEvt_disarm(&amp;me-&gt;tempPollEvt);</exit>
       <state_glyph node="14,25,41,31">
        <entry box="0,3,6,2"/>
@@ -288,6 +274,44 @@ QACTIVE_POST(AO_Main_App, &amp;e-&gt;super, &amp;AO_Sensor);
     <state_diagram size="166,149"/>
    </statechart>
   </class>
+  <!--${AOs::RFButton}-->
+  <class name="RFButton" superclass="qpc::QActive">
+   <!--${AOs::RFButton::inst}-->
+   <attribute name="inst" type="RFButton" visibility="0x02" properties="0x01"/>
+   <!--${AOs::RFButton::receive_rf}-->
+   <operation name="receive_rf" type="void" visibility="0x02" properties="0x01">
+    <code>while(nrf24_data_available()) {
+        uint8_t payload[PLD_S]; 
+        nrf24_receive(payload, sizeof(payload));
+        //QACTIVE_POST(AO_Main_App, &amp;evt-&gt;super, me);
+    }</code>
+   </operation>
+   <!--${AOs::RFButton::SM}-->
+   <statechart properties="0x00">
+    <!--${AOs::RFButton::SM::initial}-->
+    <initial target="../1">
+     <initial_glyph conn="49,9,5,0,-6,10">
+      <action box="0,-2,10,2"/>
+     </initial_glyph>
+    </initial>
+    <!--${AOs::RFButton::SM::wait}-->
+    <state name="wait">
+     <entry>printf(&quot;wait\n&quot;);
+</entry>
+     <!--${AOs::RFButton::SM::wait::NRF_IRQ}-->
+     <tran trig="NRF_IRQ">
+      <action brief="receive">RFButton_receive_rf();</action>
+      <tran_glyph conn="41,36,4,-1,-9">
+       <action box="1,-3,10,2"/>
+      </tran_glyph>
+     </tran>
+     <state_glyph node="26,19,32,17">
+      <entry box="0,3,6,2"/>
+     </state_glyph>
+    </state>
+    <state_diagram size="153,121"/>
+   </statechart>
+  </class>
  </package>
  <!--${Inc}-->
  <directory name="Inc">
@@ -301,7 +325,7 @@ QACTIVE_POST(AO_Main_App, &amp;e-&gt;super, &amp;AO_Sensor);
 #include &quot;display.h&quot;
 #include &quot;plant_sensor.h&quot;
 #include &quot;sensor.h&quot;
-
+#include &quot;rfbutton.h&quot;
 
 
 //keep track of substates
@@ -324,6 +348,7 @@ enum MenuGameSignals {
     BUTTON_RELEASE_SIG,
     START_SENSOR_SIG,
     SENSOR_DONE_SIG,
+    NRF_IRQ_SIG,
     MAX_SIG  // Keep last for validation
 };
 
@@ -348,6 +373,18 @@ typedef struct {
 #include &quot;qpc.h&quot;
 
 $declare${AOs::Sensor}
+
+
+#endif </text>
+  </file>
+  <!--${Inc::rfbutton.h}-->
+  <file name="rfbutton.h">
+   <text>#ifndef RFBUTTON_H
+#define RFBUTTON_H
+
+#include &quot;qpc.h&quot;
+
+$declare${AOs::RFButton}
 
 
 
@@ -380,6 +417,13 @@ extern ADC_HandleTypeDef hadc1;
 $define${AOs::Sensor}
 
 //QActive * const AO_Sensor = &amp;Sensor_inst;</text>
+  </file>
+  <!--${Src::rfbutton.c}-->
+  <file name="rfbutton.c">
+   <text>#include &quot;rfbutton.h&quot;
+#include &quot;main_app.h&quot;
+#include &quot;NRF_chip.h&quot;
+$define${AOs::RFButton}</text>
   </file>
  </directory>
 </model>

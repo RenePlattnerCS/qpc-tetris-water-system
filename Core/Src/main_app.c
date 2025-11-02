@@ -110,13 +110,13 @@ QState MainApp_display(MainApp * const me, QEvt const * const e) {
             {
                 case TEMPERATURE:
                 display_temp(me->currentTemp);
-                printf("display temp: u%",me->currentTemp );
+                printf("display temp: u% \n",me->currentTemp );
                 break;
 
                 case DRYNESS:
                     uint8_t p = MainApp_calc_dryness_percent(me->currentDryness);
                     display_dry(p);
-                    printf("Dry: u%", p );
+                    printf("Dry: u% \n", p );
                 break;
                 default:
                         // error
@@ -150,32 +150,7 @@ QState MainApp_display(MainApp * const me, QEvt const * const e) {
             QTimeEvt_disarm(&me->debounceEvt);
             printf("released button inside\n");
 
-            if(me->currentState == TEMPERATURE)
-            {
-                me->currentState = DRYNESS;
 
-            }
-            else
-            {
-                me->currentState = TEMPERATURE;
-            }
-
-            switch(me->currentState)
-            {
-                case TEMPERATURE:
-                display_temp(me->currentTemp);
-                printf("display temp: u%",me->currentTemp );
-                break;
-
-                case DRYNESS:
-                    uint8_t p = MainApp_calc_dryness_percent(me->currentDryness);
-                    display_dry(p);
-                break;
-                default:
-                        // error
-                        break;
-
-            }
 
             status_ = Q_HANDLED();
             break;
@@ -190,7 +165,7 @@ QState MainApp_display(MainApp * const me, QEvt const * const e) {
         //${AOs::MainApp::SM::display::BUTTON_TIMEOUT}
         case BUTTON_TIMEOUT_SIG: {
             // Debounce time elapsed — check stable pin state
-            GPIO_PinState state = HAL_GPIO_ReadPin(TEST_BUTTON_PORT, TEST_BUTTON_PIN);
+            GPIO_PinState state = HAL_GPIO_ReadPin(RF_BUTTON_PORT, RF_BUTTON_PIN);
 
             if (state == GPIO_PIN_RESET) {
                 // Button is stably pressed
@@ -291,6 +266,15 @@ void Sensor_ctor(Sensor * const me) {
     QActive_ctor(&me->super, Q_STATE_CAST(&Sensor_initial));
 
 
+
+}
+
+//${Shared::AO_RFButton} .....................................................
+QActive * const AO_RFButton = &RFButton_inst.super;
+
+//${Shared::RFButton_ctor} ...................................................
+void RFButton_ctor(RFButton * const me) {
+    QActive_ctor(&me->super, Q_STATE_CAST(&RFButton_initial));
 
 }
 //$enddef${Shared} ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

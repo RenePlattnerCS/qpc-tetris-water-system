@@ -25,6 +25,7 @@
 #include "bsp.h"
 #include "main_app.h"
 #include "sensor.h"
+#include "rfbutton.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -47,6 +48,8 @@ ADC_HandleTypeDef hadc1;
 
 I2C_HandleTypeDef hi2c1;
 
+SPI_HandleTypeDef hspi1;
+
 TIM_HandleTypeDef htim14;
 
 UART_HandleTypeDef huart2;
@@ -62,6 +65,7 @@ static void MX_USART2_UART_Init(void);
 static void MX_TIM14_Init(void);
 static void MX_I2C1_Init(void);
 static void MX_ADC1_Init(void);
+static void MX_SPI1_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -74,8 +78,12 @@ extern MainApp MainApp_inst; // Storage for the AO instance
 static QEvt const *sensorQueueSto[5]; // Storage for event queue
 extern Sensor Sensor_inst; // Storage for the AO instance
 
+static QEvt const *rfbuttonQueueSto[5]; // Storage for event queue
+extern RFButton RFButton_inst; // Storage for the AO instance
+
 // Allocate pool for SensorEvent
 static QF_MPOOL_EL(SensorEvent) sensorEvtPoolSto[2];
+
 
 
 /* USER CODE END 0 */
@@ -113,6 +121,7 @@ int main(void)
   MX_TIM14_Init();
   MX_I2C1_Init();
   MX_ADC1_Init();
+  MX_SPI1_Init();
   /* USER CODE BEGIN 2 */
 
   /* USER CODE END 2 */
@@ -127,10 +136,11 @@ int main(void)
 
   Main_App_ctor(&MainApp_inst);
   Sensor_ctor(&Sensor_inst);
+  RFButton_ctor(&RFButton_inst);
 
   // 4. Start the Active Object
       QACTIVE_START(&MainApp_inst,           // AO pointer
-                    2U,                     // Priority
+                    3U,                     // Priority
                     menuGameQueueSto,       // Event queue storage
                     Q_DIM(menuGameQueueSto), // Queue length
                     (void *)0,              // Stack storage (0 for bare-metal)
@@ -138,12 +148,20 @@ int main(void)
                     (void *)0);             // Initial event (optional)
 
       QACTIVE_START(&Sensor_inst,           // AO pointer
-                          1U,                     // Priority
+                          2U,                     // Priority
 						  sensorQueueSto,       // Event queue storage
                           Q_DIM(sensorQueueSto), // Queue length
                           (void *)0,              // Stack storage (0 for bare-metal)
                           0U,                     // Stack size (0 for bare-metal)
                           (void *)0);             // Initial event (optional)
+
+      QACTIVE_START(&RFButton_inst,           // AO pointer
+                                4U,                     // Priority
+								rfbuttonQueueSto,       // Event queue storage
+                                Q_DIM(rfbuttonQueueSto), // Queue length
+                                (void *)0,              // Stack storage (0 for bare-metal)
+                                0U,                     // Stack size (0 for bare-metal)
+                                (void *)0);             // Initial event (optional)
 
   //BSP_start();     // start the AOs/Threads
   return QF_run(); // run the QF application
@@ -299,6 +317,46 @@ static void MX_I2C1_Init(void)
 }
 
 /**
+  * @brief SPI1 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_SPI1_Init(void)
+{
+
+  /* USER CODE BEGIN SPI1_Init 0 */
+
+  /* USER CODE END SPI1_Init 0 */
+
+  /* USER CODE BEGIN SPI1_Init 1 */
+
+  /* USER CODE END SPI1_Init 1 */
+  /* SPI1 parameter configuration*/
+  hspi1.Instance = SPI1;
+  hspi1.Init.Mode = SPI_MODE_MASTER;
+  hspi1.Init.Direction = SPI_DIRECTION_2LINES;
+  hspi1.Init.DataSize = SPI_DATASIZE_8BIT;
+  hspi1.Init.CLKPolarity = SPI_POLARITY_LOW;
+  hspi1.Init.CLKPhase = SPI_PHASE_1EDGE;
+  hspi1.Init.NSS = SPI_NSS_SOFT;
+  hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_8;
+  hspi1.Init.FirstBit = SPI_FIRSTBIT_MSB;
+  hspi1.Init.TIMode = SPI_TIMODE_DISABLE;
+  hspi1.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
+  hspi1.Init.CRCPolynomial = 7;
+  hspi1.Init.CRCLength = SPI_CRC_LENGTH_DATASIZE;
+  hspi1.Init.NSSPMode = SPI_NSS_PULSE_ENABLE;
+  if (HAL_SPI_Init(&hspi1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN SPI1_Init 2 */
+
+  /* USER CODE END SPI1_Init 2 */
+
+}
+
+/**
   * @brief TIM14 Initialization Function
   * @param None
   * @retval None
@@ -381,6 +439,7 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOC_CLK_ENABLE();
   __HAL_RCC_GPIOF_CLK_ENABLE();
   __HAL_RCC_GPIOA_CLK_ENABLE();
+  __HAL_RCC_GPIOB_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOA, TEMP_Pin|Water_Pump_Pin, GPIO_PIN_RESET);
@@ -391,11 +450,11 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(User_Button_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : BTN_Pin */
-  GPIO_InitStruct.Pin = BTN_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING_FALLING;
-  GPIO_InitStruct.Pull = GPIO_PULLUP;
-  HAL_GPIO_Init(BTN_GPIO_Port, &GPIO_InitStruct);
+  /*Configure GPIO pin : RF_BTN_Pin */
+  GPIO_InitStruct.Pin = RF_BTN_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(RF_BTN_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pins : TEMP_Pin Water_Pump_Pin */
   GPIO_InitStruct.Pin = TEMP_Pin|Water_Pump_Pin;

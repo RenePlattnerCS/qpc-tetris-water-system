@@ -58,5 +58,4 @@ QState Sensor_waiting(Sensor * const me, QEvt const * const e);
 //$enddecl${AOs::Sensor} ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 
-
 #endif

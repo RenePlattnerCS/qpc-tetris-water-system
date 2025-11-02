@@ -37,10 +37,12 @@
 #include "ssd1306.h"
 #include "app_config.h"
 #include "main_app.h"
+#include "NRF_chip.h"
 // add other drivers if necessary...
 extern MainApp MainApp_inst;
 extern TIM_HandleTypeDef  htim14;
 extern ADC_HandleTypeDef hadc1;
+//extern QActive AO_RFButton;
 
 
 Q_DEFINE_THIS_FILE  // define the name of this file for assertions
@@ -122,8 +124,9 @@ void SysTick_Handler(void) {
 
 void BSP_delayMs(uint32_t ms) {
     uint32_t start = sysTickCounter;
-    while ((sysTickCounter - start) < ms ); // *10 cause my systick fires slower since i deivide by 100 not 1000
+    while ((sysTickCounter - start) < ms);
 }
+
 
 
 static uint32_t buttonPressTime = 0;
@@ -134,14 +137,21 @@ void EXTI0_1_IRQHandler(void)
 {
     QK_ISR_ENTRY();
 
-    __HAL_GPIO_EXTI_CLEAR_IT(TEST_BUTTON_PIN);
 
+    static QEvt const nrfEvt = { NRF_IRQ_SIG, 0U, 0U };
+        QACTIVE_POST(AO_RFButton, &nrfEvt, &l_EXTI0_1_IRQHandler);
+
+
+
+    __HAL_GPIO_EXTI_CLEAR_IT(RF_BUTTON_PIN);
+    /*
     // Disable EXTI temporarily to avoid bounce interrupts
     HAL_NVIC_DisableIRQ(EXTI0_1_IRQn);
 
     // Post debounce event
     QEvt *e = Q_NEW(QEvt, BUTTON_DEBOUNCE_SIG);
     QACTIVE_POST(AO_Main_App, e, &l_EXTI_IRQHandler);
+	*/
 
     QK_ISR_EXIT();
 }
@@ -211,7 +221,7 @@ void BSP_init(void) {
     // Initialize LEDs, buttons, UART, etc.
     HAL_Init();
     SystemClock_Config();  // configure system clock
-    HAL_SYSTICK_Config(HAL_RCC_GetHCLKFreq() / 100U); // 100Hz -> 100ticks per sec
+    HAL_SYSTICK_Config(HAL_RCC_GetHCLKFreq() / 1000U);
 
     // start TIM14
 	if (HAL_TIM_Base_Start(&htim14) != HAL_OK) {
@@ -219,6 +229,7 @@ void BSP_init(void) {
 	}
 
 	ssd1306_Init();
+	init_nrf();
 }
 //............................................................................
 void BSP_start(void)

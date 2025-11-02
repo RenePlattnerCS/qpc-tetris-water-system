@@ -43,7 +43,7 @@
 #include "display.h"
 #include "plant_sensor.h"
 #include "sensor.h"
-
+#include "rfbutton.h"
 
 
 //keep track of substates
@@ -99,6 +99,12 @@ extern QActive * const AO_Sensor;
 
 //${Shared::Sensor_ctor} .....................................................
 void Sensor_ctor(Sensor * const me);
+
+//${Shared::AO_RFButton} .....................................................
+extern QActive * const AO_RFButton;
+
+//${Shared::RFButton_ctor} ...................................................
+void RFButton_ctor(RFButton * const me);
 //$enddecl${Shared} ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 // Signals
 enum MenuGameSignals {
@@ -111,6 +117,7 @@ enum MenuGameSignals {
     BUTTON_RELEASE_SIG,
     START_SENSOR_SIG,
     SENSOR_DONE_SIG,
+    NRF_IRQ_SIG,
     MAX_SIG  // Keep last for validation
 };
 

@@ -1,2 +1,2 @@
-../Core/Src/temp_sensor.c:92:13:Delay_us	0	static
+../Core/Src/temp_sensor.c:103:13:Delay_us	0	static
 ../Core/Src/temp_sensor.c:14:9:DHT11_Read	64	static

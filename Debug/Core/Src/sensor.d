@@ -43,6 +43,8 @@ Core/Src/sensor.o: ../Core/Src/sensor.c ../Core/Inc/sensor.h \
  ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_i2c_ex.h \
  ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_pwr.h \
  ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_pwr_ex.h \
+ ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_spi.h \
+ ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_spi_ex.h \
  ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_tim.h \
  ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_tim_ex.h \
  ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_uart.h \
@@ -50,7 +52,7 @@ Core/Src/sensor.o: ../Core/Src/sensor.c ../Core/Inc/sensor.h \
  M:/embedded/stm32C0_Nucleus/qpc-tetris-water-system/Middlewares/Third_Party/OLED_SSD1306/include/ssd1306_conf.h \
  M:/embedded/stm32C0_Nucleus/qpc-tetris-water-system/Middlewares/Third_Party/OLED_SSD1306/include/ssd1306_fonts.h \
  M:/embedded/stm32C0_Nucleus/qpc-tetris-water-system/Middlewares/Third_Party/OLED_SSD1306/include/ssd1306.h \
- ../Core/Inc/plant_sensor.h ../Core/Inc/sensor.h
+ ../Core/Inc/plant_sensor.h ../Core/Inc/sensor.h ../Core/Inc/rfbutton.h
 ../Core/Inc/sensor.h:
 ../Middlewares/Third_Party/QuantumLeaps_RTEF_qpc/include/qpc.h:
 ../Middlewares/Third_Party/QuantumLeaps_RTEF_qpc/ports/arm-cm/qk/gnu/qp_port.h:
@@ -98,6 +100,8 @@ M:/embedded/stm32C0_Nucleus/qpc-tetris-water-system/Middlewares/Third_Party/OLED
 ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_i2c_ex.h:
 ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_pwr.h:
 ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_pwr_ex.h:
+../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_spi.h:
+../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_spi_ex.h:
 ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_tim.h:
 ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_tim_ex.h:
 ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_uart.h:
@@ -107,3 +111,4 @@ M:/embedded/stm32C0_Nucleus/qpc-tetris-water-system/Middlewares/Third_Party/OLED
 M:/embedded/stm32C0_Nucleus/qpc-tetris-water-system/Middlewares/Third_Party/OLED_SSD1306/include/ssd1306.h:
 ../Core/Inc/plant_sensor.h:
 ../Core/Inc/sensor.h:
+../Core/Inc/rfbutton.h:

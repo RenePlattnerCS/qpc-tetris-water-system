@@ -67,9 +67,9 @@ void Error_Handler(void);
 #define RCC_OSC_IN_GPIO_Port GPIOF
 #define RCC_OSC_OUT_Pin GPIO_PIN_1
 #define RCC_OSC_OUT_GPIO_Port GPIOF
-#define BTN_Pin GPIO_PIN_0
-#define BTN_GPIO_Port GPIOA
-#define BTN_EXTI_IRQn EXTI0_1_IRQn
+#define RF_BTN_Pin GPIO_PIN_0
+#define RF_BTN_GPIO_Port GPIOA
+#define RF_BTN_EXTI_IRQn EXTI0_1_IRQn
 #define TEMP_Pin GPIO_PIN_1
 #define TEMP_GPIO_Port GPIOA
 #define VCP_USART2_TX_Pin GPIO_PIN_2

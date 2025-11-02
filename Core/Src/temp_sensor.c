@@ -22,7 +22,6 @@ uint8_t DHT11_Read(uint8_t *temp_data)
     //HAL_Delay(20); // Pull low for ≥18ms
     BSP_delayMs(2);
     HAL_GPIO_WritePin(DHT11_PORT, DHT11_PIN, GPIO_PIN_SET);
-    //BSP_delayMs(30);
     Delay_us(30);
     DHT11_SetPinInput();
 
@@ -89,6 +88,7 @@ static void DHT11_SetPinInput(void)
     HAL_GPIO_Init(DHT11_PORT, &GPIO_InitStruct);
 }
 
+/*
 static void Delay_us(uint16_t us)
 {
     __HAL_TIM_SET_COUNTER(&htim14, 0);  // Reset counter
@@ -99,5 +99,10 @@ static void Delay_us(uint16_t us)
     while (__HAL_TIM_GET_COUNTER(&htim14) < us);
 
 }
-
+*/
+static void Delay_us(uint16_t us)
+{
+    __HAL_TIM_SET_COUNTER(&htim14, 0);          // reset counter
+    while (__HAL_TIM_GET_COUNTER(&htim14) < us); // wait until counter reaches 'us'
+}
 
