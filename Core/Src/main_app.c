@@ -57,13 +57,11 @@ MainApp MainApp_inst;
 uint8_t MainApp_calc_dryness_percent(uint16_t dryness) {
     if(dryness >= MAX_DRY)
     {
-    printf("max\n");
         return 100;
     }
 
     if((uint16_t) dryness <= (uint16_t) MAX_WET)
     {
-    printf("min\n");
         return 0;
     }
 
@@ -145,6 +143,11 @@ QState MainApp_display(MainApp * const me, QEvt const * const e) {
             status_ = Q_HANDLED();
             break;
         }
+        //${AOs::MainApp::SM::display::BUTTON_LONG}
+        case BUTTON_LONG_SIG: {
+            status_ = Q_TRAN(&MainApp_pump);
+            break;
+        }
         //${AOs::MainApp::SM::display::BUTTON_RELEASE}
         case BUTTON_RELEASE_SIG: {
             QTimeEvt_disarm(&me->longPressEvt);
@@ -215,6 +218,12 @@ QState MainApp_pump(MainApp * const me, QEvt const * const e) {
             printf("exit pump\n");
             HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_RESET);
             status_ = Q_HANDLED();
+            break;
+        }
+        //${AOs::MainApp::SM::pump::BUTTON_RELEASE}
+        case BUTTON_RELEASE_SIG: {
+            printf("released the btm inside pump \n");
+            status_ = Q_TRAN(&MainApp_display_stats);
             break;
         }
         default: {

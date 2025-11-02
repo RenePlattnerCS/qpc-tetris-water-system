@@ -1,8 +1,8 @@
-../Core/Src/main_app.c:78:8:MainApp_initial	0	static
-../Core/Src/main_app.c:176:8:MainApp_display_stats	8	static
+../Core/Src/main_app.c:76:8:MainApp_initial	0	static
+../Core/Src/main_app.c:179:8:MainApp_display_stats	8	static
+../Core/Src/main_app.c:203:8:MainApp_pump	16	static
 ../Core/Src/main_app.c:57:9:MainApp_calc_dryness_percent	8	static
-../Core/Src/main_app.c:84:8:MainApp_display	16	static
-../Core/Src/main_app.c:200:8:MainApp_pump	16	static
-../Core/Src/main_app.c:234:6:Main_App_ctor	8	static
-../Core/Src/main_app.c:245:6:Sensor_ctor	8	static
-../Core/Src/main_app.c:256:6:RFButton_ctor	8	static
+../Core/Src/main_app.c:82:8:MainApp_display	16	static
+../Core/Src/main_app.c:243:6:Main_App_ctor	8	static
+../Core/Src/main_app.c:254:6:Sensor_ctor	8	static
+../Core/Src/main_app.c:265:6:RFButton_ctor	8	static
