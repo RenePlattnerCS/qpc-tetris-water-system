@@ -15,6 +15,8 @@
    <parameter name="me" type="MainApp * const"/>
    <code>QActive_ctor(&amp;me-&gt;super, Q_STATE_CAST(&amp;MainApp_initial));
 QTimeEvt_ctorX(&amp;me-&gt;tempPollEvt, &amp;me-&gt;super, POLL_SENSOR_SIG, 0U);
+QTimeEvt_ctorX(&amp;me-&gt;longPressEvt, &amp;me-&gt;super, BUTTON_LONG_SIG, 0U);
+QTimeEvt_ctorX(&amp;me-&gt;debounceEvt, &amp;me-&gt;super, BUTTON_TIMEOUT_SIG, 0U);
 me-&gt;currentTemp = 0.0f;</code>
   </operation>
   <!--${Shared::AO_Sensor}-->
@@ -47,6 +49,10 @@ me-&gt;currentTemp = 0.0f;</code>
    <attribute name="currentState" type="display_states" visibility="0x02" properties="0x00">
     <code>curr_state = &quot;t&quot;;</code>
    </attribute>
+   <!--${AOs::MainApp::longPressEvt}-->
+   <attribute name="longPressEvt" type="QTimeEvt" visibility="0x00" properties="0x00"/>
+   <!--${AOs::MainApp::debounceEvt}-->
+   <attribute name="debounceEvt" type="QTimeEvt" visibility="0x00" properties="0x00"/>
    <!--${AOs::MainApp::calc_dryness_percent}-->
    <operation name="calc_dryness_percent" type="uint8_t" visibility="0x02" properties="0x01">
     <!--${AOs::MainApp::calc_dryness_per~::dryness}-->
@@ -72,8 +78,8 @@ return percent;</code>
    <!--${AOs::MainApp::SM}-->
    <statechart properties="0x00">
     <!--${AOs::MainApp::SM::initial}-->
-    <initial target="../1/2">
-     <initial_glyph conn="41,6,5,0,-13,19">
+    <initial target="../1">
+     <initial_glyph conn="41,6,5,0,-13,6">
       <action box="0,-2,10,2"/>
      </initial_glyph>
     </initial>
@@ -83,7 +89,13 @@ return percent;</code>
               800U,    // Fire after 10 seconds
               800U);   // Then repeat every 10 seconds
 
-</entry>
+HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_RESET);</entry>
+     <!--${AOs::MainApp::SM::display::initial}-->
+     <initial target="../7">
+      <initial_glyph conn="49,20,5,0,-5,5">
+       <action box="0,-2,10,2"/>
+      </initial_glyph>
+     </initial>
      <!--${AOs::MainApp::SM::display::SENSOR_DONE}-->
      <tran trig="SENSOR_DONE">
       <action>SensorEvent const *sensorEvt = (SensorEvent const *)e;
@@ -110,8 +122,8 @@ switch(me-&gt;currentState)
 
 }
 </action>
-      <tran_glyph conn="106,47,1,-1,-22">
-       <action box="-14,-3,18,2"/>
+      <tran_glyph conn="106,38,1,-1,-22">
+       <action box="-18,-3,18,2"/>
       </tran_glyph>
      </tran>
      <!--${AOs::MainApp::SM::display::POLL_SENSOR}-->
@@ -125,13 +137,21 @@ QACTIVE_POST(AO_Sensor,&amp;ADC_Start_Evt, me);
        <action box="-17,-3,21,2"/>
       </tran_glyph>
      </tran>
-     <!--${AOs::MainApp::SM::display::display_stats}-->
-     <state name="display_stats">
-      <entry brief="poll">display_temp(me-&gt;currentTemp);</entry>
-      <exit>QTimeEvt_disarm(&amp;me-&gt;tempPollEvt);</exit>
-      <!--${AOs::MainApp::SM::display::display_stats::BUTTON_SHORT}-->
-      <tran trig="BUTTON_SHORT">
-       <action brief="switch temp/dryness">if(me-&gt;currentState == TEMPERATURE)
+     <!--${AOs::MainApp::SM::display::BUTTON_PRESS}-->
+     <tran trig="BUTTON_PRESS">
+      <action>QTimeEvt_disarm(&amp;me-&gt;longPressEvt);
+QTimeEvt_armX(&amp;me-&gt;longPressEvt, LONG_PRESS_TIME_MS / 10, 0U);</action>
+      <tran_glyph conn="106,57,1,-1,-22">
+       <action box="-19,-2,18,2"/>
+      </tran_glyph>
+     </tran>
+     <!--${AOs::MainApp::SM::display::BUTTON_RELEASE}-->
+     <tran trig="BUTTON_RELEASE">
+      <action brief="short press">QTimeEvt_disarm(&amp;me-&gt;longPressEvt);
+QTimeEvt_disarm(&amp;me-&gt;debounceEvt);
+printf(&quot;released button inside\n&quot;);
+
+if(me-&gt;currentState == TEMPERATURE)
 {
     me-&gt;currentState = DRYNESS;
     
@@ -140,7 +160,6 @@ else
 {
     me-&gt;currentState = TEMPERATURE;
 }
-printf(&quot;flipped states&quot;);
 
 switch(me-&gt;currentState)
 {
@@ -152,26 +171,72 @@ switch(me-&gt;currentState)
     case DRYNESS:
         uint8_t p = MainApp_calc_dryness_percent(me-&gt;currentDryness);
         display_dry(p);
-        printf(&quot;Dry: u%&quot;, p );
     break;
     default:
             // error
             break;
 
 }
-
 </action>
-       <tran_glyph conn="28,56,2,-1,-9">
-        <action box="0,-6,19,7"/>
-       </tran_glyph>
-      </tran>
+      <tran_glyph conn="106,65,1,-1,-22">
+       <action box="-19,-4,18,5"/>
+      </tran_glyph>
+     </tran>
+     <!--${AOs::MainApp::SM::display::BUTTON_DEBOUNCE}-->
+     <tran trig="BUTTON_DEBOUNCE">
+      <action>QTimeEvt_disarm(&amp;me-&gt;debounceEvt);
+QTimeEvt_armX(&amp;me-&gt;debounceEvt, 3U, 0U);</action>
+      <tran_glyph conn="106,50,1,-1,-22">
+       <action box="-21,-4,18,2"/>
+      </tran_glyph>
+     </tran>
+     <!--${AOs::MainApp::SM::display::BUTTON_TIMEOUT}-->
+     <tran trig="BUTTON_TIMEOUT">
+      <action>// Debounce time elapsed — check stable pin state
+GPIO_PinState state = HAL_GPIO_ReadPin(TEST_BUTTON_PORT, TEST_BUTTON_PIN);
+
+if (state == GPIO_PIN_RESET) {
+    // Button is stably pressed
+    static QEvt const pressEvt = { BUTTON_PRESS_SIG, 0U, 0U };
+    QACTIVE_POST(AO_Main_App, &amp;pressEvt, &amp;AO_Main_App);
+} else {
+    // Button is stably released
+    static QEvt const releaseEvt = { BUTTON_RELEASE_SIG, 0U, 0U };
+    QACTIVE_POST(AO_Main_App, &amp;releaseEvt, &amp;AO_Main_App);
+}
+
+// Re-enable EXTI after debounce is done
+HAL_NVIC_EnableIRQ(EXTI0_1_IRQn);</action>
+      <tran_glyph conn="106,72,1,-1,-22">
+       <action box="-18,-2,15,3"/>
+      </tran_glyph>
+     </tran>
+     <!--${AOs::MainApp::SM::display::display_stats}-->
+     <state name="display_stats">
+      <entry brief="poll">display_temp(me-&gt;currentTemp);</entry>
+      <exit>QTimeEvt_disarm(&amp;me-&gt;tempPollEvt);</exit>
       <state_glyph node="14,25,41,31">
        <entry box="0,3,6,2"/>
        <exit box="0,5,6,2"/>
       </state_glyph>
      </state>
-     <state_glyph node="9,12,97,64">
+     <state_glyph node="9,12,97,87">
       <entry box="0,3,6,2"/>
+     </state_glyph>
+    </state>
+    <!--${AOs::MainApp::SM::pump}-->
+    <state name="pump">
+     <entry>printf(&quot;enter pump\n&quot;);
+QTimeEvt_disarm(&amp;me-&gt;longPressEvt);
+QTimeEvt_disarm(&amp;me-&gt;debounceEvt);
+HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_SET);
+
+</entry>
+     <exit>printf(&quot;exit pump\n&quot;);
+HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_RESET);</exit>
+     <state_glyph node="27,108,34,18">
+      <entry box="0,3,6,2"/>
+      <exit box="0,5,6,2"/>
      </state_glyph>
     </state>
     <state_diagram size="128,134"/>
@@ -252,8 +317,11 @@ $declare ${Shared}
 enum MenuGameSignals {
     BUTTON_PRESS_SIG = Q_USER_SIG,
     POLL_SENSOR_SIG,
+    BUTTON_DEBOUNCE_SIG,
+    BUTTON_TIMEOUT_SIG,
     BUTTON_SHORT_SIG,
     BUTTON_LONG_SIG,
+    BUTTON_RELEASE_SIG,
     START_SENSOR_SIG,
     SENSOR_DONE_SIG,
     MAX_SIG  // Keep last for validation

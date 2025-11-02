@@ -68,6 +68,10 @@ typedef struct MainApp {
     uint8_t currentTemp;
     uint16_t currentDryness;
     display_states currentState;
+
+// public:
+    QTimeEvt longPressEvt;
+    QTimeEvt debounceEvt;
 } MainApp;
 
 extern MainApp MainApp_inst;
@@ -79,6 +83,7 @@ uint8_t MainApp_calc_dryness_percent(uint16_t dryness);
 QState MainApp_initial(MainApp * const me, void const * const par);
 QState MainApp_display(MainApp * const me, QEvt const * const e);
 QState MainApp_display_stats(MainApp * const me, QEvt const * const e);
+QState MainApp_pump(MainApp * const me, QEvt const * const e);
 //$enddecl${AOs::MainApp} ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 //$declare${Shared} vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
@@ -99,8 +104,11 @@ void Sensor_ctor(Sensor * const me);
 enum MenuGameSignals {
     BUTTON_PRESS_SIG = Q_USER_SIG,
     POLL_SENSOR_SIG,
+    BUTTON_DEBOUNCE_SIG,
+    BUTTON_TIMEOUT_SIG,
     BUTTON_SHORT_SIG,
     BUTTON_LONG_SIG,
+    BUTTON_RELEASE_SIG,
     START_SENSOR_SIG,
     SENSOR_DONE_SIG,
     MAX_SIG  // Keep last for validation

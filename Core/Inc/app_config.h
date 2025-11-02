@@ -13,7 +13,7 @@
 #define TEST_BUTTON_PIN			GPIO_PIN_0
 #define TEST_BUTTON_PORT		GPIOA
 
-#define MAX_DRY 			 (2800U) //for the dryness plant sensor
+#define MAX_DRY 			 (2500U) //for the dryness plant sensor
 #define MAX_WET 			 (1000U)
 
 

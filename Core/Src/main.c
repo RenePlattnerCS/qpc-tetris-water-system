@@ -68,14 +68,16 @@ static void MX_ADC1_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-static QEvt const *menuGameQueueSto[10]; // Storage for event queue
+static QEvt const *menuGameQueueSto[15]; // Storage for event queue
 extern MainApp MainApp_inst; // Storage for the AO instance
 
 static QEvt const *sensorQueueSto[5]; // Storage for event queue
 extern Sensor Sensor_inst; // Storage for the AO instance
 
-// Allocate pool for SensorEvent (10 events)
+// Allocate pool for SensorEvent
 static QF_MPOOL_EL(SensorEvent) sensorEvtPoolSto[2];
+
+
 /* USER CODE END 0 */
 
 /**
@@ -119,6 +121,7 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   QF_init();       // initialize the framework and the underlying RT kernel
   BSP_init();      // initialize the BSP
+
 
   QF_poolInit(sensorEvtPoolSto, sizeof(sensorEvtPoolSto), sizeof(sensorEvtPoolSto[0]));
 
@@ -380,7 +383,7 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOA_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(TEMP_GPIO_Port, TEMP_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOA, TEMP_Pin|Water_Pump_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin : User_Button_Pin */
   GPIO_InitStruct.Pin = User_Button_Pin;
@@ -394,12 +397,12 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_PULLUP;
   HAL_GPIO_Init(BTN_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : TEMP_Pin */
-  GPIO_InitStruct.Pin = TEMP_Pin;
+  /*Configure GPIO pins : TEMP_Pin Water_Pump_Pin */
+  GPIO_InitStruct.Pin = TEMP_Pin|Water_Pump_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(TEMP_GPIO_Port, &GPIO_InitStruct);
+  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
   /* EXTI interrupt init*/
   HAL_NVIC_SetPriority(EXTI0_1_IRQn, 0, 0);

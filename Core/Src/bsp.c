@@ -132,47 +132,25 @@ static uint8_t buttonPressed = 0;
 void EXTI0_1_IRQHandler(void);
 void EXTI0_1_IRQHandler(void)
 {
-	QK_ISR_ENTRY();
+    QK_ISR_ENTRY();
 
-	__HAL_GPIO_EXTI_CLEAR_IT(TEST_BUTTON_PIN);
+    __HAL_GPIO_EXTI_CLEAR_IT(TEST_BUTTON_PIN);
 
+    // Disable EXTI temporarily to avoid bounce interrupts
+    HAL_NVIC_DisableIRQ(EXTI0_1_IRQn);
 
+    // Post debounce event
+    QEvt *e = Q_NEW(QEvt, BUTTON_DEBOUNCE_SIG);
+    QACTIVE_POST(AO_Main_App, e, &l_EXTI_IRQHandler);
 
-	if (HAL_GPIO_ReadPin(TEST_BUTTON_PORT, TEST_BUTTON_PIN) == GPIO_PIN_RESET) {
-				// Button pressed (assuming active low)
-				buttonPressed = 1;
-				buttonPressTime = sysTickCounter;
-			}
-	else
-	{
-	if (buttonPressed) {
-	                uint32_t pressDuration = sysTickCounter - buttonPressTime;
-
-	                // Check if it was debounced press
-	                if (pressDuration > (DEBOUNCE_TIME_MS / 10)) {  // /10 because 100Hz tick
-
-	                    static QEvt const buttonShortEvt = {BUTTON_SHORT_SIG, 0U, 0U};
-	                    static QEvt const buttonLongEvt = {BUTTON_LONG_SIG, 0U, 0U};
-
-	                    if (pressDuration > (LONG_PRESS_TIME_MS / 10)) {
-	                        // Long press
-	                    	 QACTIVE_POST(&MainApp_inst, &buttonLongEvt, &l_EXTI_IRQHandler);
-	                    } else {
-	                        // Short press
-	                    	 QACTIVE_POST(&MainApp_inst, &buttonShortEvt, &l_EXTI_IRQHandler);
-	                    }
-
-	                }
-	                buttonPressed = 0;
-	            }
-
-	        }
-
-	    QK_ISR_EXIT();
+    QK_ISR_EXIT();
 }
 
 
 /*
+ * static QEvt const buttonLongEvt = {BUTTON_RELEASED_SIG, 0U, 0U};
+ *
+ *
 void ADC1_IRQHandler(void)
 {
 	QK_ISR_ENTRY();

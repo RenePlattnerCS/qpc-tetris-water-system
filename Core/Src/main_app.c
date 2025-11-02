@@ -76,7 +76,7 @@ uint8_t MainApp_calc_dryness_percent(uint16_t dryness) {
 //${AOs::MainApp::SM} ........................................................
 QState MainApp_initial(MainApp * const me, void const * const par) {
     //${AOs::MainApp::SM::initial}
-    return Q_TRAN(&MainApp_display_stats);
+    return Q_TRAN(&MainApp_display);
 }
 
 //${AOs::MainApp::SM::display} ...............................................
@@ -89,8 +89,13 @@ QState MainApp_display(MainApp * const me, QEvt const * const e) {
                           800U,    // Fire after 10 seconds
                           800U);   // Then repeat every 10 seconds
 
-
+            HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_RESET);
             status_ = Q_HANDLED();
+            break;
+        }
+        //${AOs::MainApp::SM::display::initial}
+        case Q_INIT_SIG: {
+            status_ = Q_TRAN(&MainApp_display_stats);
             break;
         }
         //${AOs::MainApp::SM::display::SENSOR_DONE}
@@ -132,6 +137,76 @@ QState MainApp_display(MainApp * const me, QEvt const * const e) {
             status_ = Q_HANDLED();
             break;
         }
+        //${AOs::MainApp::SM::display::BUTTON_PRESS}
+        case BUTTON_PRESS_SIG: {
+            QTimeEvt_disarm(&me->longPressEvt);
+            QTimeEvt_armX(&me->longPressEvt, LONG_PRESS_TIME_MS / 10, 0U);
+            status_ = Q_HANDLED();
+            break;
+        }
+        //${AOs::MainApp::SM::display::BUTTON_RELEASE}
+        case BUTTON_RELEASE_SIG: {
+            QTimeEvt_disarm(&me->longPressEvt);
+            QTimeEvt_disarm(&me->debounceEvt);
+            printf("released button inside\n");
+
+            if(me->currentState == TEMPERATURE)
+            {
+                me->currentState = DRYNESS;
+
+            }
+            else
+            {
+                me->currentState = TEMPERATURE;
+            }
+
+            switch(me->currentState)
+            {
+                case TEMPERATURE:
+                display_temp(me->currentTemp);
+                printf("display temp: u%",me->currentTemp );
+                break;
+
+                case DRYNESS:
+                    uint8_t p = MainApp_calc_dryness_percent(me->currentDryness);
+                    display_dry(p);
+                break;
+                default:
+                        // error
+                        break;
+
+            }
+
+            status_ = Q_HANDLED();
+            break;
+        }
+        //${AOs::MainApp::SM::display::BUTTON_DEBOUNCE}
+        case BUTTON_DEBOUNCE_SIG: {
+            QTimeEvt_disarm(&me->debounceEvt);
+            QTimeEvt_armX(&me->debounceEvt, 3U, 0U);
+            status_ = Q_HANDLED();
+            break;
+        }
+        //${AOs::MainApp::SM::display::BUTTON_TIMEOUT}
+        case BUTTON_TIMEOUT_SIG: {
+            // Debounce time elapsed — check stable pin state
+            GPIO_PinState state = HAL_GPIO_ReadPin(TEST_BUTTON_PORT, TEST_BUTTON_PIN);
+
+            if (state == GPIO_PIN_RESET) {
+                // Button is stably pressed
+                static QEvt const pressEvt = { BUTTON_PRESS_SIG, 0U, 0U };
+                QACTIVE_POST(AO_Main_App, &pressEvt, &AO_Main_App);
+            } else {
+                // Button is stably released
+                static QEvt const releaseEvt = { BUTTON_RELEASE_SIG, 0U, 0U };
+                QACTIVE_POST(AO_Main_App, &releaseEvt, &AO_Main_App);
+            }
+
+            // Re-enable EXTI after debounce is done
+            HAL_NVIC_EnableIRQ(EXTI0_1_IRQn);
+            status_ = Q_HANDLED();
+            break;
+        }
         default: {
             status_ = Q_SUPER(&QHsm_top);
             break;
@@ -156,43 +231,38 @@ QState MainApp_display_stats(MainApp * const me, QEvt const * const e) {
             status_ = Q_HANDLED();
             break;
         }
-        //${AOs::MainApp::SM::display::display_stats::BUTTON_SHORT}
-        case BUTTON_SHORT_SIG: {
-            if(me->currentState == TEMPERATURE)
-            {
-                me->currentState = DRYNESS;
+        default: {
+            status_ = Q_SUPER(&MainApp_display);
+            break;
+        }
+    }
+    return status_;
+}
 
-            }
-            else
-            {
-                me->currentState = TEMPERATURE;
-            }
-            printf("flipped states");
-
-            switch(me->currentState)
-            {
-                case TEMPERATURE:
-                display_temp(me->currentTemp);
-                printf("display temp: u%",me->currentTemp );
-                break;
-
-                case DRYNESS:
-                    uint8_t p = MainApp_calc_dryness_percent(me->currentDryness);
-                    display_dry(p);
-                    printf("Dry: u%", p );
-                break;
-                default:
-                        // error
-                        break;
-
-            }
+//${AOs::MainApp::SM::pump} ..................................................
+QState MainApp_pump(MainApp * const me, QEvt const * const e) {
+    QState status_;
+    switch (e->sig) {
+        //${AOs::MainApp::SM::pump}
+        case Q_ENTRY_SIG: {
+            printf("enter pump\n");
+            QTimeEvt_disarm(&me->longPressEvt);
+            QTimeEvt_disarm(&me->debounceEvt);
+            HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_SET);
 
 
             status_ = Q_HANDLED();
             break;
         }
+        //${AOs::MainApp::SM::pump}
+        case Q_EXIT_SIG: {
+            printf("exit pump\n");
+            HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_RESET);
+            status_ = Q_HANDLED();
+            break;
+        }
         default: {
-            status_ = Q_SUPER(&MainApp_display);
+            status_ = Q_SUPER(&QHsm_top);
             break;
         }
     }
@@ -208,6 +278,8 @@ QActive * const AO_Main_App = &MainApp_inst.super;
 void Main_App_ctor(MainApp * const me) {
     QActive_ctor(&me->super, Q_STATE_CAST(&MainApp_initial));
     QTimeEvt_ctorX(&me->tempPollEvt, &me->super, POLL_SENSOR_SIG, 0U);
+    QTimeEvt_ctorX(&me->longPressEvt, &me->super, BUTTON_LONG_SIG, 0U);
+    QTimeEvt_ctorX(&me->debounceEvt, &me->super, BUTTON_TIMEOUT_SIG, 0U);
     me->currentTemp = 0.0f;
 }
 
