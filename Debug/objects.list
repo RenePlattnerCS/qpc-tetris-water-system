@@ -2,6 +2,8 @@
 "./Core/Src/display.o"
 "./Core/Src/main.o"
 "./Core/Src/main_app.o"
+"./Core/Src/plant_sensor.o"
+"./Core/Src/sensor.o"
 "./Core/Src/stm32c0xx_hal_msp.o"
 "./Core/Src/stm32c0xx_it.o"
 "./Core/Src/syscalls.o"

@@ -7,15 +7,28 @@
  <package name="Shared" stereotype="0x01">
   <!--${Shared::AO_Main_App}-->
   <attribute name="AO_Main_App" type="QActive * const" visibility="0x00" properties="0x00">
-   <code>= &amp;Main_App_inst.super;</code>
+   <code>= &amp;MainApp_inst.super;</code>
   </attribute>
   <!--${Shared::Main_App_ctor}-->
   <operation name="Main_App_ctor" type="void" visibility="0x00" properties="0x00">
    <!--${Shared::Main_App_ctor::me}-->
    <parameter name="me" type="MainApp * const"/>
    <code>QActive_ctor(&amp;me-&gt;super, Q_STATE_CAST(&amp;MainApp_initial));
-QTimeEvt_ctorX(&amp;me-&gt;tempPollEvt, &amp;me-&gt;super, TEMP_POLL_SIG, 0U);
+QTimeEvt_ctorX(&amp;me-&gt;tempPollEvt, &amp;me-&gt;super, POLL_SENSOR_SIG, 0U);
 me-&gt;currentTemp = 0.0f;</code>
+  </operation>
+  <!--${Shared::AO_Sensor}-->
+  <attribute name="AO_Sensor" type="QActive * const" visibility="0x00" properties="0x00">
+   <code>= &amp;Sensor_inst.super;</code>
+  </attribute>
+  <!--${Shared::Sensor_ctor}-->
+  <operation name="Sensor_ctor" type="void" visibility="0x00" properties="0x00">
+   <!--${Shared::Sensor_ctor::me}-->
+   <parameter name="me" type="Sensor * const"/>
+   <code>QActive_ctor(&amp;me-&gt;super, Q_STATE_CAST(&amp;Sensor_initial));
+
+
+</code>
   </operation>
  </package>
  <!--${AOs}-->
@@ -27,73 +40,187 @@ me-&gt;currentTemp = 0.0f;</code>
    <!--${AOs::MainApp::tempPollEvt}-->
    <attribute name="tempPollEvt" type="QTimeEvt " visibility="0x00" properties="0x00"/>
    <!--${AOs::MainApp::currentTemp}-->
-   <attribute name="currentTemp" type="uint8_t" visibility="0x00" properties="0x00"/>
+   <attribute name="currentTemp" type="uint8_t" visibility="0x02" properties="0x00"/>
+   <!--${AOs::MainApp::currentDryness}-->
+   <attribute name="currentDryness" type="uint16_t" visibility="0x02" properties="0x00"/>
+   <!--${AOs::MainApp::currentState}-->
+   <attribute name="currentState" type="display_states" visibility="0x02" properties="0x00">
+    <code>curr_state = &quot;t&quot;;</code>
+   </attribute>
+   <!--${AOs::MainApp::calc_dryness_percent}-->
+   <operation name="calc_dryness_percent" type="uint8_t" visibility="0x02" properties="0x01">
+    <!--${AOs::MainApp::calc_dryness_per~::dryness}-->
+    <parameter name="dryness" type="uint16_t"/>
+    <code>if(dryness &gt;= MAX_DRY)
+{
+printf(&quot;max\n&quot;);
+    return 100;
+}
+
+if((uint16_t) dryness &lt;= (uint16_t) MAX_WET)
+{
+printf(&quot;min\n&quot;);
+    return 0;
+}
+
+uint8_t percent = 0;
+
+percent = ((dryness - MAX_WET) * 100) / (MAX_DRY - MAX_WET);
+
+return percent;</code>
+   </operation>
    <!--${AOs::MainApp::SM}-->
    <statechart properties="0x00">
     <!--${AOs::MainApp::SM::initial}-->
-    <initial target="../1/1">
+    <initial target="../1/2">
      <initial_glyph conn="41,6,5,0,-13,19">
       <action box="0,-2,10,2"/>
      </initial_glyph>
     </initial>
-    <!--${AOs::MainApp::SM::display_Stats}-->
-    <state name="display_Stats">
-     <!--${AOs::MainApp::SM::display_Stats::dryness}-->
-     <state name="dryness">
-      <entry brief="Hello">printf(&quot;Hello entering dryness\n&quot;);
-QTimeEvt_armX(&amp;me-&gt;tempPollEvt, 
-              400U,    // Fire after 10 seconds
-              400U);   // Then repeat every 10 seconds</entry>
+    <!--${AOs::MainApp::SM::display}-->
+    <state name="display">
+     <entry brief="arm and poll ">QTimeEvt_armX(&amp;me-&gt;tempPollEvt, 
+              800U,    // Fire after 10 seconds
+              800U);   // Then repeat every 10 seconds
+
+</entry>
+     <!--${AOs::MainApp::SM::display::SENSOR_DONE}-->
+     <tran trig="SENSOR_DONE">
+      <action>SensorEvent const *sensorEvt = (SensorEvent const *)e;
+
+me-&gt;currentTemp = sensorEvt-&gt;temperature;
+
+me-&gt;currentDryness = sensorEvt-&gt;dryness;
+
+switch(me-&gt;currentState)
+{
+    case TEMPERATURE:
+    display_temp(me-&gt;currentTemp);
+    printf(&quot;display temp: u%&quot;,me-&gt;currentTemp );
+    break;
+    
+    case DRYNESS:
+        uint8_t p = MainApp_calc_dryness_percent(me-&gt;currentDryness);
+        display_dry(p);
+        printf(&quot;Dry: u%&quot;, p );
+    break;
+    default:
+            // error
+            break;
+
+}
+</action>
+      <tran_glyph conn="106,47,1,-1,-22">
+       <action box="-14,-3,18,2"/>
+      </tran_glyph>
+     </tran>
+     <!--${AOs::MainApp::SM::display::POLL_SENSOR}-->
+     <tran trig="POLL_SENSOR">
+      <action>static QEvt const ADC_Start_Evt = {START_SENSOR_SIG, 0U, 0U};
+QACTIVE_POST(AO_Sensor,&amp;ADC_Start_Evt, me);
+
+
+</action>
+      <tran_glyph conn="106,33,1,-1,-22">
+       <action box="-17,-3,21,2"/>
+      </tran_glyph>
+     </tran>
+     <!--${AOs::MainApp::SM::display::display_stats}-->
+     <state name="display_stats">
+      <entry brief="poll">display_temp(me-&gt;currentTemp);</entry>
       <exit>QTimeEvt_disarm(&amp;me-&gt;tempPollEvt);</exit>
-      <!--${AOs::MainApp::SM::display_Stats::dryness::TEMP_POLL}-->
-      <tran trig="TEMP_POLL">
-       <action>printf(&quot;hahahah\n&quot;);</action>
-       <tran_glyph conn="14,65,3,-1,12,-1">
-        <action box="0,-2,10,2"/>
+      <!--${AOs::MainApp::SM::display::display_stats::BUTTON_SHORT}-->
+      <tran trig="BUTTON_SHORT">
+       <action brief="switch temp/dryness">if(me-&gt;currentState == TEMPERATURE)
+{
+    me-&gt;currentState = DRYNESS;
+    
+} 
+else
+{
+    me-&gt;currentState = TEMPERATURE;
+}
+printf(&quot;flipped states&quot;);
+
+switch(me-&gt;currentState)
+{
+    case TEMPERATURE:
+    display_temp(me-&gt;currentTemp);
+    printf(&quot;display temp: u%&quot;,me-&gt;currentTemp );
+    break;
+    
+    case DRYNESS:
+        uint8_t p = MainApp_calc_dryness_percent(me-&gt;currentDryness);
+        display_dry(p);
+        printf(&quot;Dry: u%&quot;, p );
+    break;
+    default:
+            // error
+            break;
+
+}
+
+</action>
+       <tran_glyph conn="28,56,2,-1,-9">
+        <action box="0,-6,19,7"/>
        </tran_glyph>
       </tran>
-      <!--${AOs::MainApp::SM::display_Stats::dryness::BUTTON_LONG}-->
-      <tran trig="BUTTON_LONG" target="../../1">
-       <tran_glyph conn="24,56,0,2,-13">
-        <action box="-10,-2,10,2"/>
-       </tran_glyph>
-      </tran>
-      <state_glyph node="14,56,29,15">
+      <state_glyph node="14,25,41,31">
        <entry box="0,3,6,2"/>
        <exit box="0,5,6,2"/>
       </state_glyph>
      </state>
-     <!--${AOs::MainApp::SM::display_Stats::temperature}-->
-     <state name="temperature">
-      <entry brief="start poll temp">printf(&quot;enter, arming timer for temperature \n&quot;);
-QTimeEvt_armX(&amp;me-&gt;tempPollEvt, 
-              400U,    // Fire after 10 seconds
-              400U);   // Then repeat every 10 seconds</entry>
-      <exit>QTimeEvt_disarm(&amp;me-&gt;tempPollEvt);</exit>
-      <!--${AOs::MainApp::SM::display_Stats::temperature::TEMP_POLL}-->
-      <tran trig="TEMP_POLL">
-       <action>DHT11_Read(&amp;me-&gt;currentTemp);
-uint16_t temp = me-&gt;currentTemp;
-printf(&quot;Temperature: %u\n&quot; , temp);
-display_temp(temp);</action>
-       <tran_glyph conn="14,33,3,-1,11">
-        <action box="0,-2,10,2"/>
-       </tran_glyph>
-      </tran>
-      <!--${AOs::MainApp::SM::display_Stats::temperature::BUTTON_SHORT}-->
-      <tran trig="BUTTON_SHORT" target="../../0">
-       <tran_glyph conn="28,43,2,0,13">
-        <action box="0,0,10,2"/>
-       </tran_glyph>
-      </tran>
-      <state_glyph node="14,25,29,18">
-       <entry box="0,3,16,2"/>
-       <exit box="0,5,6,2"/>
-      </state_glyph>
-     </state>
-     <state_glyph node="9,12,60,64"/>
+     <state_glyph node="9,12,97,64">
+      <entry box="0,3,6,2"/>
+     </state_glyph>
     </state>
     <state_diagram size="128,134"/>
+   </statechart>
+  </class>
+  <!--${AOs::Sensor}-->
+  <class name="Sensor" superclass="qpc::QActive">
+   <!--${AOs::Sensor::inst}-->
+   <attribute name="inst" type="Sensor" visibility="0x02" properties="0x01"/>
+   <!--${AOs::Sensor::SM}-->
+   <statechart properties="0x00">
+    <!--${AOs::Sensor::SM::initial}-->
+    <initial target="../1">
+     <initial_glyph conn="60,16,4,0,15">
+      <action box="0,-2,10,2"/>
+     </initial_glyph>
+    </initial>
+    <!--${AOs::Sensor::SM::waiting}-->
+    <state name="waiting">
+     <entry>printf(&quot;entering sensor state \n&quot;);
+</entry>
+     <!--${AOs::Sensor::SM::waiting::START_SENSOR}-->
+     <tran trig="START_SENSOR">
+      <action>HAL_ADC_Start(&amp;hadc1);                   // Start conversion
+HAL_ADC_PollForConversion(&amp;hadc1, 0);    // Poll immediately (timeout = 0)
+uint16_t adcValue = HAL_ADC_GetValue(&amp;hadc1);
+
+
+//check temperature
+uint16_t temp = 1;
+DHT11_Read(&amp;temp);
+printf(&quot;Temperature: %u\n&quot; , temp);
+
+
+SensorEvent *e = Q_NEW(SensorEvent, SENSOR_DONE_SIG);
+e-&gt;temperature = temp;
+e-&gt;dryness = adcValue;
+
+QACTIVE_POST(AO_Main_App, &amp;e-&gt;super, &amp;AO_Sensor);
+</action>
+      <tran_glyph conn="42,41,3,-1,26">
+       <action box="0,-2,10,2"/>
+      </tran_glyph>
+     </tran>
+     <state_glyph node="42,31,70,24">
+      <entry box="0,3,6,2"/>
+     </state_glyph>
+    </state>
+    <state_diagram size="166,149"/>
    </statechart>
   </class>
  </package>
@@ -101,20 +228,62 @@ display_temp(temp);</action>
  <directory name="Inc">
   <!--${Inc::main_app.h}-->
   <file name="main_app.h">
-   <text>#include &quot;qpc.h&quot;
+   <text>#ifndef MAIN_APP_H
+#define MAIN_APP_H
+
+#include &quot;qpc.h&quot;
 #include &quot;temp_sensor.h&quot;
 #include &quot;display.h&quot;
+#include &quot;plant_sensor.h&quot;
+#include &quot;sensor.h&quot;
+
+
+
+//keep track of substates
+typedef enum {
+    TEMPERATURE,
+    DRYNESS
+} display_states;
 
 $declare${AOs::MainApp}
-$declare${Shared::Main_App_ctor}
+
+$declare ${Shared}
 // Signals
 enum MenuGameSignals {
     BUTTON_PRESS_SIG = Q_USER_SIG,
-    TEMP_POLL_SIG,
+    POLL_SENSOR_SIG,
     BUTTON_SHORT_SIG,
     BUTTON_LONG_SIG,
+    START_SENSOR_SIG,
+    SENSOR_DONE_SIG,
     MAX_SIG  // Keep last for validation
-};</text>
+};
+
+
+//events
+
+typedef struct {
+    QEvt super;       
+    uint16_t dryness;      
+    uint16_t temperature;     
+} SensorEvent;
+
+
+
+#endif </text>
+  </file>
+  <!--${Inc::sensor.h}-->
+  <file name="sensor.h">
+   <text>#ifndef SENSOR_H
+#define SENSOR_H
+
+#include &quot;qpc.h&quot;
+
+$declare${AOs::Sensor}
+
+
+
+#endif </text>
   </file>
  </directory>
  <!--${Src}-->
@@ -125,9 +294,24 @@ enum MenuGameSignals {
 
 #include &quot;main_app.h&quot;
 #include &lt;stdio.h&gt;
+#include &quot;app_config.h&quot;
 
 $define${AOs::MainApp}
-$define${Shared::Main_App_ctor}</text>
+$define${Shared}
+
+
+</text>
+  </file>
+  <!--${Src::sensor.c}-->
+  <file name="sensor.c">
+   <text>#include &quot;sensor.h&quot;
+#include &lt;stdio.h&gt;
+#include &quot;main_app.h&quot;
+
+extern ADC_HandleTypeDef hadc1;
+$define${AOs::Sensor}
+
+//QActive * const AO_Sensor = &amp;Sensor_inst;</text>
   </file>
  </directory>
 </model>

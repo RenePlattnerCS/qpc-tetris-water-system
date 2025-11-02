@@ -35,9 +35,22 @@
 // <info@state-machine.com>
 //
 //$endhead${Inc::main_app.h} ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+#ifndef MAIN_APP_H
+#define MAIN_APP_H
+
 #include "qpc.h"
 #include "temp_sensor.h"
 #include "display.h"
+#include "plant_sensor.h"
+#include "sensor.h"
+
+
+
+//keep track of substates
+typedef enum {
+    TEMPERATURE,
+    DRYNESS
+} display_states;
 
 //$declare${AOs::MainApp} vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 
@@ -50,27 +63,58 @@ typedef struct MainApp {
 
 // public:
     QTimeEvt  tempPollEvt;
+
+// private:
     uint8_t currentTemp;
+    uint16_t currentDryness;
+    display_states currentState;
 } MainApp;
 
 extern MainApp MainApp_inst;
 
+// private:
+uint8_t MainApp_calc_dryness_percent(uint16_t dryness);
+
 // protected:
 QState MainApp_initial(MainApp * const me, void const * const par);
-QState MainApp_display_Stats(MainApp * const me, QEvt const * const e);
-QState MainApp_dryness(MainApp * const me, QEvt const * const e);
-QState MainApp_temperature(MainApp * const me, QEvt const * const e);
+QState MainApp_display(MainApp * const me, QEvt const * const e);
+QState MainApp_display_stats(MainApp * const me, QEvt const * const e);
 //$enddecl${AOs::MainApp} ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//$declare${Shared::Main_App_ctor} vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+
+//$declare${Shared} vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+
+//${Shared::AO_Main_App} .....................................................
+extern QActive * const AO_Main_App;
 
 //${Shared::Main_App_ctor} ...................................................
 void Main_App_ctor(MainApp * const me);
-//$enddecl${Shared::Main_App_ctor} ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+//${Shared::AO_Sensor} .......................................................
+extern QActive * const AO_Sensor;
+
+//${Shared::Sensor_ctor} .....................................................
+void Sensor_ctor(Sensor * const me);
+//$enddecl${Shared} ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 // Signals
 enum MenuGameSignals {
     BUTTON_PRESS_SIG = Q_USER_SIG,
-    TEMP_POLL_SIG,
+    POLL_SENSOR_SIG,
     BUTTON_SHORT_SIG,
     BUTTON_LONG_SIG,
+    START_SENSOR_SIG,
+    SENSOR_DONE_SIG,
     MAX_SIG  // Keep last for validation
 };
+
+
+//events
+
+typedef struct {
+    QEvt super;
+    uint16_t dryness;
+    uint16_t temperature;
+} SensorEvent;
+
+
+
+#endif

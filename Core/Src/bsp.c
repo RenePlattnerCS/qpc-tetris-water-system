@@ -40,6 +40,7 @@
 // add other drivers if necessary...
 extern MainApp MainApp_inst;
 extern TIM_HandleTypeDef  htim14;
+extern ADC_HandleTypeDef hadc1;
 
 
 Q_DEFINE_THIS_FILE  // define the name of this file for assertions
@@ -84,7 +85,7 @@ Q_NORETURN Q_onError(char const * const module, int_t const id) {
 
 #ifndef NDEBUG
     // light up the user LED
-    GPIOA->BSRR = (1U << LD4_PIN);  // turn LED on
+    //GPIOA->BSRR = (1U << LD4_PIN);  // turn LED on
     // for debugging, hang on in an endless loop...
     for (;;) {
     }
@@ -149,22 +150,18 @@ void EXTI0_1_IRQHandler(void)
 
 	                // Check if it was debounced press
 	                if (pressDuration > (DEBOUNCE_TIME_MS / 10)) {  // /10 because 100Hz tick
-	                	bool posted;
 
 	                    static QEvt const buttonShortEvt = {BUTTON_SHORT_SIG, 0U, 0U};
 	                    static QEvt const buttonLongEvt = {BUTTON_LONG_SIG, 0U, 0U};
 
 	                    if (pressDuration > (LONG_PRESS_TIME_MS / 10)) {
 	                        // Long press
-	                    	posted = QACTIVE_POST_X(&MainApp_inst, &buttonLongEvt,0U, &l_EXTI_IRQHandler);
+	                    	 QACTIVE_POST(&MainApp_inst, &buttonLongEvt, &l_EXTI_IRQHandler);
 	                    } else {
 	                        // Short press
-	                    	posted = QACTIVE_POST_X(&MainApp_inst, &buttonShortEvt,0U, &l_EXTI_IRQHandler);
+	                    	 QACTIVE_POST(&MainApp_inst, &buttonShortEvt, &l_EXTI_IRQHandler);
 	                    }
 
-	                    if (!posted) {
-	                    					buttonPressed = 0;
-	                    				}
 	                }
 	                buttonPressed = 0;
 	            }
@@ -175,6 +172,26 @@ void EXTI0_1_IRQHandler(void)
 }
 
 
+/*
+void ADC1_IRQHandler(void)
+{
+	QK_ISR_ENTRY();
+	HAL_ADC_IRQHandler(&hadc1);
+	QK_ISR_EXIT();
+}
+
+void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc)
+{
+    if (hadc->Instance == ADC1) {
+        uint16_t adcValue = (uint16_t)HAL_ADC_GetValue(hadc);
+
+        ADCEvent *e = Q_NEW(ADCEvent, ADC_DONE_SIG);
+        e->value = adcValue;
+
+        QACTIVE_POST(&AO_Sensor, &e, &ADC1_IRQHandler);
+    }
+}
+*/
 //............................................................................
 
 

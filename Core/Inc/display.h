@@ -14,6 +14,8 @@
 #include <string.h>
 #include <stdint.h>
 
+
 void display_temp(uint16_t temp);
+void display_dry(uint8_t dryness_percent);
 
 #endif /* INC_DISPLAY_H_ */

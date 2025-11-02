@@ -1,0 +1,2 @@
+../Core/Src/sensor.c:61:8:Sensor_waiting	24	static
+../Core/Src/sensor.c:55:8:Sensor_initial	0	static

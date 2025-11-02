@@ -39,6 +39,7 @@
 
 #include "main_app.h"
 #include <stdio.h>
+#include "app_config.h"
 
 //$skip${QP_VERSION} vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 // Check for the minimum required QP version
@@ -51,16 +52,86 @@
 //${AOs::MainApp} ............................................................
 MainApp MainApp_inst;
 
+//${AOs::MainApp::calc_dryness_percent} ......................................
+uint8_t MainApp_calc_dryness_percent(uint16_t dryness) {
+    if(dryness >= MAX_DRY)
+    {
+    printf("max\n");
+        return 100;
+    }
+
+    if((uint16_t) dryness <= (uint16_t) MAX_WET)
+    {
+    printf("min\n");
+        return 0;
+    }
+
+    uint8_t percent = 0;
+
+    percent = ((dryness - MAX_WET) * 100) / (MAX_DRY - MAX_WET);
+
+    return percent;
+}
+
 //${AOs::MainApp::SM} ........................................................
 QState MainApp_initial(MainApp * const me, void const * const par) {
     //${AOs::MainApp::SM::initial}
-    return Q_TRAN(&MainApp_temperature);
+    return Q_TRAN(&MainApp_display_stats);
 }
 
-//${AOs::MainApp::SM::display_Stats} .........................................
-QState MainApp_display_Stats(MainApp * const me, QEvt const * const e) {
+//${AOs::MainApp::SM::display} ...............................................
+QState MainApp_display(MainApp * const me, QEvt const * const e) {
     QState status_;
     switch (e->sig) {
+        //${AOs::MainApp::SM::display}
+        case Q_ENTRY_SIG: {
+            QTimeEvt_armX(&me->tempPollEvt,
+                          800U,    // Fire after 10 seconds
+                          800U);   // Then repeat every 10 seconds
+
+
+            status_ = Q_HANDLED();
+            break;
+        }
+        //${AOs::MainApp::SM::display::SENSOR_DONE}
+        case SENSOR_DONE_SIG: {
+            SensorEvent const *sensorEvt = (SensorEvent const *)e;
+
+            me->currentTemp = sensorEvt->temperature;
+
+            me->currentDryness = sensorEvt->dryness;
+
+            switch(me->currentState)
+            {
+                case TEMPERATURE:
+                display_temp(me->currentTemp);
+                printf("display temp: u%",me->currentTemp );
+                break;
+
+                case DRYNESS:
+                    uint8_t p = MainApp_calc_dryness_percent(me->currentDryness);
+                    display_dry(p);
+                    printf("Dry: u%", p );
+                break;
+                default:
+                        // error
+                        break;
+
+            }
+
+            status_ = Q_HANDLED();
+            break;
+        }
+        //${AOs::MainApp::SM::display::POLL_SENSOR}
+        case POLL_SENSOR_SIG: {
+            static QEvt const ADC_Start_Evt = {START_SENSOR_SIG, 0U, 0U};
+            QACTIVE_POST(AO_Sensor,&ADC_Start_Evt, me);
+
+
+
+            status_ = Q_HANDLED();
+            break;
+        }
         default: {
             status_ = Q_SUPER(&QHsm_top);
             break;
@@ -69,91 +140,88 @@ QState MainApp_display_Stats(MainApp * const me, QEvt const * const e) {
     return status_;
 }
 
-//${AOs::MainApp::SM::display_Stats::dryness} ................................
-QState MainApp_dryness(MainApp * const me, QEvt const * const e) {
+//${AOs::MainApp::SM::display::display_stats} ................................
+QState MainApp_display_stats(MainApp * const me, QEvt const * const e) {
     QState status_;
     switch (e->sig) {
-        //${AOs::MainApp::SM::display_Stats::dryness}
+        //${AOs::MainApp::SM::display::display_stats}
         case Q_ENTRY_SIG: {
-            printf("Hello entering dryness\n");
-            QTimeEvt_armX(&me->tempPollEvt,
-                          400U,    // Fire after 10 seconds
-                          400U);   // Then repeat every 10 seconds
+            display_temp(me->currentTemp);
             status_ = Q_HANDLED();
             break;
         }
-        //${AOs::MainApp::SM::display_Stats::dryness}
+        //${AOs::MainApp::SM::display::display_stats}
         case Q_EXIT_SIG: {
             QTimeEvt_disarm(&me->tempPollEvt);
             status_ = Q_HANDLED();
             break;
         }
-        //${AOs::MainApp::SM::display_Stats::dryness::TEMP_POLL}
-        case TEMP_POLL_SIG: {
-            printf("hahahah\n");
-            status_ = Q_HANDLED();
-            break;
-        }
-        //${AOs::MainApp::SM::display_Stats::dryness::BUTTON_LONG}
-        case BUTTON_LONG_SIG: {
-            status_ = Q_TRAN(&MainApp_temperature);
-            break;
-        }
-        default: {
-            status_ = Q_SUPER(&MainApp_display_Stats);
-            break;
-        }
-    }
-    return status_;
-}
-
-//${AOs::MainApp::SM::display_Stats::temperature} ............................
-QState MainApp_temperature(MainApp * const me, QEvt const * const e) {
-    QState status_;
-    switch (e->sig) {
-        //${AOs::MainApp::SM::display_Stats::temperature}
-        case Q_ENTRY_SIG: {
-            printf("enter, arming timer for temperature \n");
-            QTimeEvt_armX(&me->tempPollEvt,
-                          400U,    // Fire after 10 seconds
-                          400U);   // Then repeat every 10 seconds
-            status_ = Q_HANDLED();
-            break;
-        }
-        //${AOs::MainApp::SM::display_Stats::temperature}
-        case Q_EXIT_SIG: {
-            QTimeEvt_disarm(&me->tempPollEvt);
-            status_ = Q_HANDLED();
-            break;
-        }
-        //${AOs::MainApp::SM::display_Stats::temperature::TEMP_POLL}
-        case TEMP_POLL_SIG: {
-            DHT11_Read(&me->currentTemp);
-            uint16_t temp = me->currentTemp;
-            printf("Temperature: %u\n" , temp);
-            display_temp(temp);
-            status_ = Q_HANDLED();
-            break;
-        }
-        //${AOs::MainApp::SM::display_Stats::temperature::BUTTON_SHORT}
+        //${AOs::MainApp::SM::display::display_stats::BUTTON_SHORT}
         case BUTTON_SHORT_SIG: {
-            status_ = Q_TRAN(&MainApp_dryness);
+            if(me->currentState == TEMPERATURE)
+            {
+                me->currentState = DRYNESS;
+
+            }
+            else
+            {
+                me->currentState = TEMPERATURE;
+            }
+            printf("flipped states");
+
+            switch(me->currentState)
+            {
+                case TEMPERATURE:
+                display_temp(me->currentTemp);
+                printf("display temp: u%",me->currentTemp );
+                break;
+
+                case DRYNESS:
+                    uint8_t p = MainApp_calc_dryness_percent(me->currentDryness);
+                    display_dry(p);
+                    printf("Dry: u%", p );
+                break;
+                default:
+                        // error
+                        break;
+
+            }
+
+
+            status_ = Q_HANDLED();
             break;
         }
         default: {
-            status_ = Q_SUPER(&MainApp_display_Stats);
+            status_ = Q_SUPER(&MainApp_display);
             break;
         }
     }
     return status_;
 }
 //$enddef${AOs::MainApp} ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//$define${Shared::Main_App_ctor} vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+//$define${Shared} vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+
+//${Shared::AO_Main_App} .....................................................
+QActive * const AO_Main_App = &MainApp_inst.super;
 
 //${Shared::Main_App_ctor} ...................................................
 void Main_App_ctor(MainApp * const me) {
     QActive_ctor(&me->super, Q_STATE_CAST(&MainApp_initial));
-    QTimeEvt_ctorX(&me->tempPollEvt, &me->super, TEMP_POLL_SIG, 0U);
+    QTimeEvt_ctorX(&me->tempPollEvt, &me->super, POLL_SENSOR_SIG, 0U);
     me->currentTemp = 0.0f;
 }
-//$enddef${Shared::Main_App_ctor} ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+//${Shared::AO_Sensor} .......................................................
+QActive * const AO_Sensor = &Sensor_inst.super;
+
+//${Shared::Sensor_ctor} .....................................................
+void Sensor_ctor(Sensor * const me) {
+    QActive_ctor(&me->super, Q_STATE_CAST(&Sensor_initial));
+
+
+
+}
+//$enddef${Shared} ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+
+

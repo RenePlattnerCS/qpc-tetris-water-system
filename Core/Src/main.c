@@ -24,6 +24,7 @@
 #include "qpc.h"
 #include "bsp.h"
 #include "main_app.h"
+#include "sensor.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -67,8 +68,14 @@ static void MX_ADC1_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-static QEvt const *menuGameQueueSto[20]; // Storage for event queue
+static QEvt const *menuGameQueueSto[10]; // Storage for event queue
 extern MainApp MainApp_inst; // Storage for the AO instance
+
+static QEvt const *sensorQueueSto[5]; // Storage for event queue
+extern Sensor Sensor_inst; // Storage for the AO instance
+
+// Allocate pool for SensorEvent (10 events)
+static QF_MPOOL_EL(SensorEvent) sensorEvtPoolSto[2];
 /* USER CODE END 0 */
 
 /**
@@ -105,7 +112,7 @@ int main(void)
   MX_I2C1_Init();
   MX_ADC1_Init();
   /* USER CODE BEGIN 2 */
-  printf("hello\n");
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -113,16 +120,27 @@ int main(void)
   QF_init();       // initialize the framework and the underlying RT kernel
   BSP_init();      // initialize the BSP
 
+  QF_poolInit(sensorEvtPoolSto, sizeof(sensorEvtPoolSto), sizeof(sensorEvtPoolSto[0]));
+
   Main_App_ctor(&MainApp_inst);
+  Sensor_ctor(&Sensor_inst);
 
   // 4. Start the Active Object
       QACTIVE_START(&MainApp_inst,           // AO pointer
-                    1U,                     // Priority
+                    2U,                     // Priority
                     menuGameQueueSto,       // Event queue storage
                     Q_DIM(menuGameQueueSto), // Queue length
                     (void *)0,              // Stack storage (0 for bare-metal)
                     0U,                     // Stack size (0 for bare-metal)
                     (void *)0);             // Initial event (optional)
+
+      QACTIVE_START(&Sensor_inst,           // AO pointer
+                          1U,                     // Priority
+						  sensorQueueSto,       // Event queue storage
+                          Q_DIM(sensorQueueSto), // Queue length
+                          (void *)0,              // Stack storage (0 for bare-metal)
+                          0U,                     // Stack size (0 for bare-metal)
+                          (void *)0);             // Initial event (optional)
 
   //BSP_start();     // start the AOs/Threads
   return QF_run(); // run the QF application
@@ -364,9 +382,6 @@ static void MX_GPIO_Init(void)
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(TEMP_GPIO_Port, TEMP_Pin, GPIO_PIN_RESET);
 
-  /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(Led_GPIO_Port, Led_Pin, GPIO_PIN_SET);
-
   /*Configure GPIO pin : User_Button_Pin */
   GPIO_InitStruct.Pin = User_Button_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
@@ -385,13 +400,6 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(TEMP_GPIO_Port, &GPIO_InitStruct);
-
-  /*Configure GPIO pin : Led_Pin */
-  GPIO_InitStruct.Pin = Led_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
-  HAL_GPIO_Init(Led_GPIO_Port, &GPIO_InitStruct);
 
   /* EXTI interrupt init*/
   HAL_NVIC_SetPriority(EXTI0_1_IRQn, 0, 0);

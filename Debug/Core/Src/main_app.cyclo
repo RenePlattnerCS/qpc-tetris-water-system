@@ -1,5 +1,6 @@
-../Core/Src/main_app.c:55:8:MainApp_initial	1
-../Core/Src/main_app.c:61:8:MainApp_display_Stats	1
-../Core/Src/main_app.c:73:8:MainApp_dryness	6
-../Core/Src/main_app.c:111:8:MainApp_temperature	6
-../Core/Src/main_app.c:154:6:Main_App_ctor	1
+../Core/Src/main_app.c:77:8:MainApp_initial	1
+../Core/Src/main_app.c:56:9:MainApp_calc_dryness_percent	3
+../Core/Src/main_app.c:83:8:MainApp_display	6
+../Core/Src/main_app.c:144:8:MainApp_display_stats	6
+../Core/Src/main_app.c:208:6:Main_App_ctor	1
+../Core/Src/main_app.c:218:6:Sensor_ctor	1
