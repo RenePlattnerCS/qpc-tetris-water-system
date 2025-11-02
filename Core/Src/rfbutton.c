@@ -54,7 +54,19 @@ void RFButton_receive_rf(void) {
     while(nrf24_data_available()) {
             uint8_t payload[PLD_S];
             nrf24_receive(payload, sizeof(payload));
-            //QACTIVE_POST(AO_Main_App, &evt->super, me);
+
+            if(payload[0] == 49U)
+            {
+                static QEvt const nrfEvt = { BUTTON_PRESS_SIG, 0U, 0U };
+                QACTIVE_POST(AO_Main_App, &nrfEvt, me);
+            }
+
+            if(payload[0] == 50U)
+            {
+                static QEvt const rlsEvt = { BUTTON_RELEASE_SIG, 0U, 0U };
+                QACTIVE_POST(AO_Main_App, &rlsEvt, me);
+            }
+
         }
 }
 
@@ -78,6 +90,7 @@ QState RFButton_wait(RFButton * const me, QEvt const * const e) {
         //${AOs::RFButton::SM::wait::NRF_IRQ}
         case NRF_IRQ_SIG: {
             RFButton_receive_rf();
+            printf("received rf signal \n");
             status_ = Q_HANDLED();
             break;
         }

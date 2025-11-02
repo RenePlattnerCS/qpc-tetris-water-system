@@ -40,6 +40,7 @@
 #include "main_app.h"
 #include <stdio.h>
 #include "app_config.h"
+#include "NRF_chip.h"
 
 //$skip${QP_VERSION} vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 // Check for the minimum required QP version
@@ -131,9 +132,7 @@ QState MainApp_display(MainApp * const me, QEvt const * const e) {
         case POLL_SENSOR_SIG: {
             static QEvt const ADC_Start_Evt = {START_SENSOR_SIG, 0U, 0U};
             QACTIVE_POST(AO_Sensor,&ADC_Start_Evt, me);
-
-
-
+            verify_rx_mode();
             status_ = Q_HANDLED();
             break;
         }
@@ -141,44 +140,27 @@ QState MainApp_display(MainApp * const me, QEvt const * const e) {
         case BUTTON_PRESS_SIG: {
             QTimeEvt_disarm(&me->longPressEvt);
             QTimeEvt_armX(&me->longPressEvt, LONG_PRESS_TIME_MS / 10, 0U);
+            printf("pressed btn\n");
+
             status_ = Q_HANDLED();
             break;
         }
         //${AOs::MainApp::SM::display::BUTTON_RELEASE}
         case BUTTON_RELEASE_SIG: {
             QTimeEvt_disarm(&me->longPressEvt);
-            QTimeEvt_disarm(&me->debounceEvt);
             printf("released button inside\n");
 
 
-
-            status_ = Q_HANDLED();
-            break;
-        }
-        //${AOs::MainApp::SM::display::BUTTON_DEBOUNCE}
-        case BUTTON_DEBOUNCE_SIG: {
-            QTimeEvt_disarm(&me->debounceEvt);
-            QTimeEvt_armX(&me->debounceEvt, 3U, 0U);
-            status_ = Q_HANDLED();
-            break;
-        }
-        //${AOs::MainApp::SM::display::BUTTON_TIMEOUT}
-        case BUTTON_TIMEOUT_SIG: {
-            // Debounce time elapsed — check stable pin state
-            GPIO_PinState state = HAL_GPIO_ReadPin(RF_BUTTON_PORT, RF_BUTTON_PIN);
-
-            if (state == GPIO_PIN_RESET) {
-                // Button is stably pressed
-                static QEvt const pressEvt = { BUTTON_PRESS_SIG, 0U, 0U };
-                QACTIVE_POST(AO_Main_App, &pressEvt, &AO_Main_App);
-            } else {
-                // Button is stably released
-                static QEvt const releaseEvt = { BUTTON_RELEASE_SIG, 0U, 0U };
-                QACTIVE_POST(AO_Main_App, &releaseEvt, &AO_Main_App);
+            if(me->currentState == TEMPERATURE)
+            {
+                me->currentState = DRYNESS;
+                display_dry(me->currentDryness);
             }
-
-            // Re-enable EXTI after debounce is done
-            HAL_NVIC_EnableIRQ(EXTI0_1_IRQn);
+            else
+            {
+                me->currentState = TEMPERATURE;
+                display_temp(me->currentTemp);
+            }
             status_ = Q_HANDLED();
             break;
         }
@@ -222,7 +204,6 @@ QState MainApp_pump(MainApp * const me, QEvt const * const e) {
         case Q_ENTRY_SIG: {
             printf("enter pump\n");
             QTimeEvt_disarm(&me->longPressEvt);
-            QTimeEvt_disarm(&me->debounceEvt);
             HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_SET);
 
 
@@ -254,7 +235,6 @@ void Main_App_ctor(MainApp * const me) {
     QActive_ctor(&me->super, Q_STATE_CAST(&MainApp_initial));
     QTimeEvt_ctorX(&me->tempPollEvt, &me->super, POLL_SENSOR_SIG, 0U);
     QTimeEvt_ctorX(&me->longPressEvt, &me->super, BUTTON_LONG_SIG, 0U);
-    QTimeEvt_ctorX(&me->debounceEvt, &me->super, BUTTON_TIMEOUT_SIG, 0U);
     me->currentTemp = 0.0f;
 }
 

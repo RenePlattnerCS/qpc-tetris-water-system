@@ -16,7 +16,6 @@
    <code>QActive_ctor(&amp;me-&gt;super, Q_STATE_CAST(&amp;MainApp_initial));
 QTimeEvt_ctorX(&amp;me-&gt;tempPollEvt, &amp;me-&gt;super, POLL_SENSOR_SIG, 0U);
 QTimeEvt_ctorX(&amp;me-&gt;longPressEvt, &amp;me-&gt;super, BUTTON_LONG_SIG, 0U);
-QTimeEvt_ctorX(&amp;me-&gt;debounceEvt, &amp;me-&gt;super, BUTTON_TIMEOUT_SIG, 0U);
 me-&gt;currentTemp = 0.0f;</code>
   </operation>
   <!--${Shared::AO_Sensor}-->
@@ -62,8 +61,6 @@ me-&gt;currentTemp = 0.0f;</code>
    </attribute>
    <!--${AOs::MainApp::longPressEvt}-->
    <attribute name="longPressEvt" type="QTimeEvt" visibility="0x00" properties="0x00"/>
-   <!--${AOs::MainApp::debounceEvt}-->
-   <attribute name="debounceEvt" type="QTimeEvt" visibility="0x00" properties="0x00"/>
    <!--${AOs::MainApp::calc_dryness_percent}-->
    <operation name="calc_dryness_percent" type="uint8_t" visibility="0x02" properties="0x01">
     <!--${AOs::MainApp::calc_dryness_per~::dryness}-->
@@ -102,7 +99,7 @@ return percent;</code>
 
 HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_RESET);</entry>
      <!--${AOs::MainApp::SM::display::initial}-->
-     <initial target="../7">
+     <initial target="../5">
       <initial_glyph conn="49,20,5,0,-5,5">
        <action box="0,-2,10,2"/>
       </initial_glyph>
@@ -141,9 +138,7 @@ switch(me-&gt;currentState)
      <tran trig="POLL_SENSOR">
       <action>static QEvt const ADC_Start_Evt = {START_SENSOR_SIG, 0U, 0U};
 QACTIVE_POST(AO_Sensor,&amp;ADC_Start_Evt, me);
-
-
-</action>
+verify_rx_mode();</action>
       <tran_glyph conn="106,33,1,-1,-22">
        <action box="-17,-3,21,2"/>
       </tran_glyph>
@@ -151,7 +146,9 @@ QACTIVE_POST(AO_Sensor,&amp;ADC_Start_Evt, me);
      <!--${AOs::MainApp::SM::display::BUTTON_PRESS}-->
      <tran trig="BUTTON_PRESS">
       <action>QTimeEvt_disarm(&amp;me-&gt;longPressEvt);
-QTimeEvt_armX(&amp;me-&gt;longPressEvt, LONG_PRESS_TIME_MS / 10, 0U);</action>
+QTimeEvt_armX(&amp;me-&gt;longPressEvt, LONG_PRESS_TIME_MS / 10, 0U);
+printf(&quot;pressed btn\n&quot;);
+</action>
       <tran_glyph conn="106,57,1,-1,-22">
        <action box="-19,-2,18,2"/>
       </tran_glyph>
@@ -159,42 +156,21 @@ QTimeEvt_armX(&amp;me-&gt;longPressEvt, LONG_PRESS_TIME_MS / 10, 0U);</action>
      <!--${AOs::MainApp::SM::display::BUTTON_RELEASE}-->
      <tran trig="BUTTON_RELEASE">
       <action brief="short press">QTimeEvt_disarm(&amp;me-&gt;longPressEvt);
-QTimeEvt_disarm(&amp;me-&gt;debounceEvt);
 printf(&quot;released button inside\n&quot;);
 
 
-</action>
+if(me-&gt;currentState == TEMPERATURE)
+{
+    me-&gt;currentState = DRYNESS;
+    display_dry(me-&gt;currentDryness);
+}
+else
+{
+    me-&gt;currentState = TEMPERATURE;
+    display_temp(me-&gt;currentTemp);
+}</action>
       <tran_glyph conn="106,65,1,-1,-22">
        <action box="-19,-4,18,5"/>
-      </tran_glyph>
-     </tran>
-     <!--${AOs::MainApp::SM::display::BUTTON_DEBOUNCE}-->
-     <tran trig="BUTTON_DEBOUNCE">
-      <action>QTimeEvt_disarm(&amp;me-&gt;debounceEvt);
-QTimeEvt_armX(&amp;me-&gt;debounceEvt, 3U, 0U);</action>
-      <tran_glyph conn="106,50,1,-1,-22">
-       <action box="-21,-4,18,2"/>
-      </tran_glyph>
-     </tran>
-     <!--${AOs::MainApp::SM::display::BUTTON_TIMEOUT}-->
-     <tran trig="BUTTON_TIMEOUT">
-      <action>// Debounce time elapsed — check stable pin state
-GPIO_PinState state = HAL_GPIO_ReadPin(RF_BUTTON_PORT, RF_BUTTON_PIN);
-
-if (state == GPIO_PIN_RESET) {
-    // Button is stably pressed
-    static QEvt const pressEvt = { BUTTON_PRESS_SIG, 0U, 0U };
-    QACTIVE_POST(AO_Main_App, &amp;pressEvt, &amp;AO_Main_App);
-} else {
-    // Button is stably released
-    static QEvt const releaseEvt = { BUTTON_RELEASE_SIG, 0U, 0U };
-    QACTIVE_POST(AO_Main_App, &amp;releaseEvt, &amp;AO_Main_App);
-}
-
-// Re-enable EXTI after debounce is done
-HAL_NVIC_EnableIRQ(EXTI0_1_IRQn);</action>
-      <tran_glyph conn="106,72,1,-1,-22">
-       <action box="-18,-2,15,3"/>
       </tran_glyph>
      </tran>
      <!--${AOs::MainApp::SM::display::display_stats}-->
@@ -214,7 +190,6 @@ HAL_NVIC_EnableIRQ(EXTI0_1_IRQn);</action>
     <state name="pump">
      <entry>printf(&quot;enter pump\n&quot;);
 QTimeEvt_disarm(&amp;me-&gt;longPressEvt);
-QTimeEvt_disarm(&amp;me-&gt;debounceEvt);
 HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_SET);
 
 </entry>
@@ -283,7 +258,19 @@ QACTIVE_POST(AO_Main_App, &amp;e-&gt;super, &amp;AO_Sensor);
     <code>while(nrf24_data_available()) {
         uint8_t payload[PLD_S]; 
         nrf24_receive(payload, sizeof(payload));
-        //QACTIVE_POST(AO_Main_App, &amp;evt-&gt;super, me);
+
+        if(payload[0] == 49U)
+        {
+            static QEvt const nrfEvt = { BUTTON_PRESS_SIG, 0U, 0U };
+            QACTIVE_POST(AO_Main_App, &amp;nrfEvt, me);
+        }
+
+        if(payload[0] == 50U)
+        {
+            static QEvt const rlsEvt = { BUTTON_RELEASE_SIG, 0U, 0U };
+            QACTIVE_POST(AO_Main_App, &amp;rlsEvt, me);
+        }
+        
     }</code>
    </operation>
    <!--${AOs::RFButton::SM}-->
@@ -300,7 +287,8 @@ QACTIVE_POST(AO_Main_App, &amp;e-&gt;super, &amp;AO_Sensor);
 </entry>
      <!--${AOs::RFButton::SM::wait::NRF_IRQ}-->
      <tran trig="NRF_IRQ">
-      <action brief="receive">RFButton_receive_rf();</action>
+      <action brief="receive">RFButton_receive_rf();
+printf(&quot;received rf signal \n&quot;);</action>
       <tran_glyph conn="41,36,4,-1,-9">
        <action box="1,-3,10,2"/>
       </tran_glyph>
@@ -341,8 +329,6 @@ $declare ${Shared}
 enum MenuGameSignals {
     BUTTON_PRESS_SIG = Q_USER_SIG,
     POLL_SENSOR_SIG,
-    BUTTON_DEBOUNCE_SIG,
-    BUTTON_TIMEOUT_SIG,
     BUTTON_SHORT_SIG,
     BUTTON_LONG_SIG,
     BUTTON_RELEASE_SIG,
@@ -400,6 +386,7 @@ $declare${AOs::RFButton}
 #include &quot;main_app.h&quot;
 #include &lt;stdio.h&gt;
 #include &quot;app_config.h&quot;
+#include &quot;NRF_chip.h&quot;
 
 $define${AOs::MainApp}
 $define${Shared}

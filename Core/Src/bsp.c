@@ -144,7 +144,11 @@ void EXTI0_1_IRQHandler(void)
 
 
     __HAL_GPIO_EXTI_CLEAR_IT(RF_BUTTON_PIN);
-    /*
+
+
+    QK_ISR_EXIT();
+}
+/*
     // Disable EXTI temporarily to avoid bounce interrupts
     HAL_NVIC_DisableIRQ(EXTI0_1_IRQn);
 
@@ -153,8 +157,6 @@ void EXTI0_1_IRQHandler(void)
     QACTIVE_POST(AO_Main_App, e, &l_EXTI_IRQHandler);
 	*/
 
-    QK_ISR_EXIT();
-}
 
 
 /*

@@ -11,5 +11,8 @@
 #define PLD_S 32 //payload size for rf
 
 void init_nrf(void);
+void listen(void);
+uint8_t check_data(void);
+void receive(uint8_t *data, uint8_t size);
 
 #endif /* INC_NRF_CHIP_H_ */

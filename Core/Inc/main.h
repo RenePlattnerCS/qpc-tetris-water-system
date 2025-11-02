@@ -80,6 +80,10 @@ void Error_Handler(void);
 #define ADC_MOIST_GPIO_Port GPIOA
 #define Water_Pump_Pin GPIO_PIN_5
 #define Water_Pump_GPIO_Port GPIOA
+#define CE_Pin GPIO_PIN_0
+#define CE_GPIO_Port GPIOB
+#define CSN_Pin GPIO_PIN_1
+#define CSN_GPIO_Port GPIOB
 #define DEBUG_SWDIO_Pin GPIO_PIN_13
 #define DEBUG_SWDIO_GPIO_Port GPIOA
 #define DEBUG_SWCLK_Pin GPIO_PIN_14

@@ -71,7 +71,6 @@ typedef struct MainApp {
 
 // public:
     QTimeEvt longPressEvt;
-    QTimeEvt debounceEvt;
 } MainApp;
 
 extern MainApp MainApp_inst;
@@ -110,8 +109,6 @@ void RFButton_ctor(RFButton * const me);
 enum MenuGameSignals {
     BUTTON_PRESS_SIG = Q_USER_SIG,
     POLL_SENSOR_SIG,
-    BUTTON_DEBOUNCE_SIG,
-    BUTTON_TIMEOUT_SIG,
     BUTTON_SHORT_SIG,
     BUTTON_LONG_SIG,
     BUTTON_RELEASE_SIG,

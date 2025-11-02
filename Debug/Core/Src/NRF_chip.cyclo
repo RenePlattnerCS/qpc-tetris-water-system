@@ -1,3 +1,6 @@
-../Core/Src/NRF_chip.c:20:6:init_nrf	1
-../Core/Src/NRF_chip.c:61:9:check_data	1
-../Core/Src/NRF_chip.c:70:6:receive	1
+../Core/Src/NRF_chip.c:21:6:init_nrf	1
+../Core/Src/NRF_chip.c:81:9:check_data	1
+../Core/Src/NRF_chip.c:90:6:receive	1
+../Core/Src/NRF_chip.c:104:6:listen	2
+../Core/Src/NRF_chip.c:122:6:NRF24_TestCommunication	1
+../Core/Src/NRF_chip.c:148:6:verify_rx_mode	5

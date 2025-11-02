@@ -53,7 +53,10 @@ Core/Src/main_app.o: ../Core/Src/main_app.c ../Core/Inc/main_app.h \
  M:/embedded/stm32C0_Nucleus/qpc-tetris-water-system/Middlewares/Third_Party/OLED_SSD1306/include/ssd1306_fonts.h \
  M:/embedded/stm32C0_Nucleus/qpc-tetris-water-system/Middlewares/Third_Party/OLED_SSD1306/include/ssd1306.h \
  ../Core/Inc/plant_sensor.h ../Core/Inc/sensor.h ../Core/Inc/rfbutton.h \
- ../Core/Inc/app_config.h
+ ../Core/Inc/app_config.h ../Core/Inc/NRF_chip.h \
+ M:/embedded/stm32C0_Nucleus/qpc-tetris-water-system/Middlewares/Third_Party/NRF24/includes/NRF24.h \
+ M:/embedded/stm32C0_Nucleus/qpc-tetris-water-system/Middlewares/Third_Party/NRF24/includes/NRF24_reg_addresses.h \
+ M:/embedded/stm32C0_Nucleus/qpc-tetris-water-system/Middlewares/Third_Party/NRF24/includes/NRF24_conf.h
 ../Core/Inc/main_app.h:
 ../Middlewares/Third_Party/QuantumLeaps_RTEF_qpc/include/qpc.h:
 ../Middlewares/Third_Party/QuantumLeaps_RTEF_qpc/ports/arm-cm/qk/gnu/qp_port.h:
@@ -113,3 +116,7 @@ M:/embedded/stm32C0_Nucleus/qpc-tetris-water-system/Middlewares/Third_Party/OLED
 ../Core/Inc/sensor.h:
 ../Core/Inc/rfbutton.h:
 ../Core/Inc/app_config.h:
+../Core/Inc/NRF_chip.h:
+M:/embedded/stm32C0_Nucleus/qpc-tetris-water-system/Middlewares/Third_Party/NRF24/includes/NRF24.h:
+M:/embedded/stm32C0_Nucleus/qpc-tetris-water-system/Middlewares/Third_Party/NRF24/includes/NRF24_reg_addresses.h:
+M:/embedded/stm32C0_Nucleus/qpc-tetris-water-system/Middlewares/Third_Party/NRF24/includes/NRF24_conf.h:
