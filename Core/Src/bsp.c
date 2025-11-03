@@ -42,13 +42,13 @@
 #include "stm32c0xx_ll_tim.h"
 // add other drivers if necessary...
 extern MainApp MainApp_inst;
-extern TIM_HandleTypeDef  htim14;
-extern TIM_HandleTypeDef  htim3;
-extern TIM_HandleTypeDef  htim17;
+//extern TIM_HandleTypeDef  htim14;
+//extern TIM_HandleTypeDef  htim3;
+//extern TIM_HandleTypeDef  htim17;
 extern ADC_HandleTypeDef hadc1;
 //extern uint32_t dht11_dma_buffer;
 //extern QActive AO_RFButton;
-extern DMA_HandleTypeDef hdma_tim3_ch1;
+//extern DMA_HandleTypeDef hdma_tim3_ch1;
 
 Q_DEFINE_THIS_FILE  // define the name of this file for assertions
 
@@ -187,6 +187,8 @@ void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc)
     }
 }
 */
+
+/*
 void TIM3_IRQHandler(void);
 void TIM3_IRQHandler(void)
 {
@@ -215,7 +217,7 @@ void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim)
 	    uint32_t dier = htim->Instance->DIER;
 	    printf("SR=0x%04lx DIER=0x%04lx i=%u pulse=%lu\n", sr, dier, ii++, pulse_length);
 
-	/*
+
 	uint32_t pulse_length = HAL_TIM_ReadCapturedValue(htim, TIM_CHANNEL_1);
     static uint32_t last_tick = 0;
     uint32_t current_tick = HAL_TIM_ReadCapturedValue(&htim3, TIM_CHANNEL_1);
@@ -230,7 +232,27 @@ void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim)
     uint32_t sr = htim->Instance->SR;
 	uint32_t dier = htim->Instance->DIER;
 	printf("SR=0x%04lx DIER=0x%04lx i=%u\n", sr, dier, ii++);
-	*/
+
+}
+
+*/
+
+void TIM3_IRQHandler(void)
+{
+    QK_ISR_ENTRY();
+
+    // Check for CC1 flag
+    if (LL_TIM_IsActiveFlag_CC1(TIM3))
+    {
+        LL_TIM_ClearFlag_CC1(TIM3);
+
+        uint32_t capture = LL_TIM_IC_GetCaptureCH1(TIM3);
+
+        // Here you can post to your AO or store in DMA buffer
+        // Example: Sensor_process_capture(capture);
+    }
+
+    QK_ISR_EXIT();
 }
 
 
@@ -281,19 +303,40 @@ void BSP_init(void) {
 	// start TIM17/14
 	LL_TIM_EnableCounter(TIM17);
 	LL_TIM_EnableCounter(TIM14);
+	LL_TIM_EnableCounter(TIM3);
 
 
-	TIM3->CR1 |= TIM_CR1_UDIS;
-	//if (HAL_TIM_Base_Start(&htim16) != HAL_OK) {
+	//TIM3->CR1 |= TIM_CR1_UDIS;
+
+	//if (HAL_TIM_Base_Start(&htim3) != HAL_OK) {
 	//		Error_Handler();
 	//	}
-	if (HAL_TIM_Base_Start(&htim3) != HAL_OK) {
-			Error_Handler();
-		}
 
-	HAL_TIM_IC_Start_IT(&htim3, TIM_CHANNEL_1);
-	__HAL_TIM_DISABLE_IT(&htim3, TIM_IT_UPDATE);
-	__HAL_TIM_CLEAR_FLAG(&htim3, TIM_FLAG_UPDATE);
+	//HAL_TIM_IC_Start_IT(&htim3, TIM_CHANNEL_1);
+	//__HAL_TIM_DISABLE_IT(&htim3, TIM_IT_UPDATE);
+	//__HAL_TIM_CLEAR_FLAG(&htim3, TIM_FLAG_UPDATE);
+
+	// Enable CC1 interrupt
+	//LL_TIM_EnableIT_CC1(TIM3);
+	// Enable counter
+	//LL_TIM_EnableCounter(TIM3);
+	LL_TIM_SetSlaveMode(TIM3, LL_TIM_SLAVEMODE_RESET);
+	LL_TIM_SetTriggerInput(TIM3, LL_TIM_TS_TI1FP1);
+
+	// --- Configure channel 1 for input capture ---
+	LL_TIM_IC_SetActiveInput(TIM3, LL_TIM_CHANNEL_CH1, LL_TIM_ACTIVEINPUT_DIRECTTI);
+	LL_TIM_IC_SetPolarity(TIM3, LL_TIM_CHANNEL_CH1, LL_TIM_IC_POLARITY_BOTHEDGE);
+	LL_TIM_IC_SetPrescaler(TIM3, LL_TIM_CHANNEL_CH1, LL_TIM_ICPSC_DIV1);
+	LL_TIM_IC_SetFilter(TIM3, LL_TIM_CHANNEL_CH1, LL_TIM_IC_FILTER_FDIV1);
+
+
+	NVIC_SetPriority(TIM3_IRQn, QF_AWARE_ISR_CMSIS_PRI);
+	NVIC_EnableIRQ(TIM3_IRQn);
+	LL_TIM_CC_EnableChannel(TIM3, LL_TIM_CHANNEL_CH1);
+	LL_TIM_EnableCounter(TIM3);          // counter enabled
+	LL_TIM_EnableIT_CC1(TIM3);           // interrupt enabled
+
+
 
 	ssd1306_Init();
 	init_nrf();

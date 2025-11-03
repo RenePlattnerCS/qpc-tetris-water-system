@@ -1,6 +1,6 @@
-../Core/Src/temp_sensor.c:81:6:DHT11_SetPinOutput	32	static
-../Core/Src/temp_sensor.c:118:6:Delay_us	8	static
-../Core/Src/temp_sensor.c:93:6:DHT11_SetPinInput	32	static,ignoring_inline_asm
-../Core/Src/temp_sensor.c:125:6:Delay_ms	0	static
-../Core/Src/temp_sensor.c:14:6:DHT11_pull_low	8	static
-../Core/Src/temp_sensor.c:25:9:DHT11_Read	40	static
+../Core/Src/temp_sensor.c:93:6:DHT11_SetPinOutput	40	static
+../Core/Src/temp_sensor.c:133:6:DHT11_SetPinInput	48	static,ignoring_inline_asm
+../Core/Src/temp_sensor.c:169:6:Delay_us	0	static
+../Core/Src/temp_sensor.c:175:6:Delay_ms	0	static
+../Core/Src/temp_sensor.c:15:6:DHT11_pull_low	8	static
+../Core/Src/temp_sensor.c:26:9:DHT11_Read	40	static

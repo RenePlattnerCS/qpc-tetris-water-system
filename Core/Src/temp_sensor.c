@@ -2,13 +2,14 @@
 #include "temp_sensor.h"
 //#include "stm32c0xx_hal.h"        // includes core HAL headers
 //#include "stm32c0xx_hal_gpio.h"   // specific GPIO macros/structs
-
+#include "stm32c0xx_ll_bus.h"
+#include "stm32c0xx_ll_gpio.h"
 #include "bsp.h"
 #include "qp_port.h"
 
 //extern TIM_HandleTypeDef  htim14;
 //extern TIM_HandleTypeDef  htim17;
-extern TIM_HandleTypeDef  htim3;
+//extern TIM_HandleTypeDef  htim3;
 #include "stm32c0xx_ll_tim.h"
 
 void DHT11_pull_low()
@@ -77,7 +78,7 @@ uint8_t DHT11_Read(uint8_t *data)
     return 0; // success
 }
 
-
+/*
 void DHT11_SetPinOutput(void)
 {
     GPIO_InitTypeDef GPIO_InitStruct = {0};
@@ -88,7 +89,21 @@ void DHT11_SetPinOutput(void)
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
     HAL_GPIO_Init(DHT11_PORT, &GPIO_InitStruct);
 }
+*/
+void DHT11_SetPinOutput(void)
+{
+    LL_GPIO_InitTypeDef GPIO_InitStruct = {0};
+    LL_AHB1_GRP1_EnableClock(LL_IOP_GRP1_PERIPH_GPIOC);
 
+    GPIO_InitStruct.Pin = DHT11_PIN;
+    GPIO_InitStruct.Mode = LL_GPIO_MODE_OUTPUT;
+    GPIO_InitStruct.OutputType = LL_GPIO_OUTPUT_PUSHPULL;
+    GPIO_InitStruct.Speed = LL_GPIO_SPEED_FREQ_LOW;
+    GPIO_InitStruct.Pull = LL_GPIO_PULL_NO;
+    LL_GPIO_Init(DHT11_PORT, &GPIO_InitStruct);
+}
+
+/*
 // Set pin as input
 void DHT11_SetPinInput(void)
 {
@@ -114,12 +129,47 @@ void DHT11_SetPinInput(void)
 			//__HAL_TIM_CLEAR_FLAG(&htim16, TIM_FLAG_UPDATE);
 }
 
+*/
+void DHT11_SetPinInput(void)
+{
+    LL_GPIO_InitTypeDef GPIO_InitStruct = {0};
+    LL_AHB1_GRP1_EnableClock(LL_IOP_GRP1_PERIPH_GPIOC);
+
+    GPIO_InitStruct.Pin = DHT11_PIN;
+    GPIO_InitStruct.Mode = LL_GPIO_MODE_ALTERNATE;
+    GPIO_InitStruct.OutputType = LL_GPIO_OUTPUT_PUSHPULL;
+    GPIO_InitStruct.Speed = LL_GPIO_SPEED_FREQ_LOW;
+    GPIO_InitStruct.Pull = LL_GPIO_PULL_NO;
+    GPIO_InitStruct.Alternate = LL_GPIO_AF_1; // TIM3_CH1 alternate
+    LL_GPIO_Init(DHT11_PORT, &GPIO_InitStruct);
+
+    // --- Configure channel 1 for input capture ---
+        	LL_TIM_IC_SetActiveInput(TIM3, LL_TIM_CHANNEL_CH1, LL_TIM_ACTIVEINPUT_DIRECTTI);
+        	LL_TIM_IC_SetPolarity(TIM3, LL_TIM_CHANNEL_CH1, LL_TIM_IC_POLARITY_BOTHEDGE);
+        	LL_TIM_IC_SetPrescaler(TIM3, LL_TIM_CHANNEL_CH1, LL_TIM_ICPSC_DIV1);
+        	LL_TIM_IC_SetFilter(TIM3, LL_TIM_CHANNEL_CH1, LL_TIM_IC_FILTER_FDIV1);
+
+
+
+    // Enable TIM3 CC1 interrupt
+    NVIC_SetPriority(TIM3_IRQn, QF_AWARE_ISR_CMSIS_PRI);
+    NVIC_EnableIRQ(TIM3_IRQn);
+
+    // Enable TIM3 CC1 interrupt and counter
+    LL_TIM_CC_EnableChannel(TIM3, LL_TIM_CHANNEL_CH1);
+    LL_TIM_EnableIT_CC1(TIM3);
+    LL_TIM_EnableCounter(TIM3);
+
+
+    ;
+}
+
+
 
 void Delay_us(uint16_t us)
 {
 	LL_TIM_SetCounter(TIM14, 0);
 	while (LL_TIM_GetCounter(TIM14) < us);
-	printf("done\n");
 }
 
 void Delay_ms(uint16_t ms)

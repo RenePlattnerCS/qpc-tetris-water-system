@@ -241,10 +241,6 @@ HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_RESET);</exit>
     </initial>
     <!--${AOs::Sensor::SM::waiting}-->
     <state name="waiting">
-     <entry>//__HAL_LINKDMA(&amp;htim3, hdma[TIM_DMA_ID_CC1], hdma_tim3_ch1);
-
-// Start input capture with DMA
-//HAL_TIM_IC_Start_DMA(&amp;htim3, TIM_CHANNEL_1, (uint32_t *)me-&gt;dma_buffer, DHT11_MAX_EDGES);</entry>
      <!--${AOs::Sensor::SM::waiting::START_SENSOR}-->
      <tran trig="START_SENSOR" target="../../2">
       <action>
@@ -257,9 +253,7 @@ me-&gt;byte_index = 0;
        <action box="0,-2,10,2"/>
       </tran_glyph>
      </tran>
-     <state_glyph node="42,31,70,31">
-      <entry box="0,3,6,2"/>
-     </state_glyph>
+     <state_glyph node="42,31,70,31"/>
     </state>
     <!--${AOs::Sensor::SM::start_temperature}-->
     <state name="start_temperature">
@@ -268,15 +262,12 @@ me-&gt;byte_index = 0;
       <action>// Pull DHT11 LOW ≥18ms
 DHT11_SetPinOutput();
 HAL_GPIO_WritePin(DHT11_PORT, DHT11_PIN, GPIO_PIN_RESET);
-// Use HAL delay (blocking) just for start signal
-//BSP_delayMs(20);
 Delay_ms(20);
 HAL_GPIO_WritePin(DHT11_PORT, DHT11_PIN, GPIO_PIN_SET);
 // Switch pin to input
-Delay_us(30);
 DHT11_SetPinInput();
-// Start timer input capture
-//HAL_TIM_IC_Start_IT(&amp;htim16, TIM_CHANNEL_1);
+Delay_us(30);
+
 </action>
       <initial_glyph conn="83,84,5,0,-6,11">
        <action box="0,-2,10,2"/>
@@ -320,7 +311,7 @@ if (me-&gt;reading_high) {
         
         if (me-&gt;byte_index &gt;= 5) {
             // Done reading 40 bits
-            HAL_TIM_IC_Stop_IT(&amp;htim3, TIM_CHANNEL_1);
+            //HAL_TIM_IC_Stop_IT(&amp;htim3, TIM_CHANNEL_1);
             
             // Verify checksum
             uint8_t checksum = me-&gt;bits[0] + me-&gt;bits[1] + me-&gt;bits[2] + me-&gt;bits[3];
@@ -517,7 +508,7 @@ $define${Shared}
 
 
 extern ADC_HandleTypeDef hadc1;
-extern TIM_HandleTypeDef htim3;
+//extern TIM_HandleTypeDef htim3;
 //extern DMA_HandleTypeDef hdma;
 //extern DMA_HandleTypeDef hdma_tim3_ch1;
 $define${AOs::Sensor}

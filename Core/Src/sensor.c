@@ -44,7 +44,7 @@
 
 
 extern ADC_HandleTypeDef hadc1;
-extern TIM_HandleTypeDef htim3;
+//extern TIM_HandleTypeDef htim3;
 //extern DMA_HandleTypeDef hdma;
 //extern DMA_HandleTypeDef hdma_tim3_ch1;
 //$skip${QP_VERSION} vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
@@ -171,7 +171,7 @@ QState Sensor_wait_response(Sensor * const me, QEvt const * const e) {
 
                     if (me->byte_index >= 5) {
                         // Done reading 40 bits
-                        HAL_TIM_IC_Stop_IT(&htim3, TIM_CHANNEL_1);
+                        //HAL_TIM_IC_Stop_IT(&htim3, TIM_CHANNEL_1);
 
                         // Verify checksum
                         uint8_t checksum = me->bits[0] + me->bits[1] + me->bits[2] + me->bits[3];
