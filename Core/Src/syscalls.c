@@ -34,7 +34,8 @@
 /* Variables */
 extern int __io_putchar(int ch) __attribute__((weak));
 extern int __io_getchar(void) __attribute__((weak));
-extern UART_HandleTypeDef huart2;
+//extern UART_HandleTypeDef huart2;
+#include "stm32c0xx_ll_usart.h"
 
 char *__env[1] = { 0 };
 char **environ = __env;
@@ -80,16 +81,14 @@ __attribute__((weak)) int _read(int file, char *ptr, int len)
 __attribute__((weak)) int _write(int file, char *ptr, int len)
 {
   (void)file;
-  int DataIdx;
-
-  for (DataIdx = 0; DataIdx < len; DataIdx++)
-  {
-    //__io_putchar(*ptr++);
-  // transmit via HAL UART in blocking mode
-	  HAL_UART_Transmit(&huart2, (uint8_t*)ptr, len, HAL_MAX_DELAY);
-	  return len;
-
-  }
+  for (int i = 0; i < len; i++) {
+          // Wait until TXE (transmit data register empty) flag is set
+          while (!LL_USART_IsActiveFlag_TXE(USART2));
+          // Write one byte to the data register
+          LL_USART_TransmitData8(USART2, (uint8_t)ptr[i]);
+      }
+      // Wait until TC (transmission complete) flag is set
+      while (!LL_USART_IsActiveFlag_TC(USART2));
   return len;
 }
 
