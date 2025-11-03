@@ -39,6 +39,7 @@
 #include "main_app.h"
 #include "NRF_chip.h"
 #include "temp_sensor.h"
+#include "stm32c0xx_ll_tim.h"
 // add other drivers if necessary...
 extern MainApp MainApp_inst;
 extern TIM_HandleTypeDef  htim14;
@@ -277,15 +278,11 @@ void BSP_init(void) {
     SystemClock_Config();  // configure system clock
     HAL_SYSTICK_Config(HAL_RCC_GetHCLKFreq() / 1000U);
 
-    // start TIM14
-	if (HAL_TIM_Base_Start(&htim14) != HAL_OK) {
-		Error_Handler();
-	}
-	// start TIM17
+	// start TIM17/14
+	LL_TIM_EnableCounter(TIM17);
+	LL_TIM_EnableCounter(TIM14);
 
-	if (HAL_TIM_Base_Start(&htim17) != HAL_OK) {
-		Error_Handler();
-	}
+
 	TIM3->CR1 |= TIM_CR1_UDIS;
 	//if (HAL_TIM_Base_Start(&htim16) != HAL_OK) {
 	//		Error_Handler();

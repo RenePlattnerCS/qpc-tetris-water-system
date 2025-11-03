@@ -6,10 +6,10 @@
 #include "bsp.h"
 #include "qp_port.h"
 
-extern TIM_HandleTypeDef  htim14;
-extern TIM_HandleTypeDef  htim17;
+//extern TIM_HandleTypeDef  htim14;
+//extern TIM_HandleTypeDef  htim17;
 extern TIM_HandleTypeDef  htim3;
-
+#include "stm32c0xx_ll_tim.h"
 
 void DHT11_pull_low()
 {
@@ -117,12 +117,13 @@ void DHT11_SetPinInput(void)
 
 void Delay_us(uint16_t us)
 {
-    __HAL_TIM_SET_COUNTER(&htim14, 0);          // reset counter
-    while (__HAL_TIM_GET_COUNTER(&htim14) < us); // wait until counter reaches 'us'
+	LL_TIM_SetCounter(TIM14, 0);
+	while (LL_TIM_GetCounter(TIM14) < us);
+	printf("done\n");
 }
 
 void Delay_ms(uint16_t ms)
 {
-    __HAL_TIM_SET_COUNTER(&htim17, 0);          // reset counter
-    while (__HAL_TIM_GET_COUNTER(&htim17) < ms); // wait until counter reaches 'us'
+	 LL_TIM_SetCounter(TIM17, 0);
+	 while (LL_TIM_GetCounter(TIM17) < ms);
 }
