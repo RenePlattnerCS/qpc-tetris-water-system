@@ -42,6 +42,9 @@
 #include "app_config.h"
 #include "NRF_chip.h"
 
+//DMA buffer
+static __attribute__((section(".bss"))) __attribute__((aligned(4))) volatile uint32_t Sensor_dht11_dma_buffer[DHT11_MAX_EDGES];
+
 //$skip${QP_VERSION} vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 // Check for the minimum required QP version
 #if (QP_VERSION < 730U) || (QP_VERSION != ((QP_RELEASE^4294967295U)%0x2710U))
@@ -103,19 +106,18 @@ QState MainApp_display(MainApp * const me, QEvt const * const e) {
 
             me->currentTemp = sensorEvt->temperature;
 
-            me->currentDryness = sensorEvt->dryness;
+            uint16_t tempDry = sensorEvt->dryness;
 
             switch(me->currentState)
             {
                 case TEMPERATURE:
                 display_temp(me->currentTemp);
-                printf("display temp: u% \n",me->currentTemp );
                 break;
 
                 case DRYNESS:
-                    uint8_t p = MainApp_calc_dryness_percent(me->currentDryness);
+                    uint8_t p = MainApp_calc_dryness_percent(tempDry);
+                    me->currentDryness = p;
                     display_dry(p);
-                    printf("Dry: u% \n", p );
                 break;
                 default:
                         // error
@@ -138,8 +140,6 @@ QState MainApp_display(MainApp * const me, QEvt const * const e) {
         case BUTTON_PRESS_SIG: {
             QTimeEvt_disarm(&me->longPressEvt);
             QTimeEvt_armX(&me->longPressEvt, LONG_PRESS_TIME_MS / 10, 0U);
-            printf("pressed btn\n");
-
             status_ = Q_HANDLED();
             break;
         }
@@ -151,8 +151,6 @@ QState MainApp_display(MainApp * const me, QEvt const * const e) {
         //${AOs::MainApp::SM::display::BUTTON_RELEASE}
         case BUTTON_RELEASE_SIG: {
             QTimeEvt_disarm(&me->longPressEvt);
-            printf("released button inside\n");
-
 
             if(me->currentState == TEMPERATURE)
             {
@@ -182,6 +180,7 @@ QState MainApp_display_stats(MainApp * const me, QEvt const * const e) {
         //${AOs::MainApp::SM::display::display_stats}
         case Q_ENTRY_SIG: {
             display_temp(me->currentTemp);
+
             status_ = Q_HANDLED();
             break;
         }
@@ -254,7 +253,8 @@ QActive * const AO_Sensor = &Sensor_inst.super;
 void Sensor_ctor(Sensor * const me) {
     QActive_ctor(&me->super, Q_STATE_CAST(&Sensor_initial));
 
-
+    me->dma_buffer = Sensor_dht11_dma_buffer;
+    me->dma_index = 0;
 
 }
 

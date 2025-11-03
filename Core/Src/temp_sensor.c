@@ -1,17 +1,28 @@
 
 #include "temp_sensor.h"
-#include "stm32c0xx_hal.h"        // includes core HAL headers
-#include "stm32c0xx_hal_gpio.h"   // specific GPIO macros/structs
-#include "bsp.h"
+//#include "stm32c0xx_hal.h"        // includes core HAL headers
+//#include "stm32c0xx_hal_gpio.h"   // specific GPIO macros/structs
 
-static void DHT11_SetPinOutput(void);
-static void DHT11_SetPinInput(void);
-static void Delay_us(uint16_t us);
+#include "bsp.h"
+#include "qp_port.h"
 
 extern TIM_HandleTypeDef  htim14;
+extern TIM_HandleTypeDef  htim17;
+extern TIM_HandleTypeDef  htim3;
 
 
-uint8_t DHT11_Read(uint8_t *temp_data)
+void DHT11_pull_low()
+{
+	// Start signal
+	DHT11_SetPinOutput();
+	HAL_GPIO_WritePin(DHT11_PORT, DHT11_PIN, GPIO_PIN_RESET);
+	Delay_ms(20); // Pull low for ≥18ms
+	HAL_GPIO_WritePin(DHT11_PORT, DHT11_PIN, GPIO_PIN_SET);
+	Delay_us(30);
+	DHT11_SetPinInput();
+}
+
+uint8_t DHT11_Read(uint8_t *data)
 {
     uint8_t bits[5] = {0};
     uint8_t i, j;
@@ -19,30 +30,27 @@ uint8_t DHT11_Read(uint8_t *temp_data)
     // Start signal
     DHT11_SetPinOutput();
     HAL_GPIO_WritePin(DHT11_PORT, DHT11_PIN, GPIO_PIN_RESET);
-    //HAL_Delay(20); // Pull low for ≥18ms
-    BSP_delayMs(2);
+    //BSP_delayMs(20); // Pull low for ≥18ms
+    Delay_ms(20);
     HAL_GPIO_WritePin(DHT11_PORT, DHT11_PIN, GPIO_PIN_SET);
     Delay_us(30);
     DHT11_SetPinInput();
 
+
     // Wait for DHT11 response
     uint32_t timeout = 0;
     while (HAL_GPIO_ReadPin(DHT11_PORT, DHT11_PIN) == GPIO_PIN_SET) {
-        if (++timeout > 100)
-		{
-        	printf("timeout\n");
-        	return 1;
-		}
+        if (++timeout > 100) { return 1;}
         Delay_us(1);
     }
     timeout = 0;
     while (HAL_GPIO_ReadPin(DHT11_PORT, DHT11_PIN) == GPIO_PIN_RESET) {
-        if (++timeout > 100) return 1;
+        if (++timeout > 100) { return 1;}
         Delay_us(1);
     }
     timeout = 0;
     while (HAL_GPIO_ReadPin(DHT11_PORT, DHT11_PIN) == GPIO_PIN_SET) {
-        if (++timeout > 100) return 1;
+        if (++timeout > 100) {  return 1;}
         Delay_us(1);
     }
 
@@ -63,46 +71,58 @@ uint8_t DHT11_Read(uint8_t *temp_data)
     if ((uint8_t)(bits[0] + bits[1] + bits[2] + bits[3]) != bits[4])
         return 2; // checksum error
 
-    *temp_data = bits[2];
+    *data = bits[2];
+
 
     return 0; // success
 }
 
 
-static void DHT11_SetPinOutput(void)
+void DHT11_SetPinOutput(void)
 {
     GPIO_InitTypeDef GPIO_InitStruct = {0};
+    __HAL_RCC_GPIOD_CLK_ENABLE();
     GPIO_InitStruct.Pin = DHT11_PIN;
     GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
     HAL_GPIO_Init(DHT11_PORT, &GPIO_InitStruct);
 }
 
 // Set pin as input
-static void DHT11_SetPinInput(void)
+void DHT11_SetPinInput(void)
 {
-    GPIO_InitTypeDef GPIO_InitStruct = {0};
-    GPIO_InitStruct.Pin = DHT11_PIN;
-    GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-    GPIO_InitStruct.Pull = GPIO_NOPULL;
-    HAL_GPIO_Init(DHT11_PORT, &GPIO_InitStruct);
+
+	// Configure GPIO for TIM16 input capture
+		    GPIO_InitTypeDef GPIO_InitStruct = {0};
+		    __HAL_RCC_GPIOD_CLK_ENABLE();
+
+		    GPIO_InitStruct.Pin = DHT11_PIN;
+		    GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+		    GPIO_InitStruct.Pull = GPIO_NOPULL;
+		    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+		    GPIO_InitStruct.Alternate = GPIO_AF1_TIM3;
+		    HAL_GPIO_Init(DHT11_PORT, &GPIO_InitStruct);
+
+		    // Enable TIM16 interrupt in NVIC
+		    NVIC_SetPriority(TIM3_IRQn, QF_AWARE_ISR_CMSIS_PRI);
+		    NVIC_EnableIRQ(TIM3_IRQn);
+		    Delay_us(10);
+		    // Start input capture
+		    HAL_TIM_IC_Start_IT(&htim3, TIM_CHANNEL_1);
+		    //__HAL_TIM_DISABLE_IT(&htim16, TIM_IT_UPDATE);
+			//__HAL_TIM_CLEAR_FLAG(&htim16, TIM_FLAG_UPDATE);
 }
 
-/*
-static void Delay_us(uint16_t us)
-{
-    __HAL_TIM_SET_COUNTER(&htim14, 0);  // Reset counter
 
-    // Wait for reset to take effect (important!)
-        while (__HAL_TIM_GET_COUNTER(&htim14) > 100);
-
-    while (__HAL_TIM_GET_COUNTER(&htim14) < us);
-
-}
-*/
-static void Delay_us(uint16_t us)
+void Delay_us(uint16_t us)
 {
     __HAL_TIM_SET_COUNTER(&htim14, 0);          // reset counter
     while (__HAL_TIM_GET_COUNTER(&htim14) < us); // wait until counter reaches 'us'
 }
 
+void Delay_ms(uint16_t ms)
+{
+    __HAL_TIM_SET_COUNTER(&htim17, 0);          // reset counter
+    while (__HAL_TIM_GET_COUNTER(&htim17) < ms); // wait until counter reaches 'us'
+}

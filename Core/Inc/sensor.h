@@ -48,6 +48,17 @@ typedef struct Sensor {
     QActive super;
 
 // private:
+
+// public:
+    uint8_t bits[5];
+    uint8_t bit_index;
+    uint8_t byte_index;
+
+// private:
+    bool reading_high;
+    uint8_t pulse_count;
+    volatile uint32_t* dma_buffer;
+    uint8_t dma_index;
 } Sensor;
 
 extern Sensor Sensor_inst;
@@ -55,6 +66,8 @@ extern Sensor Sensor_inst;
 // protected:
 QState Sensor_initial(Sensor * const me, void const * const par);
 QState Sensor_waiting(Sensor * const me, QEvt const * const e);
+QState Sensor_start_temperature(Sensor * const me, QEvt const * const e);
+QState Sensor_wait_response(Sensor * const me, QEvt const * const e);
 //$enddecl${AOs::Sensor} ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 

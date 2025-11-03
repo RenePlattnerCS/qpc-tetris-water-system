@@ -16,6 +16,6 @@
 #define MAX_DRY 			 (2500U) //for the dryness plant sensor
 #define MAX_WET 			 (1000U)
 
-
+#define DHT11_MAX_EDGES 		3
 
 #endif /* INC_APP_CONFIG_H_ */

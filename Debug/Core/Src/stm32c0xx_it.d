@@ -35,8 +35,6 @@ Core/Src/stm32c0xx_it.o: ../Core/Src/stm32c0xx_it.c ../Core/Inc/main.h \
  ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_spi_ex.h \
  ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_tim.h \
  ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_tim_ex.h \
- ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_uart.h \
- ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_uart_ex.h \
  ../Core/Inc/stm32c0xx_it.h
 ../Core/Inc/main.h:
 ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal.h:
@@ -75,6 +73,4 @@ Core/Src/stm32c0xx_it.o: ../Core/Src/stm32c0xx_it.c ../Core/Inc/main.h \
 ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_spi_ex.h:
 ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_tim.h:
 ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_tim_ex.h:
-../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_uart.h:
-../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_uart_ex.h:
 ../Core/Inc/stm32c0xx_it.h:

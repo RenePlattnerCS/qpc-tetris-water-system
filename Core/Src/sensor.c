@@ -38,8 +38,15 @@
 #include "sensor.h"
 #include <stdio.h>
 #include "main_app.h"
+#include "app_config.h"
+#include "temp_sensor.h"
+
+
 
 extern ADC_HandleTypeDef hadc1;
+extern TIM_HandleTypeDef htim3;
+//extern DMA_HandleTypeDef hdma;
+//extern DMA_HandleTypeDef hdma_tim3_ch1;
 //$skip${QP_VERSION} vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 // Check for the minimum required QP version
 #if (QP_VERSION < 730U) || (QP_VERSION != ((QP_RELEASE^4294967295U)%0x2710U))
@@ -63,31 +70,22 @@ QState Sensor_waiting(Sensor * const me, QEvt const * const e) {
     switch (e->sig) {
         //${AOs::Sensor::SM::waiting}
         case Q_ENTRY_SIG: {
-            printf("entering sensor state \n");
+            //__HAL_LINKDMA(&htim3, hdma[TIM_DMA_ID_CC1], hdma_tim3_ch1);
 
+            // Start input capture with DMA
+            //HAL_TIM_IC_Start_DMA(&htim3, TIM_CHANNEL_1, (uint32_t *)me->dma_buffer, DHT11_MAX_EDGES);
             status_ = Q_HANDLED();
             break;
         }
         //${AOs::Sensor::SM::waiting::START_SENSOR}
         case START_SENSOR_SIG: {
-            HAL_ADC_Start(&hadc1);                   // Start conversion
-            HAL_ADC_PollForConversion(&hadc1, 0);    // Poll immediately (timeout = 0)
-            uint16_t adcValue = HAL_ADC_GetValue(&hadc1);
+
+            for(int i=0;i<5;i++) me->bits[i]=0;
+            me->bit_index = 0;
+            me->byte_index = 0;
 
 
-            //check temperature
-            uint16_t temp = 1;
-            DHT11_Read(&temp);
-            printf("Temperature: %u\n" , temp);
-
-
-            SensorEvent *e = Q_NEW(SensorEvent, SENSOR_DONE_SIG);
-            e->temperature = temp;
-            e->dryness = adcValue;
-
-            QACTIVE_POST(AO_Main_App, &e->super, &AO_Sensor);
-
-            status_ = Q_HANDLED();
+            status_ = Q_TRAN(&Sensor_start_temperature);
             break;
         }
         default: {
@@ -97,6 +95,118 @@ QState Sensor_waiting(Sensor * const me, QEvt const * const e) {
     }
     return status_;
 }
+
+//${AOs::Sensor::SM::start_temperature} ......................................
+QState Sensor_start_temperature(Sensor * const me, QEvt const * const e) {
+    QState status_;
+    switch (e->sig) {
+        //${AOs::Sensor::SM::start_temperatur~::initial}
+        case Q_INIT_SIG: {
+            // Pull DHT11 LOW ≥18ms
+            DHT11_SetPinOutput();
+            HAL_GPIO_WritePin(DHT11_PORT, DHT11_PIN, GPIO_PIN_RESET);
+            // Use HAL delay (blocking) just for start signal
+            //BSP_delayMs(20);
+            Delay_ms(20);
+            HAL_GPIO_WritePin(DHT11_PORT, DHT11_PIN, GPIO_PIN_SET);
+            // Switch pin to input
+            Delay_us(30);
+            DHT11_SetPinInput();
+            // Start timer input capture
+            //HAL_TIM_IC_Start_IT(&htim16, TIM_CHANNEL_1);
+
+            status_ = Q_TRAN(&Sensor_wait_response);
+            break;
+        }
+        default: {
+            status_ = Q_SUPER(&QHsm_top);
+            break;
+        }
+    }
+    return status_;
+}
+
+//${AOs::Sensor::SM::start_temperatur~::wait_response} .......................
+QState Sensor_wait_response(Sensor * const me, QEvt const * const e) {
+    QState status_;
+    switch (e->sig) {
+        //${AOs::Sensor::SM::start_temperatur~::wait_response}
+        case Q_ENTRY_SIG: {
+            me->bit_index = 0;
+            me->byte_index = 0;
+            me->reading_high = false;
+            me->pulse_count = 0;
+            memset(me->bits, 0, sizeof(me->bits));
+
+            status_ = Q_HANDLED();
+            break;
+        }
+        //${AOs::Sensor::SM::start_temperatur~::wait_response::DHT11_TIMER_IC}
+        case DHT11_TIMER_IC_SIG: {
+            uint32_t pulse_length = ((DHT11Evt const *)e)->pulse_length;
+
+            me->pulse_count++;
+
+            // Skip first 2 pulses (response: 80µs LOW + 80µs HIGH)
+            if (me->pulse_count <= 2) {
+                status_ = Q_HANDLED();
+                break;
+            }
+
+            // Now process data bits
+            me->reading_high = !me->reading_high;
+
+            if (me->reading_high) {
+                // We're measuring the HIGH pulse (data bit)
+                if (pulse_length > 40) {  // threshold between 0 and 1
+                    // logical 1 (70µs)
+                    me->bits[me->byte_index] |= (1 << (7 - me->bit_index));
+                }
+                // else bit=0 by default (26-28µs)
+
+                me->bit_index++;
+                if (me->bit_index > 7) {
+                    me->bit_index = 0;
+                    me->byte_index++;
+
+                    if (me->byte_index >= 5) {
+                        // Done reading 40 bits
+                        HAL_TIM_IC_Stop_IT(&htim3, TIM_CHANNEL_1);
+
+                        // Verify checksum
+                        uint8_t checksum = me->bits[0] + me->bits[1] + me->bits[2] + me->bits[3];
+                        if (checksum == me->bits[4]) {
+                            // Valid data
+                            printf("Humidity: %u.%u%%  Temperature: %u.%u°C\n",
+                                   me->bits[0], me->bits[1],
+                                   me->bits[2], me->bits[3]);
+                        } else {
+                            printf("Checksum error! Expected: %u, Got: %u\n",
+                                   checksum, me->bits[4]);
+                        }
+
+                        status_ = Q_TRAN(&Sensor_waiting);
+                        break;
+                    }
+                }
+            }
+            status_ = Q_HANDLED();
+            break;
+        }
+        default: {
+            status_ = Q_SUPER(&Sensor_start_temperature);
+            break;
+        }
+    }
+    return status_;
+}
 //$enddef${AOs::Sensor} ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+
+
+// DMA buffer must be in RAM, not flash
+// Must be in RAM for DMA, do NOT use 'const'
+//static __attribute__((aligned(4))) volatile uint32_t dht11_dma_buffer[DHT11_MAX_EDGES];
+//static volatile uint8_t dma_index = 0;
 
 //QActive * const AO_Sensor = &Sensor_inst;

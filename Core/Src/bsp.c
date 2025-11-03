@@ -38,12 +38,16 @@
 #include "app_config.h"
 #include "main_app.h"
 #include "NRF_chip.h"
+#include "temp_sensor.h"
 // add other drivers if necessary...
 extern MainApp MainApp_inst;
 extern TIM_HandleTypeDef  htim14;
+extern TIM_HandleTypeDef  htim3;
+extern TIM_HandleTypeDef  htim17;
 extern ADC_HandleTypeDef hadc1;
+//extern uint32_t dht11_dma_buffer;
 //extern QActive AO_RFButton;
-
+extern DMA_HandleTypeDef hdma_tim3_ch1;
 
 Q_DEFINE_THIS_FILE  // define the name of this file for assertions
 
@@ -182,6 +186,54 @@ void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc)
     }
 }
 */
+void TIM3_IRQHandler(void);
+void TIM3_IRQHandler(void)
+{
+	if (__HAL_TIM_GET_FLAG(&htim3, TIM_FLAG_UPDATE)) {
+		__HAL_TIM_CLEAR_FLAG(&htim3, TIM_FLAG_UPDATE);
+	}
+
+	QK_ISR_ENTRY();
+    HAL_TIM_IRQHandler(&htim3);
+    QK_ISR_EXIT();
+}
+static uint8_t ii = 0;
+
+void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim)
+{
+	// Read captured pulse width (in timer ticks / µs)
+	    uint32_t pulse_length = HAL_TIM_ReadCapturedValue(htim, TIM_CHANNEL_1);
+
+	    // Post event to DHT11 AO (optional)
+	    // DHT11Evt *evt = Q_NEW(DHT11Evt, DHT11_TIMER_IC_SIG);
+	    // evt->pulse_length = pulse_length;
+	    // QACTIVE_POST(AO_Sensor, &evt->super, NULL);
+
+	    // Debug output
+	    uint32_t sr = htim->Instance->SR;
+	    uint32_t dier = htim->Instance->DIER;
+	    printf("SR=0x%04lx DIER=0x%04lx i=%u pulse=%lu\n", sr, dier, ii++, pulse_length);
+
+	/*
+	uint32_t pulse_length = HAL_TIM_ReadCapturedValue(htim, TIM_CHANNEL_1);
+    static uint32_t last_tick = 0;
+    uint32_t current_tick = HAL_TIM_ReadCapturedValue(&htim3, TIM_CHANNEL_1);
+    uint32_t pulse_length = current_tick - last_tick; // µs
+    last_tick = current_tick;
+
+    // Post event to DHT11 AO
+    //DHT11Evt *evt = Q_NEW(DHT11Evt, DHT11_TIMER_IC_SIG);
+
+    //evt->pulse_length = pulse_length;
+    //QACTIVE_POST(AO_Sensor, &evt->super, NULL);
+    uint32_t sr = htim->Instance->SR;
+	uint32_t dier = htim->Instance->DIER;
+	printf("SR=0x%04lx DIER=0x%04lx i=%u\n", sr, dier, ii++);
+	*/
+}
+
+
+
 //............................................................................
 
 
@@ -229,9 +281,32 @@ void BSP_init(void) {
 	if (HAL_TIM_Base_Start(&htim14) != HAL_OK) {
 		Error_Handler();
 	}
+	// start TIM17
+
+	if (HAL_TIM_Base_Start(&htim17) != HAL_OK) {
+		Error_Handler();
+	}
+	TIM3->CR1 |= TIM_CR1_UDIS;
+	//if (HAL_TIM_Base_Start(&htim16) != HAL_OK) {
+	//		Error_Handler();
+	//	}
+	if (HAL_TIM_Base_Start(&htim3) != HAL_OK) {
+			Error_Handler();
+		}
+
+	HAL_TIM_IC_Start_IT(&htim3, TIM_CHANNEL_1);
+	__HAL_TIM_DISABLE_IT(&htim3, TIM_IT_UPDATE);
+	__HAL_TIM_CLEAR_FLAG(&htim3, TIM_FLAG_UPDATE);
 
 	ssd1306_Init();
 	init_nrf();
+
+	//__HAL_LINKDMA(&htim3, hdma[TIM_DMA_ID_CC1], hdma_tim3_ch1);
+
+	// Start input capture with DMA
+	//HAL_TIM_IC_Start_DMA(&htim3, TIM_CHANNEL_1, (uint32_t *)dht11_dma_buffer, DHT11_MAX_EDGES);
+	//printf("test \n");
+
 }
 //............................................................................
 void BSP_start(void)
@@ -246,37 +321,7 @@ void BSP_start(void)
     (void)QF_run();  // never returns
 }
 //............................................................................
-void BSP_displayPhilStat(uint8_t n, char const *stat) {
-    Q_UNUSED_PAR(n);
 
-    if (stat[0] == 'e') {
-        GPIOA->BSRR = (1U << LD4_PIN);  // turn LED on
-    }
-    else {
-        GPIOA->BSRR = (1U << (LD4_PIN + 16U));  // turn LED off
-    }
-
-    // app-specific trace record...
-    QS_BEGIN_ID(PHILO_STAT, AO_Table->prio)
-        QS_U8(1, n);  // Philosopher number
-        QS_STR(stat); // Philosopher status
-    QS_END()
-}
-//............................................................................
-void BSP_displayPaused(uint8_t const paused) {
-    // not enough LEDs to implement this feature
-    if (paused != 0U) {
-        //GPIOA->BSRR = (1U << LD4_PIN);  // turn LED[n] on
-    }
-    else {
-        //GPIOA->BSRR = (1U << (LD4_PIN + 16U));  // turn LED[n] off
-    }
-
-    // application-specific trace record
-    QS_BEGIN_ID(PAUSED_STAT, AO_Table->prio)
-        QS_U8(1, paused);  // Paused status
-    QS_END()
-}
 //............................................................................
 void BSP_randomSeed(uint32_t seed) {
     l_rndSeed = seed;

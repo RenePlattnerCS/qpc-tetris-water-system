@@ -1,0 +1,3 @@
+../Middlewares/Third_Party/QuantumLeaps_RTEF_qpc/src/qf/qf_defer.c:44:6:QActive_defer	8	static
+../Middlewares/Third_Party/QuantumLeaps_RTEF_qpc/src/qf/qf_defer.c:78:6:QActive_recall	16	static
+../Middlewares/Third_Party/QuantumLeaps_RTEF_qpc/src/qf/qf_defer.c:135:10:QActive_flushDeferred	24	static

@@ -36,9 +36,13 @@ Core/Src/temp_sensor.o: ../Core/Src/temp_sensor.c \
  ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_spi_ex.h \
  ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_tim.h \
  ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_tim_ex.h \
- ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_uart.h \
- ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_uart_ex.h \
- ../Core/Inc/bsp.h
+ ../Core/Inc/bsp.h \
+ ../Middlewares/Third_Party/QuantumLeaps_RTEF_qpc/ports/arm-cm/qk/gnu/qp_port.h \
+ ../Middlewares/Third_Party/QuantumLeaps_RTEF_qpc/ports/arm-cm/config/qp_config.h \
+ ../Middlewares/Third_Party/QuantumLeaps_RTEF_qpc/include/qequeue.h \
+ ../Middlewares/Third_Party/QuantumLeaps_RTEF_qpc/include/qmpool.h \
+ ../Middlewares/Third_Party/QuantumLeaps_RTEF_qpc/include/qp.h \
+ ../Middlewares/Third_Party/QuantumLeaps_RTEF_qpc/include/qk.h
 ../Core/Inc/temp_sensor.h:
 ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal.h:
 ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_system.h:
@@ -76,6 +80,10 @@ Core/Src/temp_sensor.o: ../Core/Src/temp_sensor.c \
 ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_spi_ex.h:
 ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_tim.h:
 ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_tim_ex.h:
-../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_uart.h:
-../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_uart_ex.h:
 ../Core/Inc/bsp.h:
+../Middlewares/Third_Party/QuantumLeaps_RTEF_qpc/ports/arm-cm/qk/gnu/qp_port.h:
+../Middlewares/Third_Party/QuantumLeaps_RTEF_qpc/ports/arm-cm/config/qp_config.h:
+../Middlewares/Third_Party/QuantumLeaps_RTEF_qpc/include/qequeue.h:
+../Middlewares/Third_Party/QuantumLeaps_RTEF_qpc/include/qmpool.h:
+../Middlewares/Third_Party/QuantumLeaps_RTEF_qpc/include/qp.h:
+../Middlewares/Third_Party/QuantumLeaps_RTEF_qpc/include/qk.h:

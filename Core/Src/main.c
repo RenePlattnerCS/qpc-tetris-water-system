@@ -25,7 +25,9 @@
 #include "bsp.h"
 #include "main_app.h"
 #include "sensor.h"
+#include "temp_sensor.h"
 #include "rfbutton.h"
+#include "app_config.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -35,7 +37,15 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-
+#if !defined(Q_ALIGN)
+  #if defined(__GNUC__) || defined(__clang__)
+    #define Q_ALIGN __attribute__((aligned(4)))
+  #elif defined(_MSC_VER)
+    #define Q_ALIGN __declspec(align(4))
+  #else
+    #define Q_ALIGN
+  #endif
+#endif
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -50,7 +60,9 @@ I2C_HandleTypeDef hi2c1;
 
 SPI_HandleTypeDef hspi1;
 
+TIM_HandleTypeDef htim3;
 TIM_HandleTypeDef htim14;
+TIM_HandleTypeDef htim17;
 
 UART_HandleTypeDef huart2;
 
@@ -61,11 +73,13 @@ UART_HandleTypeDef huart2;
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
-static void MX_USART2_UART_Init(void);
-static void MX_TIM14_Init(void);
 static void MX_I2C1_Init(void);
 static void MX_ADC1_Init(void);
 static void MX_SPI1_Init(void);
+static void MX_TIM17_Init(void);
+static void MX_TIM3_Init(void);
+static void MX_TIM14_Init(void);
+static void MX_USART2_UART_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -75,15 +89,15 @@ static void MX_SPI1_Init(void);
 static QEvt const *menuGameQueueSto[15]; // Storage for event queue
 extern MainApp MainApp_inst; // Storage for the AO instance
 
-static QEvt const *sensorQueueSto[5]; // Storage for event queue
+static QEvt const *sensorQueueSto[10]; // Storage for event queue
 extern Sensor Sensor_inst; // Storage for the AO instance
 
 static QEvt const *rfbuttonQueueSto[5]; // Storage for event queue
 extern RFButton RFButton_inst; // Storage for the AO instance
 
 // Allocate pool for SensorEvent
-static QF_MPOOL_EL(SensorEvent) sensorEvtPoolSto[2];
-
+Q_ALIGN static QF_MPOOL_EL(SensorEvent) sensorEvtPoolSto[2];
+Q_ALIGN static QF_MPOOL_EL(DHT11Evt) dhtEvtPoolSto[8];
 
 
 /* USER CODE END 0 */
@@ -96,7 +110,7 @@ int main(void)
 {
 
   /* USER CODE BEGIN 1 */
-
+	printf("test \n");
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -117,11 +131,13 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
-  MX_USART2_UART_Init();
-  MX_TIM14_Init();
   MX_I2C1_Init();
   MX_ADC1_Init();
   MX_SPI1_Init();
+  MX_TIM17_Init();
+  MX_TIM3_Init();
+  MX_TIM14_Init();
+  MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
 
   /* USER CODE END 2 */
@@ -132,7 +148,10 @@ int main(void)
   BSP_init();      // initialize the BSP
 
 
+
   QF_poolInit(sensorEvtPoolSto, sizeof(sensorEvtPoolSto), sizeof(sensorEvtPoolSto[0]));
+  QF_poolInit(dhtEvtPoolSto,sizeof(dhtEvtPoolSto),sizeof(dhtEvtPoolSto[0]));
+
 
   Main_App_ctor(&MainApp_inst);
   Sensor_ctor(&Sensor_inst);
@@ -140,7 +159,7 @@ int main(void)
 
   // 4. Start the Active Object
       QACTIVE_START(&MainApp_inst,           // AO pointer
-                    3U,                     // Priority
+                    1U,                     // Priority
                     menuGameQueueSto,       // Event queue storage
                     Q_DIM(menuGameQueueSto), // Queue length
                     (void *)0,              // Stack storage (0 for bare-metal)
@@ -148,7 +167,7 @@ int main(void)
                     (void *)0);             // Initial event (optional)
 
       QACTIVE_START(&Sensor_inst,           // AO pointer
-                          2U,                     // Priority
+                          3U,                     // Priority
 						  sensorQueueSto,       // Event queue storage
                           Q_DIM(sensorQueueSto), // Queue length
                           (void *)0,              // Stack storage (0 for bare-metal)
@@ -156,7 +175,7 @@ int main(void)
                           (void *)0);             // Initial event (optional)
 
       QACTIVE_START(&RFButton_inst,           // AO pointer
-                                4U,                     // Priority
+                                2U,                     // Priority
 								rfbuttonQueueSto,       // Event queue storage
                                 Q_DIM(rfbuttonQueueSto), // Queue length
                                 (void *)0,              // Stack storage (0 for bare-metal)
@@ -357,6 +376,73 @@ static void MX_SPI1_Init(void)
 }
 
 /**
+  * @brief TIM3 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_TIM3_Init(void)
+{
+
+  /* USER CODE BEGIN TIM3_Init 0 */
+
+  /* USER CODE END TIM3_Init 0 */
+
+  TIM_ClockConfigTypeDef sClockSourceConfig = {0};
+  TIM_SlaveConfigTypeDef sSlaveConfig = {0};
+  TIM_MasterConfigTypeDef sMasterConfig = {0};
+  TIM_IC_InitTypeDef sConfigIC = {0};
+
+  /* USER CODE BEGIN TIM3_Init 1 */
+
+  /* USER CODE END TIM3_Init 1 */
+  htim3.Instance = TIM3;
+  htim3.Init.Prescaler = 47;
+  htim3.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim3.Init.Period = 65535;
+  htim3.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+  htim3.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  if (HAL_TIM_Base_Init(&htim3) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
+  if (HAL_TIM_ConfigClockSource(&htim3, &sClockSourceConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  if (HAL_TIM_IC_Init(&htim3) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sSlaveConfig.SlaveMode = TIM_SLAVEMODE_RESET;
+  sSlaveConfig.InputTrigger = TIM_TS_TI1FP1;
+  sSlaveConfig.TriggerPolarity = TIM_INPUTCHANNELPOLARITY_BOTHEDGE;
+  sSlaveConfig.TriggerFilter = 0;
+  if (HAL_TIM_SlaveConfigSynchro(&htim3, &sSlaveConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+  if (HAL_TIMEx_MasterConfigSynchronization(&htim3, &sMasterConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sConfigIC.ICPolarity = TIM_INPUTCHANNELPOLARITY_BOTHEDGE;
+  sConfigIC.ICSelection = TIM_ICSELECTION_DIRECTTI;
+  sConfigIC.ICPrescaler = TIM_ICPSC_DIV1;
+  sConfigIC.ICFilter = 0;
+  if (HAL_TIM_IC_ConfigChannel(&htim3, &sConfigIC, TIM_CHANNEL_1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN TIM3_Init 2 */
+
+  /* USER CODE END TIM3_Init 2 */
+
+}
+
+/**
   * @brief TIM14 Initialization Function
   * @param None
   * @retval None
@@ -372,7 +458,7 @@ static void MX_TIM14_Init(void)
 
   /* USER CODE END TIM14_Init 1 */
   htim14.Instance = TIM14;
-  htim14.Init.Prescaler = 47;
+  htim14.Init.Prescaler = 0;
   htim14.Init.CounterMode = TIM_COUNTERMODE_UP;
   htim14.Init.Period = 65535;
   htim14.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
@@ -384,6 +470,38 @@ static void MX_TIM14_Init(void)
   /* USER CODE BEGIN TIM14_Init 2 */
 
   /* USER CODE END TIM14_Init 2 */
+
+}
+
+/**
+  * @brief TIM17 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_TIM17_Init(void)
+{
+
+  /* USER CODE BEGIN TIM17_Init 0 */
+
+  /* USER CODE END TIM17_Init 0 */
+
+  /* USER CODE BEGIN TIM17_Init 1 */
+
+  /* USER CODE END TIM17_Init 1 */
+  htim17.Instance = TIM17;
+  htim17.Init.Prescaler = 47999;
+  htim17.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim17.Init.Period = 65535;
+  htim17.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+  htim17.Init.RepetitionCounter = 0;
+  htim17.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  if (HAL_TIM_Base_Init(&htim17) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN TIM17_Init 2 */
+
+  /* USER CODE END TIM17_Init 2 */
 
 }
 
@@ -446,12 +564,6 @@ static void MX_GPIO_Init(void)
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOB, CE_Pin|CSN_Pin, GPIO_PIN_RESET);
-
-  /*Configure GPIO pin : User_Button_Pin */
-  GPIO_InitStruct.Pin = User_Button_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(User_Button_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pin : RF_BTN_Pin */
   GPIO_InitStruct.Pin = RF_BTN_Pin;

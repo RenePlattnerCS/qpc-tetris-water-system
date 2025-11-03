@@ -28,7 +28,8 @@ me-&gt;currentTemp = 0.0f;</code>
    <parameter name="me" type="Sensor * const"/>
    <code>QActive_ctor(&amp;me-&gt;super, Q_STATE_CAST(&amp;Sensor_initial));
 
-
+me-&gt;dma_buffer = Sensor_dht11_dma_buffer;
+me-&gt;dma_index = 0;
 </code>
   </operation>
   <!--${Shared::AO_RFButton}-->
@@ -108,19 +109,18 @@ HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_RESET);</entry>
 
 me-&gt;currentTemp = sensorEvt-&gt;temperature;
 
-me-&gt;currentDryness = sensorEvt-&gt;dryness;
+uint16_t tempDry = sensorEvt-&gt;dryness;
 
 switch(me-&gt;currentState)
 {
     case TEMPERATURE:
     display_temp(me-&gt;currentTemp);
-    printf(&quot;display temp: u% \n&quot;,me-&gt;currentTemp );
     break;
     
     case DRYNESS:
-        uint8_t p = MainApp_calc_dryness_percent(me-&gt;currentDryness);
+        uint8_t p = MainApp_calc_dryness_percent(tempDry);
+        me-&gt;currentDryness = p;
         display_dry(p);
-        printf(&quot;Dry: u% \n&quot;, p );
     break;
     default:
             // error
@@ -144,9 +144,7 @@ verify_rx_mode();</action>
      <!--${AOs::MainApp::SM::display::BUTTON_PRESS}-->
      <tran trig="BUTTON_PRESS">
       <action>QTimeEvt_disarm(&amp;me-&gt;longPressEvt);
-QTimeEvt_armX(&amp;me-&gt;longPressEvt, LONG_PRESS_TIME_MS / 10, 0U);
-printf(&quot;pressed btn\n&quot;);
-</action>
+QTimeEvt_armX(&amp;me-&gt;longPressEvt, LONG_PRESS_TIME_MS / 10, 0U);</action>
       <tran_glyph conn="106,57,1,-1,-22">
        <action box="-19,-2,18,2"/>
       </tran_glyph>
@@ -160,8 +158,6 @@ printf(&quot;pressed btn\n&quot;);
      <!--${AOs::MainApp::SM::display::BUTTON_RELEASE}-->
      <tran trig="BUTTON_RELEASE">
       <action brief="short press">QTimeEvt_disarm(&amp;me-&gt;longPressEvt);
-printf(&quot;released button inside\n&quot;);
-
 
 if(me-&gt;currentState == TEMPERATURE)
 {
@@ -179,7 +175,8 @@ else
      </tran>
      <!--${AOs::MainApp::SM::display::display_stats}-->
      <state name="display_stats">
-      <entry>display_temp(me-&gt;currentTemp);</entry>
+      <entry>display_temp(me-&gt;currentTemp);
+</entry>
       <exit>QTimeEvt_disarm(&amp;me-&gt;tempPollEvt);</exit>
       <state_glyph node="14,25,41,31">
        <entry box="0,3,6,2"/>
@@ -218,6 +215,22 @@ HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_RESET);</exit>
   <class name="Sensor" superclass="qpc::QActive">
    <!--${AOs::Sensor::inst}-->
    <attribute name="inst" type="Sensor" visibility="0x02" properties="0x01"/>
+   <!--${AOs::Sensor::bits[5]}-->
+   <attribute name="bits[5]" type="uint8_t" visibility="0x00" properties="0x00"/>
+   <!--${AOs::Sensor::bit_index}-->
+   <attribute name="bit_index" type="uint8_t" visibility="0x00" properties="0x00"/>
+   <!--${AOs::Sensor::byte_index}-->
+   <attribute name="byte_index" type="uint8_t" visibility="0x00" properties="0x00"/>
+   <!--${AOs::Sensor::reading_high}-->
+   <attribute name="reading_high" type="bool" visibility="0x02" properties="0x00"/>
+   <!--${AOs::Sensor::pulse_count}-->
+   <attribute name="pulse_count" type="uint8_t" visibility="0x02" properties="0x00"/>
+   <!--${AOs::Sensor::dma_buffer}-->
+   <attribute name="dma_buffer" type="volatile uint32_t*" visibility="0x02" properties="0x00"/>
+   <!--${AOs::Sensor::dma_index}-->
+   <attribute name="dma_index" type="uint8_t" visibility="0x02" properties="0x00">
+    <code>= 0;</code>
+   </attribute>
    <!--${AOs::Sensor::SM}-->
    <statechart properties="0x00">
     <!--${AOs::Sensor::SM::initial}-->
@@ -228,36 +241,115 @@ HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_RESET);</exit>
     </initial>
     <!--${AOs::Sensor::SM::waiting}-->
     <state name="waiting">
-     <entry>printf(&quot;entering sensor state \n&quot;);
-</entry>
+     <entry>//__HAL_LINKDMA(&amp;htim3, hdma[TIM_DMA_ID_CC1], hdma_tim3_ch1);
+
+// Start input capture with DMA
+//HAL_TIM_IC_Start_DMA(&amp;htim3, TIM_CHANNEL_1, (uint32_t *)me-&gt;dma_buffer, DHT11_MAX_EDGES);</entry>
      <!--${AOs::Sensor::SM::waiting::START_SENSOR}-->
-     <tran trig="START_SENSOR">
-      <action>HAL_ADC_Start(&amp;hadc1);                   // Start conversion
-HAL_ADC_PollForConversion(&amp;hadc1, 0);    // Poll immediately (timeout = 0)
-uint16_t adcValue = HAL_ADC_GetValue(&amp;hadc1);
+     <tran trig="START_SENSOR" target="../../2">
+      <action>
+for(int i=0;i&lt;5;i++) me-&gt;bits[i]=0;
+me-&gt;bit_index = 0;
+me-&gt;byte_index = 0;
 
-
-//check temperature
-uint16_t temp = 1;
-DHT11_Read(&amp;temp);
-printf(&quot;Temperature: %u\n&quot; , temp);
-
-
-SensorEvent *e = Q_NEW(SensorEvent, SENSOR_DONE_SIG);
-e-&gt;temperature = temp;
-e-&gt;dryness = adcValue;
-
-QACTIVE_POST(AO_Main_App, &amp;e-&gt;super, &amp;AO_Sensor);
 </action>
-      <tran_glyph conn="42,41,3,-1,26">
+      <tran_glyph conn="76,62,4,0,12">
        <action box="0,-2,10,2"/>
       </tran_glyph>
      </tran>
-     <state_glyph node="42,31,70,24">
+     <state_glyph node="42,31,70,31">
       <entry box="0,3,6,2"/>
      </state_glyph>
     </state>
-    <state_diagram size="166,149"/>
+    <!--${AOs::Sensor::SM::start_temperature}-->
+    <state name="start_temperature">
+     <!--${AOs::Sensor::SM::start_temperatur~::initial}-->
+     <initial target="../1">
+      <action>// Pull DHT11 LOW ≥18ms
+DHT11_SetPinOutput();
+HAL_GPIO_WritePin(DHT11_PORT, DHT11_PIN, GPIO_PIN_RESET);
+// Use HAL delay (blocking) just for start signal
+//BSP_delayMs(20);
+Delay_ms(20);
+HAL_GPIO_WritePin(DHT11_PORT, DHT11_PIN, GPIO_PIN_SET);
+// Switch pin to input
+Delay_us(30);
+DHT11_SetPinInput();
+// Start timer input capture
+//HAL_TIM_IC_Start_IT(&amp;htim16, TIM_CHANNEL_1);
+</action>
+      <initial_glyph conn="83,84,5,0,-6,11">
+       <action box="0,-2,10,2"/>
+      </initial_glyph>
+     </initial>
+     <!--${AOs::Sensor::SM::start_temperatur~::wait_response}-->
+     <state name="wait_response">
+      <entry brief="init">me-&gt;bit_index = 0;
+me-&gt;byte_index = 0;
+me-&gt;reading_high = false;
+me-&gt;pulse_count = 0; 
+memset(me-&gt;bits, 0, sizeof(me-&gt;bits));
+</entry>
+      <!--${AOs::Sensor::SM::start_temperatur~::wait_response::DHT11_TIMER_IC}-->
+      <tran trig="DHT11_TIMER_IC">
+       <action>uint32_t pulse_length = ((DHT11Evt const *)e)-&gt;pulse_length;
+
+me-&gt;pulse_count++;
+
+// Skip first 2 pulses (response: 80µs LOW + 80µs HIGH)
+if (me-&gt;pulse_count &lt;= 2) {
+    status_ = Q_HANDLED();
+    break;
+}
+
+// Now process data bits
+me-&gt;reading_high = !me-&gt;reading_high;
+
+if (me-&gt;reading_high) {
+    // We're measuring the HIGH pulse (data bit)
+    if (pulse_length &gt; 40) {  // threshold between 0 and 1
+        // logical 1 (70µs)
+        me-&gt;bits[me-&gt;byte_index] |= (1 &lt;&lt; (7 - me-&gt;bit_index));
+    }
+    // else bit=0 by default (26-28µs)
+    
+    me-&gt;bit_index++;
+    if (me-&gt;bit_index &gt; 7) {
+        me-&gt;bit_index = 0;
+        me-&gt;byte_index++;
+        
+        if (me-&gt;byte_index &gt;= 5) {
+            // Done reading 40 bits
+            HAL_TIM_IC_Stop_IT(&amp;htim3, TIM_CHANNEL_1);
+            
+            // Verify checksum
+            uint8_t checksum = me-&gt;bits[0] + me-&gt;bits[1] + me-&gt;bits[2] + me-&gt;bits[3];
+            if (checksum == me-&gt;bits[4]) {
+                // Valid data
+                printf(&quot;Humidity: %u.%u%%  Temperature: %u.%u°C\n&quot;,
+                       me-&gt;bits[0], me-&gt;bits[1],
+                       me-&gt;bits[2], me-&gt;bits[3]);
+            } else {
+                printf(&quot;Checksum error! Expected: %u, Got: %u\n&quot;,
+                       checksum, me-&gt;bits[4]);
+            }
+            
+            status_ = Q_TRAN(&amp;Sensor_waiting);
+            break;
+        }
+    }
+}</action>
+       <tran_glyph conn="97,105,1,-1,-10">
+        <action box="0,-2,10,2"/>
+       </tran_glyph>
+      </tran>
+      <state_glyph node="53,95,44,20">
+       <entry box="0,3,6,2"/>
+      </state_glyph>
+     </state>
+     <state_glyph node="48,74,65,45"/>
+    </state>
+    <state_diagram size="196,261"/>
    </statechart>
   </class>
   <!--${AOs::RFButton}-->
@@ -346,7 +438,9 @@ enum MenuGameSignals {
     START_SENSOR_SIG,
     SENSOR_DONE_SIG,
     NRF_IRQ_SIG,
-    MAX_SIG  // Keep last for validation
+    DHT11_TIMER_IC_SIG,
+    DHT11_DONE_SIG,
+    MAX_SIG  
 };
 
 
@@ -358,7 +452,11 @@ typedef struct {
     uint16_t temperature;     
 } SensorEvent;
 
-
+typedef struct {
+    QEvt super;      
+    uint32_t pulse_length; 
+    uint8_t dummy;
+} DHT11Evt;
 
 #endif </text>
   </file>
@@ -399,6 +497,9 @@ $declare${AOs::RFButton}
 #include &quot;app_config.h&quot;
 #include &quot;NRF_chip.h&quot;
 
+//DMA buffer
+static __attribute__((section(&quot;.bss&quot;))) __attribute__((aligned(4))) volatile uint32_t Sensor_dht11_dma_buffer[DHT11_MAX_EDGES];
+
 $define${AOs::MainApp}
 $define${Shared}
 
@@ -410,9 +511,23 @@ $define${Shared}
    <text>#include &quot;sensor.h&quot;
 #include &lt;stdio.h&gt;
 #include &quot;main_app.h&quot;
+#include &quot;app_config.h&quot;
+#include &quot;temp_sensor.h&quot;
+
+
 
 extern ADC_HandleTypeDef hadc1;
+extern TIM_HandleTypeDef htim3;
+//extern DMA_HandleTypeDef hdma;
+//extern DMA_HandleTypeDef hdma_tim3_ch1;
 $define${AOs::Sensor}
+
+
+
+// DMA buffer must be in RAM, not flash
+// Must be in RAM for DMA, do NOT use 'const'
+//static __attribute__((aligned(4))) volatile uint32_t dht11_dma_buffer[DHT11_MAX_EDGES];
+//static volatile uint8_t dma_index = 0;
 
 //QActive * const AO_Sensor = &amp;Sensor_inst;</text>
   </file>
