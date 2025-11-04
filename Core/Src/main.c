@@ -89,14 +89,14 @@ static void MX_USART2_UART_Init(void);
 static QEvt const *menuGameQueueSto[15]; // Storage for event queue
 extern MainApp MainApp_inst; // Storage for the AO instance
 
-static QEvt const *sensorQueueSto[4]; // Storage for event queue
+static QEvt const *sensorQueueSto[16]; // Storage for event queue
 extern Sensor Sensor_inst; // Storage for the AO instance
 
 static QEvt const *rfbuttonQueueSto[5]; // Storage for event queue
 extern RFButton RFButton_inst; // Storage for the AO instance
 
 // Allocate pool for SensorEvent
-Q_ALIGN static QF_MPOOL_EL(SensorEvent) sensorEvtPoolSto[2];
+Q_ALIGN static QF_MPOOL_EL(SensorEvent) sensorEvtPoolSto[4];
 //Q_ALIGN static QF_MPOOL_EL(DHT11Evt) dhtEvtPoolSto[4];
 
 

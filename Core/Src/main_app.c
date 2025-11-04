@@ -88,15 +88,13 @@ QState MainApp_display(MainApp * const me, QEvt const * const e) {
     switch (e->sig) {
         //${AOs::MainApp::SM::display}
         case Q_ENTRY_SIG: {
-
-
             HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_RESET);
             status_ = Q_HANDLED();
             break;
         }
         //${AOs::MainApp::SM::display}
         case Q_EXIT_SIG: {
-            QTimeEvt_disarm(&me->tempPollEvt);
+            //QTimeEvt_disarm(&me->tempPollEvt);
             status_ = Q_HANDLED();
             break;
         }
@@ -107,6 +105,12 @@ QState MainApp_display(MainApp * const me, QEvt const * const e) {
         }
         //${AOs::MainApp::SM::display::SENSOR_DONE}
         case SENSOR_DONE_SIG: {
+            //QTimeEvt_disarm(&me->tempPollEvt);
+            //QTimeEvt_armX(&me->tempPollEvt,
+            //              20000U,    // Fire after 10 seconds
+            //              20000U);   // Then repeat every 10 seconds
+
+
             SensorEvent const *sensorEvt = (SensorEvent const *)e;
             printf("DONE SENSOR \n");
 
@@ -145,9 +149,9 @@ QState MainApp_display(MainApp * const me, QEvt const * const e) {
         //${AOs::MainApp::SM::display::POLL_SENSOR}
         case POLL_SENSOR_SIG: {
             static QEvt const ADC_Start_Evt = {START_SENSOR_SIG, 0U, 0U};
-            QACTIVE_POST(AO_Sensor,&ADC_Start_Evt, me);
-            verify_rx_mode();
             printf("POLL SENSOR \n");
+            QACTIVE_POST(AO_Sensor,&ADC_Start_Evt, me);
+
 
             status_ = Q_HANDLED();
             break;
@@ -198,7 +202,7 @@ QState MainApp_display_stats(MainApp * const me, QEvt const * const e) {
             display_temp(me->currentTemp);
             QTimeEvt_armX(&me->tempPollEvt,
                           200U,    // Fire after 10 seconds
-                          20000U);   // Then repeat every 10 seconds
+                          2000U);   // Then repeat every 10 seconds
             status_ = Q_HANDLED();
             break;
         }

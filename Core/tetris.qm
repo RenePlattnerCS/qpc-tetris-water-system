@@ -97,10 +97,8 @@ return percent;</code>
     </initial>
     <!--${AOs::MainApp::SM::display}-->
     <state name="display">
-     <entry>
-
-HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_RESET);</entry>
-     <exit>QTimeEvt_disarm(&amp;me-&gt;tempPollEvt);</exit>
+     <entry>HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_RESET);</entry>
+     <exit>//QTimeEvt_disarm(&amp;me-&gt;tempPollEvt);</exit>
      <!--${AOs::MainApp::SM::display::initial}-->
      <initial target="../6">
       <initial_glyph conn="49,20,5,0,-6,5">
@@ -109,7 +107,13 @@ HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_RESET);</entry>
      </initial>
      <!--${AOs::MainApp::SM::display::SENSOR_DONE}-->
      <tran trig="SENSOR_DONE">
-      <action>SensorEvent const *sensorEvt = (SensorEvent const *)e;
+      <action>//QTimeEvt_disarm(&amp;me-&gt;tempPollEvt);
+//QTimeEvt_armX(&amp;me-&gt;tempPollEvt, 
+//              20000U,    // Fire after 10 seconds
+//              20000U);   // Then repeat every 10 seconds
+
+
+SensorEvent const *sensorEvt = (SensorEvent const *)e;
 printf(&quot;DONE SENSOR \n&quot;);
 
 me-&gt;currentTemp = sensorEvt-&gt;temperature;
@@ -148,9 +152,9 @@ switch(me-&gt;currentState)
      <!--${AOs::MainApp::SM::display::POLL_SENSOR}-->
      <tran trig="POLL_SENSOR">
       <action>static QEvt const ADC_Start_Evt = {START_SENSOR_SIG, 0U, 0U};
-QACTIVE_POST(AO_Sensor,&amp;ADC_Start_Evt, me);
-verify_rx_mode();
 printf(&quot;POLL SENSOR \n&quot;);
+QACTIVE_POST(AO_Sensor,&amp;ADC_Start_Evt, me);
+
 </action>
       <tran_glyph conn="106,33,1,-1,-22">
        <action box="-17,-3,21,2"/>
@@ -193,7 +197,7 @@ else
       <entry brief="display and poll timer">display_temp(me-&gt;currentTemp);
 QTimeEvt_armX(&amp;me-&gt;tempPollEvt, 
               200U,    // Fire after 10 seconds
-              20000U);   // Then repeat every 10 seconds</entry>
+              2000U);   // Then repeat every 10 seconds</entry>
       <!--${AOs::MainApp::SM::display::display_stats::PLANT_DRY}-->
       <tran trig="PLANT_DRY" target="../../7">
        <tran_glyph conn="54,50,1,0,23,29">
@@ -313,13 +317,11 @@ return 0;</code>
     </initial>
     <!--${AOs::Sensor::SM::waiting}-->
     <state name="waiting">
-     <entry>printf(&quot;waiting SENSOR \n&quot;);
+     <entry>printf(&quot;1 waiting waiting \n&quot;);
 QTimeEvt_disarm(&amp;me-&gt;resetEvt);
 </entry>
      <!--${AOs::Sensor::SM::waiting::START_SENSOR}-->
      <tran trig="START_SENSOR" target="../../3">
-      <action>
-</action>
       <tran_glyph conn="76,62,4,0,13">
        <action box="0,-2,10,2"/>
       </tran_glyph>
@@ -332,16 +334,6 @@ QTimeEvt_disarm(&amp;me-&gt;resetEvt);
     <state name="start_temperature">
      <!--${AOs::Sensor::SM::start_temperatur~::initial}-->
      <initial target="../2">
-      <action>// 1. MCU sends start signal
-
-// 2. MCU releases line (float)
-
-
-
-// Switch pin to input
-//DHT11_SetPinInput();
-
-//HAL_GPIO_WritePin(DHT11_PORT, DHT11_PIN, GPIO_PIN_RESET);</action>
       <initial_glyph conn="83,103,5,0,-6,11">
        <action box="0,-2,10,2"/>
       </initial_glyph>
@@ -356,13 +348,12 @@ printf(&quot;Reset DHT11&quot;);</action>
      </tran>
      <!--${AOs::Sensor::SM::start_temperatur~::wait_response}-->
      <state name="wait_response">
-      <entry brief="init">printf(&quot;entry to waiting for responce\n&quot;);
+      <entry brief="init">//printf(&quot;4 entry to waiting for responce\n&quot;);
 me-&gt;bit_index = 0;
 me-&gt;byte_index = 0;
 me-&gt;reading_high = true;
 me-&gt;pulse_count = 0; 
 memset(me-&gt;bits, 0, sizeof(me-&gt;bits));
-printf(&quot;ENTRY SENSOR \n&quot;);
 </entry>
       <!--${AOs::Sensor::SM::start_temperatur~::wait_response::DHT11_TIMER_IC}-->
       <tran trig="DHT11_TIMER_IC" target="../../../1">
@@ -396,6 +387,7 @@ for(uint8_t i = 0; i &lt; TIMESTAMP_SIZE; i++)
             if (me-&gt;byte_index &gt;= 5) {
                 // Verify checksum
                 uint8_t checksum = me-&gt;bits[0] + me-&gt;bits[1] + me-&gt;bits[2] + me-&gt;bits[3];
+                printf(&quot;5 sending data&quot;);
                 if (checksum == me-&gt;bits[4]) {
                     uint16_t dryness_val = Sensor_get_adc_dryness();
 
@@ -436,7 +428,7 @@ for(uint8_t i = 0; i &lt; TIMESTAMP_SIZE; i++)
     </state>
     <!--${AOs::Sensor::SM::start_dht}-->
     <state name="start_dht">
-     <entry>printf(&quot;start DHT arm 30ms \n&quot;);
+     <entry>//printf(&quot;2 start DHT arm 30ms \n&quot;);
 for(int i=0;i&lt;5;i++) me-&gt;bits[i]=0;
 me-&gt;bit_index = 0;
 me-&gt;byte_index = 0;
@@ -450,7 +442,7 @@ HAL_GPIO_WritePin(DHT11_PORT, DHT11_PIN, GPIO_PIN_RESET);
 QTimeEvt_armX(&amp;me-&gt;dht11StartEvt, 2U, 0U); // 27ms</entry>
      <!--${AOs::Sensor::SM::start_dht::DHT11_START}-->
      <tran trig="DHT11_START" target="../../2">
-      <action>printf(&quot;transition to input \n&quot;);
+      <action>//printf(&quot;3 transition to input \n&quot;);
 DHT11_SetPinInput();
 Delay_us(30);  // 20–40 µs wait</action>
       <tran_glyph conn="76,83,2,0,10">

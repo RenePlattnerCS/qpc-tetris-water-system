@@ -82,7 +82,7 @@ QState Sensor_waiting(Sensor * const me, QEvt const * const e) {
     switch (e->sig) {
         //${AOs::Sensor::SM::waiting}
         case Q_ENTRY_SIG: {
-            printf("waiting SENSOR \n");
+            printf("1 waiting waiting \n");
             QTimeEvt_disarm(&me->resetEvt);
 
             status_ = Q_HANDLED();
@@ -90,8 +90,6 @@ QState Sensor_waiting(Sensor * const me, QEvt const * const e) {
         }
         //${AOs::Sensor::SM::waiting::START_SENSOR}
         case START_SENSOR_SIG: {
-
-
             status_ = Q_TRAN(&Sensor_start_dht);
             break;
         }
@@ -109,16 +107,6 @@ QState Sensor_start_temperature(Sensor * const me, QEvt const * const e) {
     switch (e->sig) {
         //${AOs::Sensor::SM::start_temperatur~::initial}
         case Q_INIT_SIG: {
-            // 1. MCU sends start signal
-
-            // 2. MCU releases line (float)
-
-
-
-            // Switch pin to input
-            //DHT11_SetPinInput();
-
-            //HAL_GPIO_WritePin(DHT11_PORT, DHT11_PIN, GPIO_PIN_RESET);
             status_ = Q_TRAN(&Sensor_wait_response);
             break;
         }
@@ -143,13 +131,12 @@ QState Sensor_wait_response(Sensor * const me, QEvt const * const e) {
     switch (e->sig) {
         //${AOs::Sensor::SM::start_temperatur~::wait_response}
         case Q_ENTRY_SIG: {
-            printf("entry to waiting for responce\n");
+            //printf("4 entry to waiting for responce\n");
             me->bit_index = 0;
             me->byte_index = 0;
             me->reading_high = true;
             me->pulse_count = 0;
             memset(me->bits, 0, sizeof(me->bits));
-            printf("ENTRY SENSOR \n");
 
             status_ = Q_HANDLED();
             break;
@@ -186,6 +173,7 @@ QState Sensor_wait_response(Sensor * const me, QEvt const * const e) {
                         if (me->byte_index >= 5) {
                             // Verify checksum
                             uint8_t checksum = me->bits[0] + me->bits[1] + me->bits[2] + me->bits[3];
+                            printf("5 sending data");
                             if (checksum == me->bits[4]) {
                                 uint16_t dryness_val = Sensor_get_adc_dryness();
 
@@ -231,7 +219,7 @@ QState Sensor_start_dht(Sensor * const me, QEvt const * const e) {
     switch (e->sig) {
         //${AOs::Sensor::SM::start_dht}
         case Q_ENTRY_SIG: {
-            printf("start DHT arm 30ms \n");
+            //printf("2 start DHT arm 30ms \n");
             for(int i=0;i<5;i++) me->bits[i]=0;
             me->bit_index = 0;
             me->byte_index = 0;
@@ -248,7 +236,7 @@ QState Sensor_start_dht(Sensor * const me, QEvt const * const e) {
         }
         //${AOs::Sensor::SM::start_dht::DHT11_START}
         case DHT11_START_SIG: {
-            printf("transition to input \n");
+            //printf("3 transition to input \n");
             DHT11_SetPinInput();
             Delay_us(30);  // 20–40 µs wait
             status_ = Q_TRAN(&Sensor_start_temperature);
