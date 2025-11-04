@@ -203,6 +203,7 @@ QState MainApp_display_stats(MainApp * const me, QEvt const * const e) {
             QTimeEvt_armX(&me->tempPollEvt,
                           200U,    // Fire after 10 seconds
                           2000U);   // Then repeat every 10 seconds
+            printf("enter display stats: arm polling");
             status_ = Q_HANDLED();
             break;
         }
@@ -267,6 +268,8 @@ QState MainApp_pump(MainApp * const me, QEvt const * const e) {
 
             QTimeEvt_disarm(&me->dryTimerEvt);
             QTimeEvt_armX(&me->dryTimerEvt, 300U , 0U);
+
+            QTimeEvt_disarm(&me->tempPollEvt);
             status_ = Q_HANDLED();
             break;
         }

@@ -163,7 +163,8 @@ QACTIVE_POST(AO_Sensor,&amp;ADC_Start_Evt, me);
      <!--${AOs::MainApp::SM::display::BUTTON_PRESS}-->
      <tran trig="BUTTON_PRESS">
       <action>QTimeEvt_disarm(&amp;me-&gt;longPressEvt);
-QTimeEvt_armX(&amp;me-&gt;longPressEvt, LONG_PRESS_TIME_MS / 10, 0U);</action>
+QTimeEvt_armX(&amp;me-&gt;longPressEvt, LONG_PRESS_TIME_MS / 10, 0U);
+printf(&quot;pressed btn!\n&quot;);</action>
       <tran_glyph conn="106,57,1,-1,-22">
        <action box="-19,-2,18,2"/>
       </tran_glyph>
@@ -197,7 +198,8 @@ else
       <entry brief="display and poll timer">display_temp(me-&gt;currentTemp);
 QTimeEvt_armX(&amp;me-&gt;tempPollEvt, 
               200U,    // Fire after 10 seconds
-              2000U);   // Then repeat every 10 seconds</entry>
+              2000U);   // Then repeat every 10 seconds
+printf(&quot;enter display stats: arm polling&quot;);</entry>
       <!--${AOs::MainApp::SM::display::display_stats::PLANT_DRY}-->
       <tran trig="PLANT_DRY" target="../../7">
        <tran_glyph conn="54,50,1,0,23,29">
@@ -242,7 +244,9 @@ QTimeEvt_disarm(&amp;me-&gt;longPressEvt);
 HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_SET);
 
 QTimeEvt_disarm(&amp;me-&gt;dryTimerEvt);
-QTimeEvt_armX(&amp;me-&gt;dryTimerEvt, 300U , 0U);</entry>
+QTimeEvt_armX(&amp;me-&gt;dryTimerEvt, 300U , 0U);
+
+QTimeEvt_disarm(&amp;me-&gt;tempPollEvt);</entry>
      <exit brief="OFF">printf(&quot;exit pump\n&quot;);
 HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_RESET);
 QTimeEvt_disarm(&amp;me-&gt;dryTimerEvt);
