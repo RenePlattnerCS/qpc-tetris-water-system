@@ -25,7 +25,7 @@
 #define ADXL_INT_MAP				0x2F
 #define ADXL_INT_SOURCE 			0x30
 #define TAP_DUR					0x21
-
+#define INT_TAP_ENABLE			0x40
 void init_accelerometer(void);
 
 //void read_accelerometer(int16_t *x, int16_t *y, int16_t *z);

@@ -43,7 +43,7 @@ void init_accelerometer(void)
 
 		// 4. Enable single tap interrupt
 		data = 0x40;  // SINGLE_TAP
-		//HAL_I2C_Mem_Write(&hi2c1, ADXL_ADDR, INT_ENABLE, 1, &data, 1, HAL_MAX_DELAY);
+		HAL_I2C_Mem_Write(&hi2c1, ADXL_ADDR, INT_TAP_ENABLE, 1, &data, 1, HAL_MAX_DELAY);
 
 
             //---------------------------  -------------------------
@@ -63,7 +63,8 @@ void init_accelerometer(void)
 
     // ----------------------------------------------------------
     // Re-enable interrupts
-    data = 0x10;
+    //data = 0x10; activity interrupt
+    data = 0x40; // -> single tap interrupt!
     HAL_I2C_Mem_Write(&hi2c1, ADXL_ADDR, ADXL_INT_ENABLE, 1, &data, 1, HAL_MAX_DELAY);
     //  ----------------------------------------------------------
 
