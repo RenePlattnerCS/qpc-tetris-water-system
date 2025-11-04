@@ -15,6 +15,8 @@
 
 #define MAX_DRY 			 (2500U) //for the dryness plant sensor
 #define MAX_WET 			 (1000U)
+#define PLANT_DRY_THREASHOLD (20U) //percent
+#define DRY_TIMEOUT			 (400U)
 
 #define DHT11_MAX_EDGES 		3
 #define DHT11_RESET_TIME 		(3000U)

@@ -60,6 +60,7 @@ typedef struct Sensor {
     volatile uint32_t* dma_buffer;
     uint8_t dma_index;
     QTimeEvt resetEvt;
+    QTimeEvt dht11StartEvt;
 } Sensor;
 
 extern Sensor Sensor_inst;
@@ -72,6 +73,7 @@ QState Sensor_initial(Sensor * const me, void const * const par);
 QState Sensor_waiting(Sensor * const me, QEvt const * const e);
 QState Sensor_start_temperature(Sensor * const me, QEvt const * const e);
 QState Sensor_wait_response(Sensor * const me, QEvt const * const e);
+QState Sensor_start_dht(Sensor * const me, QEvt const * const e);
 //$enddecl${AOs::Sensor} ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 

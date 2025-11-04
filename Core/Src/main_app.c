@@ -89,8 +89,8 @@ QState MainApp_display(MainApp * const me, QEvt const * const e) {
         //${AOs::MainApp::SM::display}
         case Q_ENTRY_SIG: {
             QTimeEvt_armX(&me->tempPollEvt,
-                          800U,    // Fire after 10 seconds
-                          800U);   // Then repeat every 10 seconds
+                          200U,    // Fire after 10 seconds
+                          20000U);   // Then repeat every 10 seconds
 
             HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_RESET);
             status_ = Q_HANDLED();
@@ -109,6 +109,15 @@ QState MainApp_display(MainApp * const me, QEvt const * const e) {
             me->currentTemp = sensorEvt->temperature;
 
             uint16_t tempDry = sensorEvt->dryness;
+            uint8_t p = MainApp_calc_dryness_percent(tempDry);
+            me->currentDryness = p;
+
+            if (p > PLANT_DRY_THREASHOLD)
+            {
+                static QEvt const dry_Evt = {PLANT_DRY_SIG, 0U, 0U};
+                QACTIVE_POST(AO_Main_App,&dry_Evt, me);
+            }
+
 
             switch(me->currentState)
             {
@@ -117,8 +126,7 @@ QState MainApp_display(MainApp * const me, QEvt const * const e) {
                 break;
 
                 case DRYNESS:
-                    uint8_t p = MainApp_calc_dryness_percent(tempDry);
-                    me->currentDryness = p;
+
                     display_dry(p);
                 break;
                 default:
@@ -194,6 +202,46 @@ QState MainApp_display_stats(MainApp * const me, QEvt const * const e) {
             status_ = Q_HANDLED();
             break;
         }
+        //${AOs::MainApp::SM::display::display_stats::PLANT_DRY}
+        case PLANT_DRY_SIG: {
+            status_ = Q_TRAN(&MainApp_dry_alert);
+            break;
+        }
+        default: {
+            status_ = Q_SUPER(&MainApp_display);
+            break;
+        }
+    }
+    return status_;
+}
+
+//${AOs::MainApp::SM::display::dry_alert} ....................................
+QState MainApp_dry_alert(MainApp * const me, QEvt const * const e) {
+    QState status_;
+    switch (e->sig) {
+        //${AOs::MainApp::SM::display::dry_alert}
+        case Q_ENTRY_SIG: {
+            QTimeEvt_armX(&me->dryTimerEvt, DRY_TIMEOUT , 0U);
+            printf("entered DRY!\n");
+            status_ = Q_HANDLED();
+            break;
+        }
+        //${AOs::MainApp::SM::display::dry_alert}
+        case Q_EXIT_SIG: {
+            QTimeEvt_disarm(&me->dryTimerEvt);
+            printf("exited DRY!\n");
+            status_ = Q_HANDLED();
+            break;
+        }
+        //${AOs::MainApp::SM::display::dry_alert::WATER_PLANT}
+        case WATER_PLANT_SIG: {
+            QTimeEvt_disarm(&me->dryTimerEvt);
+            QTimeEvt_armX(&me->dryTimerEvt, DRY_TIMEOUT , 0U);
+
+
+            status_ = Q_TRAN(&MainApp_pump);
+            break;
+        }
         default: {
             status_ = Q_SUPER(&MainApp_display);
             break;
@@ -220,12 +268,19 @@ QState MainApp_pump(MainApp * const me, QEvt const * const e) {
         case Q_EXIT_SIG: {
             printf("exit pump\n");
             HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_RESET);
+            QTimeEvt_disarm(&me->dryTimerEvt);
+
             status_ = Q_HANDLED();
             break;
         }
         //${AOs::MainApp::SM::pump::BUTTON_RELEASE}
         case BUTTON_RELEASE_SIG: {
             printf("released the btm inside pump \n");
+            status_ = Q_TRAN(&MainApp_display_stats);
+            break;
+        }
+        //${AOs::MainApp::SM::pump::PLANT_DRY}
+        case PLANT_DRY_SIG: {
             status_ = Q_TRAN(&MainApp_display_stats);
             break;
         }
@@ -247,6 +302,8 @@ void Main_App_ctor(MainApp * const me) {
     QActive_ctor(&me->super, Q_STATE_CAST(&MainApp_initial));
     QTimeEvt_ctorX(&me->tempPollEvt, &me->super, POLL_SENSOR_SIG, 0U);
     QTimeEvt_ctorX(&me->longPressEvt, &me->super, BUTTON_LONG_SIG, 0U);
+    QTimeEvt_ctorX(&me->dryTimerEvt, &me->super, WATER_PLANT_SIG, 0U);
+
     me->currentTemp = 0.0f;
 }
 
@@ -257,7 +314,7 @@ QActive * const AO_Sensor = &Sensor_inst.super;
 void Sensor_ctor(Sensor * const me) {
     QActive_ctor(&me->super, Q_STATE_CAST(&Sensor_initial));
     QTimeEvt_ctorX(&me->resetEvt, &me->super, DHT11_RESET_SIG, 0U);
-
+    QTimeEvt_ctorX(&me->dht11StartEvt, &me->super, DHT11_START_SIG, 0U);
     me->dma_buffer = Sensor_dht11_dma_buffer;
     me->dma_index = 0;
 

@@ -1,6 +1,6 @@
 ../Core/Src/temp_sensor.c:93:6:DHT11_SetPinOutput	1
 ../Core/Src/temp_sensor.c:133:6:DHT11_SetPinInput	1
-../Core/Src/temp_sensor.c:169:6:Delay_us	2
-../Core/Src/temp_sensor.c:175:6:Delay_ms	2
-../Core/Src/temp_sensor.c:15:6:DHT11_pull_low	1
+../Core/Src/temp_sensor.c:168:6:Delay_us	2
 ../Core/Src/temp_sensor.c:26:9:DHT11_Read	13
+../Core/Src/temp_sensor.c:15:6:DHT11_pull_low	1
+../Core/Src/temp_sensor.c:174:6:Delay_ms	1

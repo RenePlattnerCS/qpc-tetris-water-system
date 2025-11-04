@@ -71,6 +71,7 @@ typedef struct MainApp {
 
 // public:
     QTimeEvt longPressEvt;
+    QTimeEvt dryTimerEvt;
 } MainApp;
 
 extern MainApp MainApp_inst;
@@ -82,6 +83,7 @@ uint8_t MainApp_calc_dryness_percent(uint16_t dryness);
 QState MainApp_initial(MainApp * const me, void const * const par);
 QState MainApp_display(MainApp * const me, QEvt const * const e);
 QState MainApp_display_stats(MainApp * const me, QEvt const * const e);
+QState MainApp_dry_alert(MainApp * const me, QEvt const * const e);
 QState MainApp_pump(MainApp * const me, QEvt const * const e);
 //$enddecl${AOs::MainApp} ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -115,9 +117,12 @@ enum MenuGameSignals {
     START_SENSOR_SIG,
     SENSOR_DONE_SIG,
     NRF_IRQ_SIG,
+    DHT11_START_SIG,
     DHT11_TIMER_IC_SIG,
     DHT11_RESET_SIG,
     DHT11_DONE_SIG,
+    PLANT_DRY_SIG,
+    WATER_PLANT_SIG,
     MAX_SIG
 };
 

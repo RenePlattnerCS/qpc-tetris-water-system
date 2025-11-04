@@ -138,16 +138,16 @@ void DHT11_SetPinInput(void)
     GPIO_InitStruct.Pin = DHT11_PIN;
     GPIO_InitStruct.Mode = LL_GPIO_MODE_ALTERNATE;
     GPIO_InitStruct.OutputType = LL_GPIO_OUTPUT_PUSHPULL;
-    GPIO_InitStruct.Speed = LL_GPIO_SPEED_FREQ_LOW;
+    GPIO_InitStruct.Speed = LL_GPIO_SPEED_FREQ_HIGH;
     GPIO_InitStruct.Pull = LL_GPIO_PULL_NO;
     GPIO_InitStruct.Alternate = LL_GPIO_AF_1; // TIM3_CH1 alternate
     LL_GPIO_Init(DHT11_PORT, &GPIO_InitStruct);
 
     // --- Configure channel 1 for input capture ---
-        	LL_TIM_IC_SetActiveInput(TIM3, LL_TIM_CHANNEL_CH1, LL_TIM_ACTIVEINPUT_DIRECTTI);
-        	LL_TIM_IC_SetPolarity(TIM3, LL_TIM_CHANNEL_CH1, LL_TIM_IC_POLARITY_BOTHEDGE);
-        	LL_TIM_IC_SetPrescaler(TIM3, LL_TIM_CHANNEL_CH1, LL_TIM_ICPSC_DIV1);
-        	LL_TIM_IC_SetFilter(TIM3, LL_TIM_CHANNEL_CH1, LL_TIM_IC_FILTER_FDIV1);
+		LL_TIM_IC_SetActiveInput(TIM3, LL_TIM_CHANNEL_CH1, LL_TIM_ACTIVEINPUT_DIRECTTI);
+		LL_TIM_IC_SetPolarity(TIM3, LL_TIM_CHANNEL_CH1, LL_TIM_IC_POLARITY_BOTHEDGE);
+		LL_TIM_IC_SetPrescaler(TIM3, LL_TIM_CHANNEL_CH1, LL_TIM_ICPSC_DIV1);
+		LL_TIM_IC_SetFilter(TIM3, LL_TIM_CHANNEL_CH1, LL_TIM_IC_FILTER_FDIV1);
 
 
 
@@ -161,15 +161,14 @@ void DHT11_SetPinInput(void)
     LL_TIM_EnableCounter(TIM3);
 
 
-    ;
 }
 
 
 
 void Delay_us(uint16_t us)
 {
-	LL_TIM_SetCounter(TIM14, 0);
-	while (LL_TIM_GetCounter(TIM14) < us);
+	LL_TIM_SetCounter(TIM17, 0);
+	while (LL_TIM_GetCounter(TIM17) < us);
 }
 
 void Delay_ms(uint16_t ms)

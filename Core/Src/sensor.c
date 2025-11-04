@@ -90,13 +90,9 @@ QState Sensor_waiting(Sensor * const me, QEvt const * const e) {
         }
         //${AOs::Sensor::SM::waiting::START_SENSOR}
         case START_SENSOR_SIG: {
-            printf("start SENSOR \n");
-            for(int i=0;i<5;i++) me->bits[i]=0;
-            me->bit_index = 0;
-            me->byte_index = 0;
-            QTimeEvt_armX(&me->resetEvt, DHT11_RESET_TIME, 0U);
 
-            status_ = Q_TRAN(&Sensor_start_temperature);
+
+            status_ = Q_TRAN(&Sensor_start_dht);
             break;
         }
         default: {
@@ -113,17 +109,16 @@ QState Sensor_start_temperature(Sensor * const me, QEvt const * const e) {
     switch (e->sig) {
         //${AOs::Sensor::SM::start_temperatur~::initial}
         case Q_INIT_SIG: {
-            printf("INIT sensor\n");
-            // Pull DHT11 LOW ≥18ms
-            DHT11_SetPinOutput();
-            HAL_GPIO_WritePin(DHT11_PORT, DHT11_PIN, GPIO_PIN_RESET);
-            Delay_ms(20);
-            HAL_GPIO_WritePin(DHT11_PORT, DHT11_PIN, GPIO_PIN_SET);
+            // 1. MCU sends start signal
+
+            // 2. MCU releases line (float)
+
+
+
             // Switch pin to input
-            DHT11_SetPinInput();
-            Delay_us(30);
+            //DHT11_SetPinInput();
 
-
+            //HAL_GPIO_WritePin(DHT11_PORT, DHT11_PIN, GPIO_PIN_RESET);
             status_ = Q_TRAN(&Sensor_wait_response);
             break;
         }
@@ -148,6 +143,7 @@ QState Sensor_wait_response(Sensor * const me, QEvt const * const e) {
     switch (e->sig) {
         //${AOs::Sensor::SM::start_temperatur~::wait_response}
         case Q_ENTRY_SIG: {
+            printf("entry to waiting for responce\n");
             me->bit_index = 0;
             me->byte_index = 0;
             me->reading_high = true;
@@ -223,6 +219,43 @@ QState Sensor_wait_response(Sensor * const me, QEvt const * const e) {
         }
         default: {
             status_ = Q_SUPER(&Sensor_start_temperature);
+            break;
+        }
+    }
+    return status_;
+}
+
+//${AOs::Sensor::SM::start_dht} ..............................................
+QState Sensor_start_dht(Sensor * const me, QEvt const * const e) {
+    QState status_;
+    switch (e->sig) {
+        //${AOs::Sensor::SM::start_dht}
+        case Q_ENTRY_SIG: {
+            printf("start DHT arm 30ms \n");
+            for(int i=0;i<5;i++) me->bits[i]=0;
+            me->bit_index = 0;
+            me->byte_index = 0;
+
+            QTimeEvt_armX(&me->resetEvt, DHT11_RESET_TIME, 0U);
+
+
+            // Pull DHT11 LOW ≥18ms
+            DHT11_SetPinOutput();
+            HAL_GPIO_WritePin(DHT11_PORT, DHT11_PIN, GPIO_PIN_RESET);
+            QTimeEvt_armX(&me->dht11StartEvt, 2U, 0U); // 27ms
+            status_ = Q_HANDLED();
+            break;
+        }
+        //${AOs::Sensor::SM::start_dht::DHT11_START}
+        case DHT11_START_SIG: {
+            printf("transition to input \n");
+            DHT11_SetPinInput();
+            Delay_us(30);  // 20–40 µs wait
+            status_ = Q_TRAN(&Sensor_start_temperature);
+            break;
+        }
+        default: {
+            status_ = Q_SUPER(&QHsm_top);
             break;
         }
     }
