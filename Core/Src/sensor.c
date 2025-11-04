@@ -101,35 +101,11 @@ QState Sensor_waiting(Sensor * const me, QEvt const * const e) {
     return status_;
 }
 
-//${AOs::Sensor::SM::start_temperature} ......................................
-QState Sensor_start_temperature(Sensor * const me, QEvt const * const e) {
-    QState status_;
-    switch (e->sig) {
-        //${AOs::Sensor::SM::start_temperatur~::initial}
-        case Q_INIT_SIG: {
-            status_ = Q_TRAN(&Sensor_wait_response);
-            break;
-        }
-        //${AOs::Sensor::SM::start_temperatur~::DHT11_RESET}
-        case DHT11_RESET_SIG: {
-            QTimeEvt_disarm(&me->resetEvt);
-            printf("Reset DHT11");
-            status_ = Q_TRAN(&Sensor_waiting);
-            break;
-        }
-        default: {
-            status_ = Q_SUPER(&QHsm_top);
-            break;
-        }
-    }
-    return status_;
-}
-
-//${AOs::Sensor::SM::start_temperatur~::wait_response} .......................
+//${AOs::Sensor::SM::wait_response} ..........................................
 QState Sensor_wait_response(Sensor * const me, QEvt const * const e) {
     QState status_;
     switch (e->sig) {
-        //${AOs::Sensor::SM::start_temperatur~::wait_response}
+        //${AOs::Sensor::SM::wait_response}
         case Q_ENTRY_SIG: {
             //printf("4 entry to waiting for responce\n");
             me->bit_index = 0;
@@ -141,7 +117,14 @@ QState Sensor_wait_response(Sensor * const me, QEvt const * const e) {
             status_ = Q_HANDLED();
             break;
         }
-        //${AOs::Sensor::SM::start_temperatur~::wait_response::DHT11_TIMER_IC}
+        //${AOs::Sensor::SM::wait_response::DHT11_RESET}
+        case DHT11_RESET_SIG: {
+            QTimeEvt_disarm(&me->resetEvt);
+            printf("Reset DHT11");
+            status_ = Q_TRAN(&Sensor_waiting);
+            break;
+        }
+        //${AOs::Sensor::SM::wait_response::DHT11_TIMER_IC}
         case DHT11_TIMER_IC_SIG: {
             uint32_t localTimestamps[TIMESTAMP_SIZE];
             BSP_get_timestamps(localTimestamps);
@@ -206,7 +189,7 @@ QState Sensor_wait_response(Sensor * const me, QEvt const * const e) {
             break;
         }
         default: {
-            status_ = Q_SUPER(&Sensor_start_temperature);
+            status_ = Q_SUPER(&QHsm_top);
             break;
         }
     }
@@ -239,7 +222,7 @@ QState Sensor_start_dht(Sensor * const me, QEvt const * const e) {
             //printf("3 transition to input \n");
             DHT11_SetPinInput();
             Delay_us(30);  // 20–40 µs wait
-            status_ = Q_TRAN(&Sensor_start_temperature);
+            status_ = Q_TRAN(&Sensor_wait_response);
             break;
         }
         default: {

@@ -330,15 +330,16 @@ QTimeEvt_disarm(&amp;me-&gt;resetEvt);
       <entry box="0,3,6,2"/>
      </state_glyph>
     </state>
-    <!--${AOs::Sensor::SM::start_temperature}-->
-    <state name="start_temperature">
-     <!--${AOs::Sensor::SM::start_temperatur~::initial}-->
-     <initial target="../2">
-      <initial_glyph conn="83,103,5,0,-6,11">
-       <action box="0,-2,10,2"/>
-      </initial_glyph>
-     </initial>
-     <!--${AOs::Sensor::SM::start_temperatur~::DHT11_RESET}-->
+    <!--${AOs::Sensor::SM::wait_response}-->
+    <state name="wait_response">
+     <entry>//printf(&quot;4 entry to waiting for responce\n&quot;);
+me-&gt;bit_index = 0;
+me-&gt;byte_index = 0;
+me-&gt;reading_high = true;
+me-&gt;pulse_count = 0; 
+memset(me-&gt;bits, 0, sizeof(me-&gt;bits));
+</entry>
+     <!--${AOs::Sensor::SM::wait_response::DHT11_RESET}-->
      <tran trig="DHT11_RESET" target="../../1">
       <action>QTimeEvt_disarm(&amp;me-&gt;resetEvt);
 printf(&quot;Reset DHT11&quot;);</action>
@@ -346,18 +347,9 @@ printf(&quot;Reset DHT11&quot;);</action>
        <action box="0,-2,10,2"/>
       </tran_glyph>
      </tran>
-     <!--${AOs::Sensor::SM::start_temperatur~::wait_response}-->
-     <state name="wait_response">
-      <entry brief="init">//printf(&quot;4 entry to waiting for responce\n&quot;);
-me-&gt;bit_index = 0;
-me-&gt;byte_index = 0;
-me-&gt;reading_high = true;
-me-&gt;pulse_count = 0; 
-memset(me-&gt;bits, 0, sizeof(me-&gt;bits));
-</entry>
-      <!--${AOs::Sensor::SM::start_temperatur~::wait_response::DHT11_TIMER_IC}-->
-      <tran trig="DHT11_TIMER_IC" target="../../../1">
-       <action>uint32_t localTimestamps[TIMESTAMP_SIZE];
+     <!--${AOs::Sensor::SM::wait_response::DHT11_TIMER_IC}-->
+     <tran trig="DHT11_TIMER_IC" target="../../1">
+      <action>uint32_t localTimestamps[TIMESTAMP_SIZE];
 BSP_get_timestamps(localTimestamps);
 
 for(uint8_t i = 0; i &lt; TIMESTAMP_SIZE; i++)
@@ -416,15 +408,13 @@ for(uint8_t i = 0; i &lt; TIMESTAMP_SIZE; i++)
 
 
 </action>
-       <tran_glyph conn="53,121,3,2,-8,-59">
-        <action box="0,-2,10,2"/>
-       </tran_glyph>
-      </tran>
-      <state_glyph node="53,114,44,20">
-       <entry box="0,3,6,2"/>
-      </state_glyph>
-     </state>
-     <state_glyph node="48,93,65,45"/>
+      <tran_glyph conn="48,120,3,2,-3,-58">
+       <action box="0,-2,10,2"/>
+      </tran_glyph>
+     </tran>
+     <state_glyph node="48,93,65,45">
+      <entry box="0,3,6,2"/>
+     </state_glyph>
     </state>
     <!--${AOs::Sensor::SM::start_dht}-->
     <state name="start_dht">

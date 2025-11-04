@@ -71,7 +71,6 @@ uint16_t Sensor_get_adc_dryness(void);
 // protected:
 QState Sensor_initial(Sensor * const me, void const * const par);
 QState Sensor_waiting(Sensor * const me, QEvt const * const e);
-QState Sensor_start_temperature(Sensor * const me, QEvt const * const e);
 QState Sensor_wait_response(Sensor * const me, QEvt const * const e);
 QState Sensor_start_dht(Sensor * const me, QEvt const * const e);
 //$enddecl${AOs::Sensor} ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
