@@ -312,6 +312,8 @@ void HAL_GPIO_EXTI_Rising_Callback(uint16_t GPIO_Pin)
 					// Tap detected
 					// Example: toggle an LED
 					printf("tap!\n");
+					static QEvt const dht11CompleteEvt = QEVT_INITIALIZER(START_TETRIS_SIG);
+					QACTIVE_POST(AO_Main_App, &dht11CompleteEvt, 0U);
 				}
 				//  clear the interrupt
 				HAL_I2C_Mem_Read(&hi2c1, ADXL_ADDR, 0x30, 1, &src, 1, HAL_MAX_DELAY);

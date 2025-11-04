@@ -94,7 +94,8 @@ QState MainApp_display(MainApp * const me, QEvt const * const e) {
         }
         //${AOs::MainApp::SM::display}
         case Q_EXIT_SIG: {
-            //QTimeEvt_disarm(&me->tempPollEvt);
+            QTimeEvt_disarm(&me->tempPollEvt);
+            QTimeEvt_disarm(&me->longPressEvt);
             status_ = Q_HANDLED();
             break;
         }
@@ -184,6 +185,13 @@ QState MainApp_display(MainApp * const me, QEvt const * const e) {
                 display_temp(me->currentTemp);
             }
             status_ = Q_HANDLED();
+            break;
+        }
+        //${AOs::MainApp::SM::display::START_TETRIS}
+        case START_TETRIS_SIG: {
+            QTimeEvt_disarm(&me->tempPollEvt);
+            QTimeEvt_disarm(&me->longPressEvt);
+            status_ = Q_TRAN(&MainApp_tetris);
             break;
         }
         default: {
@@ -298,6 +306,72 @@ QState MainApp_pump(MainApp * const me, QEvt const * const e) {
         }
         default: {
             status_ = Q_SUPER(&QHsm_top);
+            break;
+        }
+    }
+    return status_;
+}
+
+//${AOs::MainApp::SM::tetris} ................................................
+QState MainApp_tetris(MainApp * const me, QEvt const * const e) {
+    QState status_;
+    switch (e->sig) {
+        //${AOs::MainApp::SM::tetris::initial}
+        case Q_INIT_SIG: {
+            status_ = Q_TRAN(&MainApp_start_screen);
+            break;
+        }
+        default: {
+            status_ = Q_SUPER(&QHsm_top);
+            break;
+        }
+    }
+    return status_;
+}
+
+//${AOs::MainApp::SM::tetris::start_screen} ..................................
+QState MainApp_start_screen(MainApp * const me, QEvt const * const e) {
+    QState status_;
+    switch (e->sig) {
+        //${AOs::MainApp::SM::tetris::start_screen}
+        case Q_ENTRY_SIG: {
+            QTimeEvt_armX(&me->dryTimerEvt, 400U , 0U);
+            display_tetris_start();
+            status_ = Q_HANDLED();
+            break;
+        }
+        //${AOs::MainApp::SM::tetris::start_screen}
+        case Q_EXIT_SIG: {
+            QTimeEvt_disarm(&me->dryTimerEvt);
+
+            status_ = Q_HANDLED();
+            break;
+        }
+        //${AOs::MainApp::SM::tetris::start_screen::WATER_PLANT}
+        case WATER_PLANT_SIG: {
+            status_ = Q_TRAN(&MainApp_game);
+            break;
+        }
+        default: {
+            status_ = Q_SUPER(&MainApp_tetris);
+            break;
+        }
+    }
+    return status_;
+}
+
+//${AOs::MainApp::SM::tetris::game} ..........................................
+QState MainApp_game(MainApp * const me, QEvt const * const e) {
+    QState status_;
+    switch (e->sig) {
+        //${AOs::MainApp::SM::tetris::game}
+        case Q_ENTRY_SIG: {
+            printf("timer triggered\n");
+            status_ = Q_HANDLED();
+            break;
+        }
+        default: {
+            status_ = Q_SUPER(&MainApp_tetris);
             break;
         }
     }

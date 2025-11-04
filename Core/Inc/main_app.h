@@ -85,6 +85,9 @@ QState MainApp_display(MainApp * const me, QEvt const * const e);
 QState MainApp_display_stats(MainApp * const me, QEvt const * const e);
 QState MainApp_dry_alert(MainApp * const me, QEvt const * const e);
 QState MainApp_pump(MainApp * const me, QEvt const * const e);
+QState MainApp_tetris(MainApp * const me, QEvt const * const e);
+QState MainApp_start_screen(MainApp * const me, QEvt const * const e);
+QState MainApp_game(MainApp * const me, QEvt const * const e);
 //$enddecl${AOs::MainApp} ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 //$declare${Shared} vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
@@ -123,6 +126,7 @@ enum MenuGameSignals {
     DHT11_DONE_SIG,
     PLANT_DRY_SIG,
     WATER_PLANT_SIG,
+    START_TETRIS_SIG,
     MAX_SIG
 };
 

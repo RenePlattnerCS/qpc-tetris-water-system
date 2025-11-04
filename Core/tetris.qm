@@ -98,9 +98,10 @@ return percent;</code>
     <!--${AOs::MainApp::SM::display}-->
     <state name="display">
      <entry>HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_RESET);</entry>
-     <exit>//QTimeEvt_disarm(&amp;me-&gt;tempPollEvt);</exit>
+     <exit>QTimeEvt_disarm(&amp;me-&gt;tempPollEvt);
+QTimeEvt_disarm(&amp;me-&gt;longPressEvt);</exit>
      <!--${AOs::MainApp::SM::display::initial}-->
-     <initial target="../6">
+     <initial target="../7">
       <initial_glyph conn="49,20,5,0,-6,5">
        <action box="0,-2,10,2"/>
       </initial_glyph>
@@ -193,6 +194,14 @@ else
        <action box="-24,-4,24,7"/>
       </tran_glyph>
      </tran>
+     <!--${AOs::MainApp::SM::display::START_TETRIS}-->
+     <tran trig="START_TETRIS" target="../../3">
+      <action>QTimeEvt_disarm(&amp;me-&gt;tempPollEvt);
+QTimeEvt_disarm(&amp;me-&gt;longPressEvt);</action>
+      <tran_glyph conn="106,45,1,3,23">
+       <action box="0,-2,10,2"/>
+      </tran_glyph>
+     </tran>
      <!--${AOs::MainApp::SM::display::display_stats}-->
      <state name="display_stats">
       <entry brief="display and poll timer">display_temp(me-&gt;currentTemp);
@@ -201,7 +210,7 @@ QTimeEvt_armX(&amp;me-&gt;tempPollEvt,
               2000U);   // Then repeat every 10 seconds
 printf(&quot;enter display stats: arm polling&quot;);</entry>
       <!--${AOs::MainApp::SM::display::display_stats::PLANT_DRY}-->
-      <tran trig="PLANT_DRY" target="../../7">
+      <tran trig="PLANT_DRY" target="../../8">
        <tran_glyph conn="54,50,1,0,23,29">
         <action box="0,-2,10,2"/>
        </tran_glyph>
@@ -252,7 +261,7 @@ HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_RESET);
 QTimeEvt_disarm(&amp;me-&gt;dryTimerEvt);
 </exit>
      <!--${AOs::MainApp::SM::pump::BUTTON_RELEASE}-->
-     <tran trig="BUTTON_RELEASE" target="../../1/6">
+     <tran trig="BUTTON_RELEASE" target="../../1/7">
       <action>printf(&quot;released the btm inside pump \n&quot;);</action>
       <tran_glyph conn="38,115,0,2,-57,-1,-2">
        <action box="-17,-4,15,3"/>
@@ -271,7 +280,41 @@ HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_RESET);</action>
       <exit box="0,5,6,2"/>
      </state_glyph>
     </state>
-    <state_diagram size="128,134"/>
+    <!--${AOs::MainApp::SM::tetris}-->
+    <state name="tetris">
+     <!--${AOs::MainApp::SM::tetris::initial}-->
+     <initial target="../1">
+      <initial_glyph conn="144,31,5,0,2,7">
+       <action box="0,-2,10,2"/>
+      </initial_glyph>
+     </initial>
+     <!--${AOs::MainApp::SM::tetris::start_screen}-->
+     <state name="start_screen">
+      <entry>QTimeEvt_armX(&amp;me-&gt;dryTimerEvt, 400U , 0U);
+display_tetris_start();</entry>
+      <exit>QTimeEvt_disarm(&amp;me-&gt;dryTimerEvt);
+</exit>
+      <!--${AOs::MainApp::SM::tetris::start_screen::WATER_PLANT}-->
+      <tran trig="WATER_PLANT" target="../../2">
+       <tran_glyph conn="158,44,1,3,17">
+        <action box="0,-2,10,2"/>
+       </tran_glyph>
+      </tran>
+      <state_glyph node="137,38,21,14">
+       <entry box="0,3,6,2"/>
+       <exit box="0,5,6,2"/>
+      </state_glyph>
+     </state>
+     <!--${AOs::MainApp::SM::tetris::game}-->
+     <state name="game">
+      <entry>printf(&quot;timer triggered\n&quot;);</entry>
+      <state_glyph node="175,33,43,60">
+       <entry box="0,3,6,2"/>
+      </state_glyph>
+     </state>
+     <state_glyph node="129,12,90,87"/>
+    </state>
+    <state_diagram size="238,164"/>
    </statechart>
   </class>
   <!--${AOs::Sensor}-->
@@ -542,6 +585,7 @@ enum MenuGameSignals {
     DHT11_DONE_SIG,
     PLANT_DRY_SIG,
     WATER_PLANT_SIG,
+    START_TETRIS_SIG,
     MAX_SIG  
 };
 

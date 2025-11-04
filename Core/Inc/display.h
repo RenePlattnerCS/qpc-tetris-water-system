@@ -17,5 +17,6 @@
 
 void display_temp(uint16_t temp);
 void display_dry(uint8_t dryness_percent);
+void display_tetris_start();
 
 #endif /* INC_DISPLAY_H_ */
