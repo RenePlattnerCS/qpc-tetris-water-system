@@ -28,6 +28,7 @@
 #include "temp_sensor.h"
 #include "rfbutton.h"
 #include "app_config.h"
+#include <stdarg.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -46,6 +47,11 @@
     #define Q_ALIGN
   #endif
 #endif
+
+#define PRINTF_BUFFER_SIZE 256
+
+
+
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -83,7 +89,7 @@ static void MX_USART2_UART_Init(void);
 static QEvt const *menuGameQueueSto[15]; // Storage for event queue
 extern MainApp MainApp_inst; // Storage for the AO instance
 
-static QEvt const *sensorQueueSto[10]; // Storage for event queue
+static QEvt const *sensorQueueSto[16]; // Storage for event queue
 extern Sensor Sensor_inst; // Storage for the AO instance
 
 static QEvt const *rfbuttonQueueSto[5]; // Storage for event queue
@@ -91,8 +97,12 @@ extern RFButton RFButton_inst; // Storage for the AO instance
 
 // Allocate pool for SensorEvent
 Q_ALIGN static QF_MPOOL_EL(SensorEvent) sensorEvtPoolSto[2];
-Q_ALIGN static QF_MPOOL_EL(DHT11Evt) dhtEvtPoolSto[8];
+Q_ALIGN static QF_MPOOL_EL(DHT11Evt) dhtEvtPoolSto[16];
 
+
+char printf_buffer[PRINTF_BUFFER_SIZE];
+static volatile uint16_t printf_head = 0;
+static volatile uint16_t printf_tail = 0;
 /* USER CODE END 0 */
 
 /**
@@ -612,7 +622,29 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
+void debug_log(const char *fmt, ...) {
+    va_list args;
+    char tmp[64];
+    va_start(args, fmt);
+    int len = vsnprintf(tmp, sizeof(tmp), fmt, args);
+    va_end(args);
 
+    for (int i = 0; i < len; ++i) {
+        uint16_t next = (printf_head + 1) % PRINTF_BUFFER_SIZE;
+        if (next == printf_tail) break;  // buffer full
+        printf_buffer[printf_head] = tmp[i];
+        printf_head = next;
+    }
+}
+
+// In main loop or idle task:
+void flush_debug_log(void) {
+    while (printf_tail != printf_head) {
+        LL_USART_TransmitData8(USART2, printf_buffer[printf_tail]);
+        while (!LL_USART_IsActiveFlag_TXE(USART2));
+        printf_tail = (printf_tail + 1) % PRINTF_BUFFER_SIZE;
+    }
+}
 /* USER CODE END 4 */
 
 /**

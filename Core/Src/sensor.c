@@ -41,8 +41,11 @@
 #include "app_config.h"
 #include "temp_sensor.h"
 
+uint32_t pbuffer[100];
+uint16_t pindex = 0;
 
-
+uint32_t pulsesbuffer[100];
+uint16_t pulsesindex = 0;
 extern ADC_HandleTypeDef hadc1;
 //extern TIM_HandleTypeDef htim3;
 //extern DMA_HandleTypeDef hdma;
@@ -68,15 +71,6 @@ QState Sensor_initial(Sensor * const me, void const * const par) {
 QState Sensor_waiting(Sensor * const me, QEvt const * const e) {
     QState status_;
     switch (e->sig) {
-        //${AOs::Sensor::SM::waiting}
-        case Q_ENTRY_SIG: {
-            //__HAL_LINKDMA(&htim3, hdma[TIM_DMA_ID_CC1], hdma_tim3_ch1);
-
-            // Start input capture with DMA
-            //HAL_TIM_IC_Start_DMA(&htim3, TIM_CHANNEL_1, (uint32_t *)me->dma_buffer, DHT11_MAX_EDGES);
-            status_ = Q_HANDLED();
-            break;
-        }
         //${AOs::Sensor::SM::waiting::START_SENSOR}
         case START_SENSOR_SIG: {
 
@@ -84,7 +78,10 @@ QState Sensor_waiting(Sensor * const me, QEvt const * const e) {
             me->bit_index = 0;
             me->byte_index = 0;
 
-
+            for(int i=0; i< 100; i++)
+            {
+            pbuffer[i];
+            }
             status_ = Q_TRAN(&Sensor_start_temperature);
             break;
         }
@@ -105,15 +102,12 @@ QState Sensor_start_temperature(Sensor * const me, QEvt const * const e) {
             // Pull DHT11 LOW ≥18ms
             DHT11_SetPinOutput();
             HAL_GPIO_WritePin(DHT11_PORT, DHT11_PIN, GPIO_PIN_RESET);
-            // Use HAL delay (blocking) just for start signal
-            //BSP_delayMs(20);
             Delay_ms(20);
             HAL_GPIO_WritePin(DHT11_PORT, DHT11_PIN, GPIO_PIN_SET);
             // Switch pin to input
-            Delay_us(30);
             DHT11_SetPinInput();
-            // Start timer input capture
-            //HAL_TIM_IC_Start_IT(&htim16, TIM_CHANNEL_1);
+            Delay_us(30);
+
 
             status_ = Q_TRAN(&Sensor_wait_response);
             break;
@@ -134,7 +128,7 @@ QState Sensor_wait_response(Sensor * const me, QEvt const * const e) {
         case Q_ENTRY_SIG: {
             me->bit_index = 0;
             me->byte_index = 0;
-            me->reading_high = false;
+            me->reading_high = true;
             me->pulse_count = 0;
             memset(me->bits, 0, sizeof(me->bits));
 
@@ -144,11 +138,13 @@ QState Sensor_wait_response(Sensor * const me, QEvt const * const e) {
         //${AOs::Sensor::SM::start_temperatur~::wait_response::DHT11_TIMER_IC}
         case DHT11_TIMER_IC_SIG: {
             uint32_t pulse_length = ((DHT11Evt const *)e)->pulse_length;
-
+            //debug_log("Pulse %2d is %u\n", me->pulse_count, pulse_length);
+            pbuffer[pindex] = pulse_length;
+            pindex++;
             me->pulse_count++;
 
-            // Skip first 2 pulses (response: 80µs LOW + 80µs HIGH)
-            if (me->pulse_count <= 2) {
+            //first 2 pulses are garbage ->  Skip next 2 pulses (response: 80µs LOW + 80µs HIGH)
+            if (me->pulse_count <= 5) {
                 status_ = Q_HANDLED();
                 break;
             }
@@ -157,26 +153,37 @@ QState Sensor_wait_response(Sensor * const me, QEvt const * const e) {
             me->reading_high = !me->reading_high;
 
             if (me->reading_high) {
-                // We're measuring the HIGH pulse (data bit)
-                if (pulse_length > 40) {  // threshold between 0 and 1
-                    // logical 1 (70µs)
-                    me->bits[me->byte_index] |= (1 << (7 - me->bit_index));
-                }
-                // else bit=0 by default (26-28µs)
+                // Determine if the current HIGH pulse represents a '1' or '0'
+                uint8_t bit_val = (pulse_length > 40) ? 1 : 0;
 
+                // Store bit in the main bits array
+                if (bit_val) {
+                    me->bits[me->byte_index] |= (1 << (7 - me->bit_index));
+                } else {
+                    me->bits[me->byte_index] &= ~(1 << (7 - me->bit_index)); // optional: ensure 0
+                }
+
+                // Optionally store in a pulse buffer for debugging
+                pulsesbuffer[pulsesindex++] = bit_val;
+
+                // Move to next bit
                 me->bit_index++;
+
+                // If a byte is complete, move to next byte
                 if (me->bit_index > 7) {
                     me->bit_index = 0;
                     me->byte_index++;
 
+                    // If 5 bytes (40 bits) are read, finalize
                     if (me->byte_index >= 5) {
-                        // Done reading 40 bits
-                        //HAL_TIM_IC_Stop_IT(&htim3, TIM_CHANNEL_1);
+                        // Print the raw pulse buffer (optional)
+                        //for (size_t i = 0; i < pulsesindex; i++) {
+                        //    printf("%u ", pulsesbuffer[i]);
+                        //}
 
                         // Verify checksum
                         uint8_t checksum = me->bits[0] + me->bits[1] + me->bits[2] + me->bits[3];
                         if (checksum == me->bits[4]) {
-                            // Valid data
                             printf("Humidity: %u.%u%%  Temperature: %u.%u°C\n",
                                    me->bits[0], me->bits[1],
                                    me->bits[2], me->bits[3]);
@@ -185,11 +192,18 @@ QState Sensor_wait_response(Sensor * const me, QEvt const * const e) {
                                    checksum, me->bits[4]);
                         }
 
+                        // Reset or go to waiting state
                         status_ = Q_TRAN(&Sensor_waiting);
                         break;
                     }
                 }
             }
+
+
+
+
+
+
             status_ = Q_HANDLED();
             break;
         }

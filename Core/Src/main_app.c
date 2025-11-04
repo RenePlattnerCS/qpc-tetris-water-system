@@ -41,6 +41,7 @@
 #include <stdio.h>
 #include "app_config.h"
 #include "NRF_chip.h"
+#include "main.h";
 
 //DMA buffer
 static __attribute__((section(".bss"))) __attribute__((aligned(4))) volatile uint32_t Sensor_dht11_dma_buffer[DHT11_MAX_EDGES];

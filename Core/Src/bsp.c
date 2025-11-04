@@ -246,10 +246,15 @@ void TIM3_IRQHandler(void)
     {
         LL_TIM_ClearFlag_CC1(TIM3);
 
-        uint32_t capture = LL_TIM_IC_GetCaptureCH1(TIM3);
+        // Read the captured value (timer ticks)
+		uint32_t capture = LL_TIM_IC_GetCaptureCH1(TIM3);
 
-        // Here you can post to your AO or store in DMA buffer
-        // Example: Sensor_process_capture(capture);
+		// Allocate the event (from the small event pool)
+		DHT11Evt *evt = Q_NEW(DHT11Evt, DHT11_TIMER_IC_SIG);
+		evt->pulse_length = capture;
+
+		// Post it to your DHT11 active object
+		QACTIVE_POST(AO_Sensor, &evt->super, 0);
     }
 
     QK_ISR_EXIT();
@@ -415,6 +420,7 @@ void QF_onCleanup(void) {
 //............................................................................
 void QK_onIdle(void) {
     // toggle an LED on and then off (not enough LEDs, see NOTE2)
+	void flush_debug_log(void);
     //QF_INT_DISABLE();
     //GPIOA->BSRR = (1U << LD4_PIN);         // turn LED[n] on
     //GPIOA->BSRR = (1U << (LD4_PIN + 16U)); // turn LED[n] off

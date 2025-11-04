@@ -248,7 +248,10 @@ for(int i=0;i&lt;5;i++) me-&gt;bits[i]=0;
 me-&gt;bit_index = 0;
 me-&gt;byte_index = 0;
 
-</action>
+for(int i=0; i&lt; 100; i++)
+{
+pbuffer[i];
+}</action>
       <tran_glyph conn="76,62,4,0,12">
        <action box="0,-2,10,2"/>
       </tran_glyph>
@@ -277,18 +280,20 @@ Delay_us(30);
      <state name="wait_response">
       <entry brief="init">me-&gt;bit_index = 0;
 me-&gt;byte_index = 0;
-me-&gt;reading_high = false;
+me-&gt;reading_high = true;
 me-&gt;pulse_count = 0; 
 memset(me-&gt;bits, 0, sizeof(me-&gt;bits));
 </entry>
       <!--${AOs::Sensor::SM::start_temperatur~::wait_response::DHT11_TIMER_IC}-->
       <tran trig="DHT11_TIMER_IC">
        <action>uint32_t pulse_length = ((DHT11Evt const *)e)-&gt;pulse_length;
-
+//debug_log(&quot;Pulse %2d is %u\n&quot;, me-&gt;pulse_count, pulse_length);
+pbuffer[pindex] = pulse_length;
+pindex++;
 me-&gt;pulse_count++;
 
-// Skip first 2 pulses (response: 80µs LOW + 80µs HIGH)
-if (me-&gt;pulse_count &lt;= 2) {
+//first 2 pulses are garbage -&gt;  Skip next 2 pulses (response: 80µs LOW + 80µs HIGH) 
+if (me-&gt;pulse_count &lt;= 5) {
     status_ = Q_HANDLED();
     break;
 }
@@ -297,26 +302,37 @@ if (me-&gt;pulse_count &lt;= 2) {
 me-&gt;reading_high = !me-&gt;reading_high;
 
 if (me-&gt;reading_high) {
-    // We're measuring the HIGH pulse (data bit)
-    if (pulse_length &gt; 40) {  // threshold between 0 and 1
-        // logical 1 (70µs)
+    // Determine if the current HIGH pulse represents a '1' or '0'
+    uint8_t bit_val = (pulse_length &gt; 40) ? 1 : 0;
+
+    // Store bit in the main bits array
+    if (bit_val) {
         me-&gt;bits[me-&gt;byte_index] |= (1 &lt;&lt; (7 - me-&gt;bit_index));
+    } else {
+        me-&gt;bits[me-&gt;byte_index] &amp;= ~(1 &lt;&lt; (7 - me-&gt;bit_index)); // optional: ensure 0
     }
-    // else bit=0 by default (26-28µs)
-    
+
+    // Optionally store in a pulse buffer for debugging
+    pulsesbuffer[pulsesindex++] = bit_val;
+
+    // Move to next bit
     me-&gt;bit_index++;
+
+    // If a byte is complete, move to next byte
     if (me-&gt;bit_index &gt; 7) {
         me-&gt;bit_index = 0;
         me-&gt;byte_index++;
-        
+
+        // If 5 bytes (40 bits) are read, finalize
         if (me-&gt;byte_index &gt;= 5) {
-            // Done reading 40 bits
-            //HAL_TIM_IC_Stop_IT(&amp;htim3, TIM_CHANNEL_1);
-            
+            // Print the raw pulse buffer (optional)
+            //for (size_t i = 0; i &lt; pulsesindex; i++) {
+            //    printf(&quot;%u &quot;, pulsesbuffer[i]);
+            //}
+
             // Verify checksum
             uint8_t checksum = me-&gt;bits[0] + me-&gt;bits[1] + me-&gt;bits[2] + me-&gt;bits[3];
             if (checksum == me-&gt;bits[4]) {
-                // Valid data
                 printf(&quot;Humidity: %u.%u%%  Temperature: %u.%u°C\n&quot;,
                        me-&gt;bits[0], me-&gt;bits[1],
                        me-&gt;bits[2], me-&gt;bits[3]);
@@ -324,12 +340,19 @@ if (me-&gt;reading_high) {
                 printf(&quot;Checksum error! Expected: %u, Got: %u\n&quot;,
                        checksum, me-&gt;bits[4]);
             }
-            
+
+            // Reset or go to waiting state
             status_ = Q_TRAN(&amp;Sensor_waiting);
             break;
         }
     }
-}</action>
+}
+
+
+
+
+
+</action>
        <tran_glyph conn="97,105,1,-1,-10">
         <action box="0,-2,10,2"/>
        </tran_glyph>
@@ -487,6 +510,7 @@ $declare${AOs::RFButton}
 #include &lt;stdio.h&gt;
 #include &quot;app_config.h&quot;
 #include &quot;NRF_chip.h&quot;
+#include &quot;main.h&quot;;
 
 //DMA buffer
 static __attribute__((section(&quot;.bss&quot;))) __attribute__((aligned(4))) volatile uint32_t Sensor_dht11_dma_buffer[DHT11_MAX_EDGES];
@@ -505,8 +529,11 @@ $define${Shared}
 #include &quot;app_config.h&quot;
 #include &quot;temp_sensor.h&quot;
 
+uint32_t pbuffer[100];
+uint16_t pindex = 0;
 
-
+uint32_t pulsesbuffer[100];
+uint16_t pulsesindex = 0;
 extern ADC_HandleTypeDef hadc1;
 //extern TIM_HandleTypeDef htim3;
 //extern DMA_HandleTypeDef hdma;

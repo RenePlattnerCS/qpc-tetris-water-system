@@ -1,4 +1,4 @@
-../Core/Src/sensor.c:130:8:Sensor_wait_response	9
-../Core/Src/sensor.c:68:8:Sensor_waiting	3
-../Core/Src/sensor.c:100:8:Sensor_start_temperature	2
-../Core/Src/sensor.c:62:8:Sensor_initial	1
+../Core/Src/sensor.c:124:8:Sensor_wait_response	9
+../Core/Src/sensor.c:71:8:Sensor_waiting	2
+../Core/Src/sensor.c:97:8:Sensor_start_temperature	2
+../Core/Src/sensor.c:65:8:Sensor_initial	1

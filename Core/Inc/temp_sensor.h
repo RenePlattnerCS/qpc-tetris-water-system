@@ -15,6 +15,7 @@
 #include "stm32c0xx_hal.h"
 
 void Delay_us(uint16_t us);
+void Delay_ms(uint16_t ms);
 uint8_t DHT11_Read(uint8_t *temp_data);
 void DHT11_pull_low();
 void DHT11_SetPinOutput(void);

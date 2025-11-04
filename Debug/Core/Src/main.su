@@ -1,3 +1,5 @@
-../Core/Src/main.c:622:6:Error_Handler	8	static,ignoring_inline_asm
-../Core/Src/main.c:193:6:SystemClock_Config	64	static
-../Core/Src/main.c:102:5:main	136	static
+../Core/Src/main.c:625:6:debug_log	104	static
+../Core/Src/main.c:641:6:flush_debug_log	12	static
+../Core/Src/main.c:654:6:Error_Handler	8	static,ignoring_inline_asm
+../Core/Src/main.c:203:6:SystemClock_Config	64	static
+../Core/Src/main.c:112:5:main	136	static

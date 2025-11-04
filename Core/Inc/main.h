@@ -43,7 +43,8 @@ extern "C" {
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+void debug_log(const char *fmt, ...);
+void flush_debug_log(void);
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/
