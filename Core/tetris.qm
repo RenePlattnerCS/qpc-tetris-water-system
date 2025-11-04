@@ -97,11 +97,10 @@ return percent;</code>
     </initial>
     <!--${AOs::MainApp::SM::display}-->
     <state name="display">
-     <entry brief="arm and poll ">QTimeEvt_armX(&amp;me-&gt;tempPollEvt, 
-              200U,    // Fire after 10 seconds
-              20000U);   // Then repeat every 10 seconds
+     <entry>
 
 HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_RESET);</entry>
+     <exit>QTimeEvt_disarm(&amp;me-&gt;tempPollEvt);</exit>
      <!--${AOs::MainApp::SM::display::initial}-->
      <initial target="../6">
       <initial_glyph conn="49,20,5,0,-6,5">
@@ -191,9 +190,10 @@ else
      </tran>
      <!--${AOs::MainApp::SM::display::display_stats}-->
      <state name="display_stats">
-      <entry>display_temp(me-&gt;currentTemp);
-</entry>
-      <exit>QTimeEvt_disarm(&amp;me-&gt;tempPollEvt);</exit>
+      <entry brief="display and poll timer">display_temp(me-&gt;currentTemp);
+QTimeEvt_armX(&amp;me-&gt;tempPollEvt, 
+              200U,    // Fire after 10 seconds
+              20000U);   // Then repeat every 10 seconds</entry>
       <!--${AOs::MainApp::SM::display::display_stats::PLANT_DRY}-->
       <tran trig="PLANT_DRY" target="../../7">
        <tran_glyph conn="54,50,1,0,23,29">
@@ -202,7 +202,6 @@ else
       </tran>
       <state_glyph node="13,25,41,31">
        <entry box="0,3,6,2"/>
-       <exit box="0,5,6,2"/>
       </state_glyph>
      </state>
      <!--${AOs::MainApp::SM::display::dry_alert}-->
@@ -210,11 +209,12 @@ else
       <entry>QTimeEvt_armX(&amp;me-&gt;dryTimerEvt, DRY_TIMEOUT , 0U);
 printf(&quot;entered DRY!\n&quot;);</entry>
       <exit>QTimeEvt_disarm(&amp;me-&gt;dryTimerEvt);
+QTimeEvt_disarm(&amp;me-&gt;tempPollEvt);
 printf(&quot;exited DRY!\n&quot;);</exit>
       <!--${AOs::MainApp::SM::display::dry_alert::WATER_PLANT}-->
       <tran trig="WATER_PLANT" target="../../../2">
        <action>QTimeEvt_disarm(&amp;me-&gt;dryTimerEvt);
-QTimeEvt_armX(&amp;me-&gt;dryTimerEvt, DRY_TIMEOUT , 0U);
+QTimeEvt_armX(&amp;me-&gt;dryTimerEvt, 300U , 0U);
 
 </action>
        <tran_glyph conn="77,90,2,1,35,-19">
@@ -228,16 +228,18 @@ QTimeEvt_armX(&amp;me-&gt;dryTimerEvt, DRY_TIMEOUT , 0U);
      </state>
      <state_glyph node="9,12,97,87">
       <entry box="0,3,6,2"/>
+      <exit box="0,5,6,2"/>
      </state_glyph>
     </state>
     <!--${AOs::MainApp::SM::pump}-->
     <state name="pump">
-     <entry>printf(&quot;enter pump\n&quot;);
+     <entry brief="ON">printf(&quot;enter pump\n&quot;);
 QTimeEvt_disarm(&amp;me-&gt;longPressEvt);
 HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_SET);
 
-</entry>
-     <exit>printf(&quot;exit pump\n&quot;);
+QTimeEvt_disarm(&amp;me-&gt;dryTimerEvt);
+QTimeEvt_armX(&amp;me-&gt;dryTimerEvt, 300U , 0U);</entry>
+     <exit brief="OFF">printf(&quot;exit pump\n&quot;);
 HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_RESET);
 QTimeEvt_disarm(&amp;me-&gt;dryTimerEvt);
 </exit>
@@ -248,9 +250,11 @@ QTimeEvt_disarm(&amp;me-&gt;dryTimerEvt);
        <action box="-17,-4,15,3"/>
       </tran_glyph>
      </tran>
-     <!--${AOs::MainApp::SM::pump::PLANT_DRY}-->
-     <tran trig="PLANT_DRY" target="../../1/6">
-      <tran_glyph conn="43,115,0,2,-57,-1,-2">
+     <!--${AOs::MainApp::SM::pump::WATER_PLANT}-->
+     <tran trig="WATER_PLANT" target="../../1">
+      <action brief="turn off pump after some time">QTimeEvt_disarm(&amp;me-&gt;dryTimerEvt);
+HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_RESET);</action>
+      <tran_glyph conn="43,115,0,2,-16">
        <action box="0,-2,10,2"/>
       </tran_glyph>
      </tran>
