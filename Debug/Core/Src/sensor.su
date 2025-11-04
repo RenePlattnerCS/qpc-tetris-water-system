@@ -1,4 +1,6 @@
-../Core/Src/sensor.c:116:8:Sensor_wait_response	40	static
-../Core/Src/sensor.c:66:8:Sensor_waiting	8	static
-../Core/Src/sensor.c:89:8:Sensor_start_temperature	16	static
-../Core/Src/sensor.c:60:8:Sensor_initial	0	static
+../Core/Src/sensor.c:111:8:Sensor_start_temperature	16	static
+../Core/Src/sensor.c:80:8:Sensor_waiting	16	static
+../Core/Src/sensor.c:60:10:Sensor_get_adc_dryness	8	static
+../Core/Src/sensor.c:146:8:Sensor_wait_response.part.0	368	static
+../Core/Src/sensor.c:146:8:Sensor_wait_response	8	static
+../Core/Src/sensor.c:74:8:Sensor_initial	0	static

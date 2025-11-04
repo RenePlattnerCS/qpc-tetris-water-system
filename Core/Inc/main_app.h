@@ -116,6 +116,7 @@ enum MenuGameSignals {
     SENSOR_DONE_SIG,
     NRF_IRQ_SIG,
     DHT11_TIMER_IC_SIG,
+    DHT11_RESET_SIG,
     DHT11_DONE_SIG,
     MAX_SIG
 };
@@ -129,10 +130,10 @@ typedef struct {
     uint16_t temperature;
 } SensorEvent;
 
+/*
 typedef struct {
     QEvt super;
-    uint32_t pulse_length;
-    uint8_t dummy;
+    uint32_t pulse_length_timestamps[TIMESTAMP_SIZE];
 } DHT11Evt;
-
+*/
 #endif

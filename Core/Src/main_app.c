@@ -104,6 +104,7 @@ QState MainApp_display(MainApp * const me, QEvt const * const e) {
         //${AOs::MainApp::SM::display::SENSOR_DONE}
         case SENSOR_DONE_SIG: {
             SensorEvent const *sensorEvt = (SensorEvent const *)e;
+            printf("DONE SENSOR \n");
 
             me->currentTemp = sensorEvt->temperature;
 
@@ -134,6 +135,8 @@ QState MainApp_display(MainApp * const me, QEvt const * const e) {
             static QEvt const ADC_Start_Evt = {START_SENSOR_SIG, 0U, 0U};
             QACTIVE_POST(AO_Sensor,&ADC_Start_Evt, me);
             verify_rx_mode();
+            printf("POLL SENSOR \n");
+
             status_ = Q_HANDLED();
             break;
         }
@@ -253,6 +256,7 @@ QActive * const AO_Sensor = &Sensor_inst.super;
 //${Shared::Sensor_ctor} .....................................................
 void Sensor_ctor(Sensor * const me) {
     QActive_ctor(&me->super, Q_STATE_CAST(&Sensor_initial));
+    QTimeEvt_ctorX(&me->resetEvt, &me->super, DHT11_RESET_SIG, 0U);
 
     me->dma_buffer = Sensor_dht11_dma_buffer;
     me->dma_index = 0;

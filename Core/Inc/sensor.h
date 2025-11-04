@@ -59,9 +59,13 @@ typedef struct Sensor {
     uint8_t pulse_count;
     volatile uint32_t* dma_buffer;
     uint8_t dma_index;
+    QTimeEvt resetEvt;
 } Sensor;
 
 extern Sensor Sensor_inst;
+
+// private:
+uint16_t Sensor_get_adc_dryness(void);
 
 // protected:
 QState Sensor_initial(Sensor * const me, void const * const par);

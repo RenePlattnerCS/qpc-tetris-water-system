@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <model version="7.0.2" links="1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://www.state-machine.com/qm/qm7.xsd">
- <documentation>Dining Philosopher Problem example</documentation>
+ <documentation>Self watering plant sysem</documentation>
  <!--${qpc}-->
  <framework name="qpc"/>
  <!--${Shared}-->
@@ -27,6 +27,7 @@ me-&gt;currentTemp = 0.0f;</code>
    <!--${Shared::Sensor_ctor::me}-->
    <parameter name="me" type="Sensor * const"/>
    <code>QActive_ctor(&amp;me-&gt;super, Q_STATE_CAST(&amp;Sensor_initial));
+QTimeEvt_ctorX(&amp;me-&gt;resetEvt, &amp;me-&gt;super, DHT11_RESET_SIG, 0U);
 
 me-&gt;dma_buffer = Sensor_dht11_dma_buffer;
 me-&gt;dma_index = 0;
@@ -106,6 +107,7 @@ HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_RESET);</entry>
      <!--${AOs::MainApp::SM::display::SENSOR_DONE}-->
      <tran trig="SENSOR_DONE">
       <action>SensorEvent const *sensorEvt = (SensorEvent const *)e;
+printf(&quot;DONE SENSOR \n&quot;);
 
 me-&gt;currentTemp = sensorEvt-&gt;temperature;
 
@@ -136,7 +138,9 @@ switch(me-&gt;currentState)
      <tran trig="POLL_SENSOR">
       <action>static QEvt const ADC_Start_Evt = {START_SENSOR_SIG, 0U, 0U};
 QACTIVE_POST(AO_Sensor,&amp;ADC_Start_Evt, me);
-verify_rx_mode();</action>
+verify_rx_mode();
+printf(&quot;POLL SENSOR \n&quot;);
+</action>
       <tran_glyph conn="106,33,1,-1,-22">
        <action box="-17,-3,21,2"/>
       </tran_glyph>
@@ -231,6 +235,21 @@ HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_RESET);</exit>
    <attribute name="dma_index" type="uint8_t" visibility="0x02" properties="0x00">
     <code>= 0;</code>
    </attribute>
+   <!--${AOs::Sensor::resetEvt}-->
+   <attribute name="resetEvt" type="QTimeEvt" visibility="0x02" properties="0x00"/>
+   <!--${AOs::Sensor::get_adc_dryness}-->
+   <operation name="get_adc_dryness" type="uint16_t" visibility="0x02" properties="0x01">
+    <code>// Start ADC conversion
+HAL_ADC_Start(&amp;hadc1);
+
+// Wait for conversion to complete
+if (HAL_ADC_PollForConversion(&amp;hadc1, 10) == HAL_OK) { // timeout in ms
+    // Read the converted value
+    return (uint16_t)HAL_ADC_GetValue(&amp;hadc1);
+}
+
+return 0;</code>
+   </operation>
    <!--${AOs::Sensor::SM}-->
    <statechart properties="0x00">
     <!--${AOs::Sensor::SM::initial}-->
@@ -241,25 +260,31 @@ HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_RESET);</exit>
     </initial>
     <!--${AOs::Sensor::SM::waiting}-->
     <state name="waiting">
+     <entry>printf(&quot;waiting SENSOR \n&quot;);
+QTimeEvt_disarm(&amp;me-&gt;resetEvt);
+</entry>
      <!--${AOs::Sensor::SM::waiting::START_SENSOR}-->
      <tran trig="START_SENSOR" target="../../2">
-      <action>
+      <action>printf(&quot;start SENSOR \n&quot;);
 for(int i=0;i&lt;5;i++) me-&gt;bits[i]=0;
 me-&gt;bit_index = 0;
 me-&gt;byte_index = 0;
-
+QTimeEvt_armX(&amp;me-&gt;resetEvt, DHT11_RESET_TIME, 0U);
 </action>
       <tran_glyph conn="76,62,4,0,12">
        <action box="0,-2,10,2"/>
       </tran_glyph>
      </tran>
-     <state_glyph node="42,31,70,31"/>
+     <state_glyph node="42,31,70,31">
+      <entry box="0,3,6,2"/>
+     </state_glyph>
     </state>
     <!--${AOs::Sensor::SM::start_temperature}-->
     <state name="start_temperature">
      <!--${AOs::Sensor::SM::start_temperatur~::initial}-->
-     <initial target="../1">
-      <action>// Pull DHT11 LOW ≥18ms
+     <initial target="../2">
+      <action>printf(&quot;INIT sensor\n&quot;);
+// Pull DHT11 LOW ≥18ms
 DHT11_SetPinOutput();
 HAL_GPIO_WritePin(DHT11_PORT, DHT11_PIN, GPIO_PIN_RESET);
 Delay_ms(20);
@@ -273,6 +298,14 @@ Delay_us(30);
        <action box="0,-2,10,2"/>
       </initial_glyph>
      </initial>
+     <!--${AOs::Sensor::SM::start_temperatur~::DHT11_RESET}-->
+     <tran trig="DHT11_RESET" target="../../1">
+      <action>QTimeEvt_disarm(&amp;me-&gt;resetEvt);
+printf(&quot;Reset DHT11&quot;);</action>
+      <tran_glyph conn="100,74,0,2,-12">
+       <action box="0,-2,10,2"/>
+      </tran_glyph>
+     </tran>
      <!--${AOs::Sensor::SM::start_temperatur~::wait_response}-->
      <state name="wait_response">
       <entry brief="init">me-&gt;bit_index = 0;
@@ -280,88 +313,69 @@ me-&gt;byte_index = 0;
 me-&gt;reading_high = true;
 me-&gt;pulse_count = 0; 
 memset(me-&gt;bits, 0, sizeof(me-&gt;bits));
+printf(&quot;ENTRY SENSOR \n&quot;);
 </entry>
       <!--${AOs::Sensor::SM::start_temperatur~::wait_response::DHT11_TIMER_IC}-->
-      <tran trig="DHT11_TIMER_IC">
-       <action>uint32_t pulse_length = ((DHT11Evt const *)e)-&gt;pulse_length;
+      <tran trig="DHT11_TIMER_IC" target="../../../1">
+       <action>uint32_t localTimestamps[TIMESTAMP_SIZE];
+BSP_get_timestamps(localTimestamps);
 
-me-&gt;pulse_count++;
+for(uint8_t i = 0; i &lt; TIMESTAMP_SIZE; i++)
+{
+    if(i &lt; 3) { continue; } // ignore ack, start
 
-//first 2 pulses are garbage -&gt;  Skip next 2 pulses (response: 80µs LOW + 80µs HIGH) 
-if (me-&gt;pulse_count &lt;= 5) {
-    status_ = Q_HANDLED();
-    break;
-}
+    if (i % 2 == 1) { // positive edge (HIGH pulse duration)
+        // Determine if the current HIGH pulse represents a '1' or '0'
+        uint8_t bit_val = (localTimestamps[i] &gt; 40) ? 1 : 0;  // FIXED!
 
-// Now process data bits
-me-&gt;reading_high = !me-&gt;reading_high;
-
-if (me-&gt;reading_high) {
-    // Determine if the current HIGH pulse represents a '1' or '0'
-    uint8_t bit_val = (pulse_length &gt; 40) ? 1 : 0;
-
-    // Store bit in the main bits array
-    if (bit_val) {
-        me-&gt;bits[me-&gt;byte_index] |= (1 &lt;&lt; (7 - me-&gt;bit_index));
-    } else {
-        me-&gt;bits[me-&gt;byte_index] &amp;= ~(1 &lt;&lt; (7 - me-&gt;bit_index)); // optional: ensure 0
-    }
-
-
-    // Move to next bit
-    me-&gt;bit_index++;
-
-    // If a byte is complete, move to next byte
-    if (me-&gt;bit_index &gt; 7) {
-        me-&gt;bit_index = 0;
-        me-&gt;byte_index++;
-
-        // If 5 bytes (40 bits) are read, finalize
-        if (me-&gt;byte_index &gt;= 5) {
-
-
-            // Verify checksum
-            uint8_t checksum = me-&gt;bits[0] + me-&gt;bits[1] + me-&gt;bits[2] + me-&gt;bits[3];
-            if (checksum == me-&gt;bits[4]) {
-
-
-uint16_t dryness_val;
-
-// Start ADC conversion
-HAL_ADC_Start(&amp;hadc1);
-
-// Wait for conversion to complete
-if (HAL_ADC_PollForConversion(&amp;hadc1, 10) == HAL_OK) { // timeout in ms
-    // Read the converted value
-    dryness_val = (uint16_t)HAL_ADC_GetValue(&amp;hadc1);
-}
-
-
-            SensorEvent *evt = Q_NEW(SensorEvent, SENSOR_DONE_SIG);  // SENSOR_SIG is the signal identifier
-
-            evt-&gt;dryness = dryness_val;
-            evt-&gt;temperature = me-&gt;bits[2];
-
-            // 3. Post the event to the AO
-            QACTIVE_POST(AO_Main_App, &amp;evt-&gt;super, NULL);
-            } else {
-                printf(&quot;Checksum error! Expected: %u, Got: %u\n&quot;,
-                       checksum, me-&gt;bits[4]);
-            }
-
-            // Reset or go to waiting state
-            status_ = Q_TRAN(&amp;Sensor_waiting);
-            break;
+        // Store bit in the main bits array
+        if (bit_val) {
+            me-&gt;bits[me-&gt;byte_index] |= (1 &lt;&lt; (7 - me-&gt;bit_index));
+        } else {
+            me-&gt;bits[me-&gt;byte_index] &amp;= ~(1 &lt;&lt; (7 - me-&gt;bit_index));
         }
-    }
+
+        // Move to next bit
+        me-&gt;bit_index++;
+
+        // If a byte is complete, move to next byte
+        if (me-&gt;bit_index &gt; 7) {
+            me-&gt;bit_index = 0;
+            me-&gt;byte_index++;
+
+            // If 5 bytes (40 bits) are read, finalize
+            if (me-&gt;byte_index &gt;= 5) {
+                // Verify checksum
+                uint8_t checksum = me-&gt;bits[0] + me-&gt;bits[1] + me-&gt;bits[2] + me-&gt;bits[3];
+                if (checksum == me-&gt;bits[4]) {
+                    uint16_t dryness_val = Sensor_get_adc_dryness();
+
+                    SensorEvent *evt = Q_NEW(SensorEvent, SENSOR_DONE_SIG);
+                    evt-&gt;dryness = dryness_val;
+                    evt-&gt;temperature = me-&gt;bits[2];
+
+                    QACTIVE_POST(AO_Main_App, &amp;evt-&gt;super, NULL);
+                    status_ = Q_TRAN(&amp;Sensor_waiting);
+                    break;
+
+
+                } else {
+                    printf(&quot;Checksum error! Expected: %u, Got: %u\n&quot;,
+                           checksum, me-&gt;bits[4]);
+                }
+
+                // Reset or go to waiting state
+                //status_ = Q_TRAN(&amp;Sensor_waiting);
+                break;
+            }
+        }
+    } // ADDED: Close the if (i % 2 == 0) block
 }
-
-
 
 
 
 </action>
-       <tran_glyph conn="97,105,1,-1,-10">
+       <tran_glyph conn="53,102,3,2,-8,-40">
         <action box="0,-2,10,2"/>
        </tran_glyph>
       </tran>
@@ -461,6 +475,7 @@ enum MenuGameSignals {
     SENSOR_DONE_SIG,
     NRF_IRQ_SIG,
     DHT11_TIMER_IC_SIG,
+    DHT11_RESET_SIG,
     DHT11_DONE_SIG,
     MAX_SIG  
 };
@@ -471,15 +486,15 @@ enum MenuGameSignals {
 typedef struct {
     QEvt super;       
     uint16_t dryness;      
-    uint16_t temperature;     
+    uint16_t temperature;    
 } SensorEvent;
 
+/*
 typedef struct {
     QEvt super;      
-    uint32_t pulse_length; 
-    uint8_t dummy;
+    uint32_t pulse_length_timestamps[TIMESTAMP_SIZE]; 
 } DHT11Evt;
-
+*/
 #endif </text>
   </file>
   <!--${Inc::sensor.h}-->

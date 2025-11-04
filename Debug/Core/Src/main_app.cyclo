@@ -1,8 +1,8 @@
 ../Core/Src/main_app.c:80:8:MainApp_initial	1
-../Core/Src/main_app.c:178:8:MainApp_display_stats	3
-../Core/Src/main_app.c:203:8:MainApp_pump	4
+../Core/Src/main_app.c:181:8:MainApp_display_stats	3
+../Core/Src/main_app.c:206:8:MainApp_pump	4
 ../Core/Src/main_app.c:61:9:MainApp_calc_dryness_percent	3
 ../Core/Src/main_app.c:86:8:MainApp_display	12
-../Core/Src/main_app.c:243:6:Main_App_ctor	1
-../Core/Src/main_app.c:254:6:Sensor_ctor	1
-../Core/Src/main_app.c:266:6:RFButton_ctor	1
+../Core/Src/main_app.c:246:6:Main_App_ctor	1
+../Core/Src/main_app.c:257:6:Sensor_ctor	1
+../Core/Src/main_app.c:270:6:RFButton_ctor	1

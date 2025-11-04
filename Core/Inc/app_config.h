@@ -17,5 +17,6 @@
 #define MAX_WET 			 (1000U)
 
 #define DHT11_MAX_EDGES 		3
-
+#define DHT11_RESET_TIME 		(3000U)
+#define TIMESTAMP_SIZE  		(82U)
 #endif /* INC_APP_CONFIG_H_ */

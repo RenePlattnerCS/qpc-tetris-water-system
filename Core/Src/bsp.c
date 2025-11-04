@@ -237,6 +237,9 @@ void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim)
 
 */
 
+static uint32_t timestamps[TIMESTAMP_SIZE];
+static uint8_t pulseCount = 0;
+static bool start_dht11 = false;
 void TIM3_IRQHandler(void)
 {
     QK_ISR_ENTRY();
@@ -249,18 +252,37 @@ void TIM3_IRQHandler(void)
         // Read the captured value (timer ticks)
 		uint32_t capture = LL_TIM_IC_GetCaptureCH1(TIM3);
 
-		// Allocate the event (from the small event pool)
-		DHT11Evt *evt = Q_NEW(DHT11Evt, DHT11_TIMER_IC_SIG);
-		evt->pulse_length = capture;
+		if(capture >= 79 && capture <= 90)
+		{
+			start_dht11 = true;
+		}
+		if(!start_dht11) //ignore stuff before ACK
+		{
+			QK_ISR_EXIT();
+			return;
+		}
 
-		// Post it to your DHT11 active object
-		QACTIVE_POST(AO_Sensor, &evt->super, 0);
+		timestamps[pulseCount] = capture;
+		pulseCount++;
+		//pulseCount %= TIMESTAMP_SIZE;
+
+		if (pulseCount >= TIMESTAMP_SIZE) {
+		    static QEvt const dht11CompleteEvt = QEVT_INITIALIZER(DHT11_TIMER_IC_SIG);
+		    QACTIVE_POST(AO_Sensor, &dht11CompleteEvt, 0U);
+		    pulseCount = 0;
+		    start_dht11 = false;
+		}
     }
 
     QK_ISR_EXIT();
 }
 
-
+void BSP_get_timestamps(uint32_t *dest) {
+    QF_CRIT_STAT
+    QF_CRIT_ENTRY();
+    memcpy(dest, timestamps, sizeof(timestamps));
+    QF_CRIT_EXIT();
+}
 
 //............................................................................
 

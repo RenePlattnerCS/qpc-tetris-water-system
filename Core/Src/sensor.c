@@ -56,6 +56,20 @@ extern ADC_HandleTypeDef hadc1;
 //${AOs::Sensor} .............................................................
 Sensor Sensor_inst;
 
+//${AOs::Sensor::get_adc_dryness} ............................................
+uint16_t Sensor_get_adc_dryness(void) {
+    // Start ADC conversion
+    HAL_ADC_Start(&hadc1);
+
+    // Wait for conversion to complete
+    if (HAL_ADC_PollForConversion(&hadc1, 10) == HAL_OK) { // timeout in ms
+        // Read the converted value
+        return (uint16_t)HAL_ADC_GetValue(&hadc1);
+    }
+
+    return 0;
+}
+
 //${AOs::Sensor::SM} .........................................................
 QState Sensor_initial(Sensor * const me, void const * const par) {
     //${AOs::Sensor::SM::initial}
@@ -66,13 +80,21 @@ QState Sensor_initial(Sensor * const me, void const * const par) {
 QState Sensor_waiting(Sensor * const me, QEvt const * const e) {
     QState status_;
     switch (e->sig) {
+        //${AOs::Sensor::SM::waiting}
+        case Q_ENTRY_SIG: {
+            printf("waiting SENSOR \n");
+            QTimeEvt_disarm(&me->resetEvt);
+
+            status_ = Q_HANDLED();
+            break;
+        }
         //${AOs::Sensor::SM::waiting::START_SENSOR}
         case START_SENSOR_SIG: {
-
+            printf("start SENSOR \n");
             for(int i=0;i<5;i++) me->bits[i]=0;
             me->bit_index = 0;
             me->byte_index = 0;
-
+            QTimeEvt_armX(&me->resetEvt, DHT11_RESET_TIME, 0U);
 
             status_ = Q_TRAN(&Sensor_start_temperature);
             break;
@@ -91,6 +113,7 @@ QState Sensor_start_temperature(Sensor * const me, QEvt const * const e) {
     switch (e->sig) {
         //${AOs::Sensor::SM::start_temperatur~::initial}
         case Q_INIT_SIG: {
+            printf("INIT sensor\n");
             // Pull DHT11 LOW ≥18ms
             DHT11_SetPinOutput();
             HAL_GPIO_WritePin(DHT11_PORT, DHT11_PIN, GPIO_PIN_RESET);
@@ -102,6 +125,13 @@ QState Sensor_start_temperature(Sensor * const me, QEvt const * const e) {
 
 
             status_ = Q_TRAN(&Sensor_wait_response);
+            break;
+        }
+        //${AOs::Sensor::SM::start_temperatur~::DHT11_RESET}
+        case DHT11_RESET_SIG: {
+            QTimeEvt_disarm(&me->resetEvt);
+            printf("Reset DHT11");
+            status_ = Q_TRAN(&Sensor_waiting);
             break;
         }
         default: {
@@ -123,91 +153,72 @@ QState Sensor_wait_response(Sensor * const me, QEvt const * const e) {
             me->reading_high = true;
             me->pulse_count = 0;
             memset(me->bits, 0, sizeof(me->bits));
+            printf("ENTRY SENSOR \n");
 
             status_ = Q_HANDLED();
             break;
         }
         //${AOs::Sensor::SM::start_temperatur~::wait_response::DHT11_TIMER_IC}
         case DHT11_TIMER_IC_SIG: {
-            uint32_t pulse_length = ((DHT11Evt const *)e)->pulse_length;
+            uint32_t localTimestamps[TIMESTAMP_SIZE];
+            BSP_get_timestamps(localTimestamps);
 
-            me->pulse_count++;
+            for(uint8_t i = 0; i < TIMESTAMP_SIZE; i++)
+            {
+                if(i < 3) { continue; } // ignore ack, start
 
-            //first 2 pulses are garbage ->  Skip next 2 pulses (response: 80µs LOW + 80µs HIGH)
-            if (me->pulse_count <= 5) {
-                status_ = Q_HANDLED();
-                break;
-            }
+                if (i % 2 == 1) { // positive edge (HIGH pulse duration)
+                    // Determine if the current HIGH pulse represents a '1' or '0'
+                    uint8_t bit_val = (localTimestamps[i] > 40) ? 1 : 0;  // FIXED!
 
-            // Now process data bits
-            me->reading_high = !me->reading_high;
-
-            if (me->reading_high) {
-                // Determine if the current HIGH pulse represents a '1' or '0'
-                uint8_t bit_val = (pulse_length > 40) ? 1 : 0;
-
-                // Store bit in the main bits array
-                if (bit_val) {
-                    me->bits[me->byte_index] |= (1 << (7 - me->bit_index));
-                } else {
-                    me->bits[me->byte_index] &= ~(1 << (7 - me->bit_index)); // optional: ensure 0
-                }
-
-
-                // Move to next bit
-                me->bit_index++;
-
-                // If a byte is complete, move to next byte
-                if (me->bit_index > 7) {
-                    me->bit_index = 0;
-                    me->byte_index++;
-
-                    // If 5 bytes (40 bits) are read, finalize
-                    if (me->byte_index >= 5) {
-
-
-                        // Verify checksum
-                        uint8_t checksum = me->bits[0] + me->bits[1] + me->bits[2] + me->bits[3];
-                        if (checksum == me->bits[4]) {
-
-
-            uint16_t dryness_val;
-
-            // Start ADC conversion
-            HAL_ADC_Start(&hadc1);
-
-            // Wait for conversion to complete
-            if (HAL_ADC_PollForConversion(&hadc1, 10) == HAL_OK) { // timeout in ms
-                // Read the converted value
-                dryness_val = (uint16_t)HAL_ADC_GetValue(&hadc1);
-            }
-
-
-                        SensorEvent *evt = Q_NEW(SensorEvent, SENSOR_DONE_SIG);  // SENSOR_SIG is the signal identifier
-
-                        evt->dryness = dryness_val;
-                        evt->temperature = me->bits[2];
-
-                        // 3. Post the event to the AO
-                        QACTIVE_POST(AO_Main_App, &evt->super, NULL);
-                        } else {
-                            printf("Checksum error! Expected: %u, Got: %u\n",
-                                   checksum, me->bits[4]);
-                        }
-
-                        // Reset or go to waiting state
-                        status_ = Q_TRAN(&Sensor_waiting);
-                        break;
+                    // Store bit in the main bits array
+                    if (bit_val) {
+                        me->bits[me->byte_index] |= (1 << (7 - me->bit_index));
+                    } else {
+                        me->bits[me->byte_index] &= ~(1 << (7 - me->bit_index));
                     }
-                }
+
+                    // Move to next bit
+                    me->bit_index++;
+
+                    // If a byte is complete, move to next byte
+                    if (me->bit_index > 7) {
+                        me->bit_index = 0;
+                        me->byte_index++;
+
+                        // If 5 bytes (40 bits) are read, finalize
+                        if (me->byte_index >= 5) {
+                            // Verify checksum
+                            uint8_t checksum = me->bits[0] + me->bits[1] + me->bits[2] + me->bits[3];
+                            if (checksum == me->bits[4]) {
+                                uint16_t dryness_val = Sensor_get_adc_dryness();
+
+                                SensorEvent *evt = Q_NEW(SensorEvent, SENSOR_DONE_SIG);
+                                evt->dryness = dryness_val;
+                                evt->temperature = me->bits[2];
+
+                                QACTIVE_POST(AO_Main_App, &evt->super, NULL);
+                                status_ = Q_TRAN(&Sensor_waiting);
+                                break;
+
+
+                            } else {
+                                printf("Checksum error! Expected: %u, Got: %u\n",
+                                       checksum, me->bits[4]);
+                            }
+
+                            // Reset or go to waiting state
+                            //status_ = Q_TRAN(&Sensor_waiting);
+                            break;
+                        }
+                    }
+                } // ADDED: Close the if (i % 2 == 0) block
             }
 
 
 
 
-
-
-            status_ = Q_HANDLED();
+            status_ = Q_TRAN(&Sensor_waiting);
             break;
         }
         default: {
