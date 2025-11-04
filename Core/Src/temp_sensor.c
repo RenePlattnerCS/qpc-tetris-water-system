@@ -1,7 +1,5 @@
 
 #include "temp_sensor.h"
-//#include "stm32c0xx_hal.h"        // includes core HAL headers
-//#include "stm32c0xx_hal_gpio.h"   // specific GPIO macros/structs
 #include "stm32c0xx_ll_bus.h"
 #include "stm32c0xx_ll_gpio.h"
 #include "bsp.h"

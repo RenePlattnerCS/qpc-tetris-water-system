@@ -6,6 +6,7 @@
 # Add inputs and outputs from these tool invocations to the build variables 
 C_SRCS += \
 ../Core/Src/NRF_chip.c \
+../Core/Src/accelerometer.c \
 ../Core/Src/bsp.c \
 ../Core/Src/display.c \
 ../Core/Src/main.c \
@@ -22,6 +23,7 @@ C_SRCS += \
 
 OBJS += \
 ./Core/Src/NRF_chip.o \
+./Core/Src/accelerometer.o \
 ./Core/Src/bsp.o \
 ./Core/Src/display.o \
 ./Core/Src/main.o \
@@ -38,6 +40,7 @@ OBJS += \
 
 C_DEPS += \
 ./Core/Src/NRF_chip.d \
+./Core/Src/accelerometer.d \
 ./Core/Src/bsp.d \
 ./Core/Src/display.d \
 ./Core/Src/main.d \
@@ -60,7 +63,7 @@ Core/Src/%.o Core/Src/%.su Core/Src/%.cyclo: ../Core/Src/%.c Core/Src/subdir.mk
 clean: clean-Core-2f-Src
 
 clean-Core-2f-Src:
-	-$(RM) ./Core/Src/NRF_chip.cyclo ./Core/Src/NRF_chip.d ./Core/Src/NRF_chip.o ./Core/Src/NRF_chip.su ./Core/Src/bsp.cyclo ./Core/Src/bsp.d ./Core/Src/bsp.o ./Core/Src/bsp.su ./Core/Src/display.cyclo ./Core/Src/display.d ./Core/Src/display.o ./Core/Src/display.su ./Core/Src/main.cyclo ./Core/Src/main.d ./Core/Src/main.o ./Core/Src/main.su ./Core/Src/main_app.cyclo ./Core/Src/main_app.d ./Core/Src/main_app.o ./Core/Src/main_app.su ./Core/Src/plant_sensor.cyclo ./Core/Src/plant_sensor.d ./Core/Src/plant_sensor.o ./Core/Src/plant_sensor.su ./Core/Src/rfbutton.cyclo ./Core/Src/rfbutton.d ./Core/Src/rfbutton.o ./Core/Src/rfbutton.su ./Core/Src/sensor.cyclo ./Core/Src/sensor.d ./Core/Src/sensor.o ./Core/Src/sensor.su ./Core/Src/stm32c0xx_hal_msp.cyclo ./Core/Src/stm32c0xx_hal_msp.d ./Core/Src/stm32c0xx_hal_msp.o ./Core/Src/stm32c0xx_hal_msp.su ./Core/Src/stm32c0xx_it.cyclo ./Core/Src/stm32c0xx_it.d ./Core/Src/stm32c0xx_it.o ./Core/Src/stm32c0xx_it.su ./Core/Src/syscalls.cyclo ./Core/Src/syscalls.d ./Core/Src/syscalls.o ./Core/Src/syscalls.su ./Core/Src/sysmem.cyclo ./Core/Src/sysmem.d ./Core/Src/sysmem.o ./Core/Src/sysmem.su ./Core/Src/system_stm32c0xx.cyclo ./Core/Src/system_stm32c0xx.d ./Core/Src/system_stm32c0xx.o ./Core/Src/system_stm32c0xx.su ./Core/Src/temp_sensor.cyclo ./Core/Src/temp_sensor.d ./Core/Src/temp_sensor.o ./Core/Src/temp_sensor.su
+	-$(RM) ./Core/Src/NRF_chip.cyclo ./Core/Src/NRF_chip.d ./Core/Src/NRF_chip.o ./Core/Src/NRF_chip.su ./Core/Src/accelerometer.cyclo ./Core/Src/accelerometer.d ./Core/Src/accelerometer.o ./Core/Src/accelerometer.su ./Core/Src/bsp.cyclo ./Core/Src/bsp.d ./Core/Src/bsp.o ./Core/Src/bsp.su ./Core/Src/display.cyclo ./Core/Src/display.d ./Core/Src/display.o ./Core/Src/display.su ./Core/Src/main.cyclo ./Core/Src/main.d ./Core/Src/main.o ./Core/Src/main.su ./Core/Src/main_app.cyclo ./Core/Src/main_app.d ./Core/Src/main_app.o ./Core/Src/main_app.su ./Core/Src/plant_sensor.cyclo ./Core/Src/plant_sensor.d ./Core/Src/plant_sensor.o ./Core/Src/plant_sensor.su ./Core/Src/rfbutton.cyclo ./Core/Src/rfbutton.d ./Core/Src/rfbutton.o ./Core/Src/rfbutton.su ./Core/Src/sensor.cyclo ./Core/Src/sensor.d ./Core/Src/sensor.o ./Core/Src/sensor.su ./Core/Src/stm32c0xx_hal_msp.cyclo ./Core/Src/stm32c0xx_hal_msp.d ./Core/Src/stm32c0xx_hal_msp.o ./Core/Src/stm32c0xx_hal_msp.su ./Core/Src/stm32c0xx_it.cyclo ./Core/Src/stm32c0xx_it.d ./Core/Src/stm32c0xx_it.o ./Core/Src/stm32c0xx_it.su ./Core/Src/syscalls.cyclo ./Core/Src/syscalls.d ./Core/Src/syscalls.o ./Core/Src/syscalls.su ./Core/Src/sysmem.cyclo ./Core/Src/sysmem.d ./Core/Src/sysmem.o ./Core/Src/sysmem.su ./Core/Src/system_stm32c0xx.cyclo ./Core/Src/system_stm32c0xx.d ./Core/Src/system_stm32c0xx.o ./Core/Src/system_stm32c0xx.su ./Core/Src/temp_sensor.cyclo ./Core/Src/temp_sensor.d ./Core/Src/temp_sensor.o ./Core/Src/temp_sensor.su
 
 .PHONY: clean-Core-2f-Src
 

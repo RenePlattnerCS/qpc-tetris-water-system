@@ -40,6 +40,7 @@
 #include "NRF_chip.h"
 #include "temp_sensor.h"
 #include "stm32c0xx_ll_tim.h"
+#include "accelerometer.h"
 // add other drivers if necessary...
 extern MainApp MainApp_inst;
 //extern TIM_HandleTypeDef  htim14;
@@ -144,7 +145,7 @@ void EXTI0_1_IRQHandler(void)
 
 
     static QEvt const nrfEvt = { NRF_IRQ_SIG, 0U, 0U };
-        QACTIVE_POST(AO_RFButton, &nrfEvt, &l_EXTI0_1_IRQHandler);
+    QACTIVE_POST(AO_RFButton, &nrfEvt, &l_EXTI0_1_IRQHandler);
 
 
 
@@ -284,6 +285,40 @@ void BSP_get_timestamps(uint32_t *dest) {
     QF_CRIT_EXIT();
 }
 
+
+
+void EXTI4_15_IRQHandler(void)
+{
+	QK_ISR_ENTRY();
+    HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_7);
+    QK_ISR_EXIT();
+}
+
+
+void HAL_GPIO_EXTI_Rising_Callback(uint16_t GPIO_Pin)
+{
+		printf("rising edge \n");
+		 if (GPIO_Pin == GPIO_PIN_7) {
+		        uint8_t src;
+		        //HAL_I2C_Mem_Read(&hi2c1, ADXL_ADDR, ADXL_INT_SOURCE, 1, &src, 1, HAL_MAX_DELAY);
+		        HAL_I2C_Mem_Read(&hi2c1, ADXL_ADDR, 0x30, 1, &src, 1, HAL_MAX_DELAY);
+
+		        if (src & 0x10) { // Bit 4 = Activity interrupt
+		            printf(" Shake detected!\n");
+
+		        }
+				if(src & 0x40) // SINGLE_TAP bit
+				{
+					// Tap detected
+					// Example: toggle an LED
+					printf("tap!\n");
+				}
+				//  clear the interrupt
+				HAL_I2C_Mem_Read(&hi2c1, ADXL_ADDR, 0x30, 1, &src, 1, HAL_MAX_DELAY);
+				__HAL_GPIO_EXTI_CLEAR_IT(GPIO_Pin);
+
+		    }
+}
 //............................................................................
 
 
@@ -323,7 +358,7 @@ void QF_onContextSw(QActive *prev, QActive *next) {
 
 void BSP_init(void) {
     // Initialize LEDs, buttons, UART, etc.
-    HAL_Init();
+    //HAL_Init();
     SystemClock_Config();  // configure system clock
     HAL_SYSTICK_Config(HAL_RCC_GetHCLKFreq() / 1000U);
 
@@ -367,6 +402,7 @@ void BSP_init(void) {
 
 	ssd1306_Init();
 	init_nrf();
+	init_accelerometer();
 
 	//__HAL_LINKDMA(&htim3, hdma[TIM_DMA_ID_CC1], hdma_tim3_ch1);
 
@@ -425,11 +461,13 @@ void QF_onStartup(void) {
     // set priorities of ALL ISRs used in the system, see NOTE1
     NVIC_SetPriority(USART2_IRQn,    0U); // kernel UNAWARE interrupt
     NVIC_SetPriority(EXTI0_1_IRQn,   QF_AWARE_ISR_CMSIS_PRI + 0U);
-    NVIC_SetPriority(SysTick_IRQn,   QF_AWARE_ISR_CMSIS_PRI + 1U);
+    NVIC_SetPriority(EXTI4_15_IRQn,   QF_AWARE_ISR_CMSIS_PRI + 2U);
+    NVIC_SetPriority(SysTick_IRQn,   QF_AWARE_ISR_CMSIS_PRI + 3U);
     // ...
 
     // enable IRQs...
     NVIC_EnableIRQ(EXTI0_1_IRQn);
+    NVIC_EnableIRQ(EXTI4_15_IRQn);
 
 #ifdef Q_SPY
     NVIC_EnableIRQ(USART2_IRQn); // UART2 interrupt used for QS-RX

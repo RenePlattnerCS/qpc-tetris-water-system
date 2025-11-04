@@ -27,6 +27,7 @@
 #include "sensor.h"
 #include "temp_sensor.h"
 #include "rfbutton.h"
+#include "accelerometer.h"
 #include "app_config.h"
 #include <stdarg.h>
 /* USER CODE END Includes */
@@ -140,12 +141,12 @@ int main(void)
   MX_TIM3_Init();
   MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
+  QF_init();       // initialize the framework and the underlying RT kernel
+  BSP_init();      // initialize the BSP
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  QF_init();       // initialize the framework and the underlying RT kernel
-  BSP_init();      // initialize the BSP
 
 
   QF_poolInit(sensorEvtPoolSto, sizeof(sensorEvtPoolSto), sizeof(sensorEvtPoolSto[0]));
@@ -580,8 +581,15 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
+  /*Configure GPIO pin : accelerometer_Pin */
+  GPIO_InitStruct.Pin = accelerometer_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(accelerometer_GPIO_Port, &GPIO_InitStruct);
+
   /* EXTI interrupt init*/
   HAL_NVIC_SetPriority(EXTI0_1_IRQn, 0, 0);
+  HAL_NVIC_SetPriority(EXTI4_15_IRQn, 0, 0);
 
   /* USER CODE BEGIN MX_GPIO_Init_2 */
 

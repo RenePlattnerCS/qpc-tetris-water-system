@@ -1,4 +1,5 @@
 "./Core/Src/NRF_chip.o"
+"./Core/Src/accelerometer.o"
 "./Core/Src/bsp.o"
 "./Core/Src/display.o"
 "./Core/Src/main.o"
