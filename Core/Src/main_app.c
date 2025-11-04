@@ -160,6 +160,7 @@ QState MainApp_display(MainApp * const me, QEvt const * const e) {
         case BUTTON_PRESS_SIG: {
             QTimeEvt_disarm(&me->longPressEvt);
             QTimeEvt_armX(&me->longPressEvt, LONG_PRESS_TIME_MS / 10, 0U);
+            printf("pressed btn!\n");
             status_ = Q_HANDLED();
             break;
         }
@@ -171,7 +172,7 @@ QState MainApp_display(MainApp * const me, QEvt const * const e) {
         //${AOs::MainApp::SM::display::BUTTON_RELEASE}
         case BUTTON_RELEASE_SIG: {
             QTimeEvt_disarm(&me->longPressEvt);
-
+            printf("released btn!\n");
             if(me->currentState == TEMPERATURE)
             {
                 me->currentState = DRYNESS;

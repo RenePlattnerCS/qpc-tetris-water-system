@@ -178,7 +178,7 @@ printf(&quot;pressed btn!\n&quot;);</action>
      <!--${AOs::MainApp::SM::display::BUTTON_RELEASE}-->
      <tran trig="BUTTON_RELEASE">
       <action brief="short press">QTimeEvt_disarm(&amp;me-&gt;longPressEvt);
-
+printf(&quot;released btn!\n&quot;);
 if(me-&gt;currentState == TEMPERATURE)
 {
     me-&gt;currentState = DRYNESS;
