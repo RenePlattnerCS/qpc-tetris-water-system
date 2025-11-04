@@ -420,7 +420,6 @@ void QF_onCleanup(void) {
 //............................................................................
 void QK_onIdle(void) {
     // toggle an LED on and then off (not enough LEDs, see NOTE2)
-	void flush_debug_log(void);
     //QF_INT_DISABLE();
     //GPIOA->BSRR = (1U << LD4_PIN);         // turn LED[n] on
     //GPIOA->BSRR = (1U << (LD4_PIN + 16U)); // turn LED[n] off

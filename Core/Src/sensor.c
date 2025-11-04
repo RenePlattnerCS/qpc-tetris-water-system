@@ -41,11 +41,6 @@
 #include "app_config.h"
 #include "temp_sensor.h"
 
-uint32_t pbuffer[100];
-uint16_t pindex = 0;
-
-uint32_t pulsesbuffer[100];
-uint16_t pulsesindex = 0;
 extern ADC_HandleTypeDef hadc1;
 //extern TIM_HandleTypeDef htim3;
 //extern DMA_HandleTypeDef hdma;
@@ -78,10 +73,7 @@ QState Sensor_waiting(Sensor * const me, QEvt const * const e) {
             me->bit_index = 0;
             me->byte_index = 0;
 
-            for(int i=0; i< 100; i++)
-            {
-            pbuffer[i];
-            }
+
             status_ = Q_TRAN(&Sensor_start_temperature);
             break;
         }
@@ -138,9 +130,7 @@ QState Sensor_wait_response(Sensor * const me, QEvt const * const e) {
         //${AOs::Sensor::SM::start_temperatur~::wait_response::DHT11_TIMER_IC}
         case DHT11_TIMER_IC_SIG: {
             uint32_t pulse_length = ((DHT11Evt const *)e)->pulse_length;
-            //debug_log("Pulse %2d is %u\n", me->pulse_count, pulse_length);
-            pbuffer[pindex] = pulse_length;
-            pindex++;
+
             me->pulse_count++;
 
             //first 2 pulses are garbage ->  Skip next 2 pulses (response: 80µs LOW + 80µs HIGH)
@@ -163,8 +153,6 @@ QState Sensor_wait_response(Sensor * const me, QEvt const * const e) {
                     me->bits[me->byte_index] &= ~(1 << (7 - me->bit_index)); // optional: ensure 0
                 }
 
-                // Optionally store in a pulse buffer for debugging
-                pulsesbuffer[pulsesindex++] = bit_val;
 
                 // Move to next bit
                 me->bit_index++;
@@ -176,17 +164,32 @@ QState Sensor_wait_response(Sensor * const me, QEvt const * const e) {
 
                     // If 5 bytes (40 bits) are read, finalize
                     if (me->byte_index >= 5) {
-                        // Print the raw pulse buffer (optional)
-                        //for (size_t i = 0; i < pulsesindex; i++) {
-                        //    printf("%u ", pulsesbuffer[i]);
-                        //}
+
 
                         // Verify checksum
                         uint8_t checksum = me->bits[0] + me->bits[1] + me->bits[2] + me->bits[3];
                         if (checksum == me->bits[4]) {
-                            printf("Humidity: %u.%u%%  Temperature: %u.%u°C\n",
-                                   me->bits[0], me->bits[1],
-                                   me->bits[2], me->bits[3]);
+
+
+            uint16_t dryness_val;
+
+            // Start ADC conversion
+            HAL_ADC_Start(&hadc1);
+
+            // Wait for conversion to complete
+            if (HAL_ADC_PollForConversion(&hadc1, 10) == HAL_OK) { // timeout in ms
+                // Read the converted value
+                dryness_val = (uint16_t)HAL_ADC_GetValue(&hadc1);
+            }
+
+
+                        SensorEvent *evt = Q_NEW(SensorEvent, SENSOR_DONE_SIG);  // SENSOR_SIG is the signal identifier
+
+                        evt->dryness = dryness_val;
+                        evt->temperature = me->bits[2];
+
+                        // 3. Post the event to the AO
+                        QACTIVE_POST(AO_Main_App, &evt->super, NULL);
                         } else {
                             printf("Checksum error! Expected: %u, Got: %u\n",
                                    checksum, me->bits[4]);

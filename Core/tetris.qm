@@ -248,10 +248,7 @@ for(int i=0;i&lt;5;i++) me-&gt;bits[i]=0;
 me-&gt;bit_index = 0;
 me-&gt;byte_index = 0;
 
-for(int i=0; i&lt; 100; i++)
-{
-pbuffer[i];
-}</action>
+</action>
       <tran_glyph conn="76,62,4,0,12">
        <action box="0,-2,10,2"/>
       </tran_glyph>
@@ -287,9 +284,7 @@ memset(me-&gt;bits, 0, sizeof(me-&gt;bits));
       <!--${AOs::Sensor::SM::start_temperatur~::wait_response::DHT11_TIMER_IC}-->
       <tran trig="DHT11_TIMER_IC">
        <action>uint32_t pulse_length = ((DHT11Evt const *)e)-&gt;pulse_length;
-//debug_log(&quot;Pulse %2d is %u\n&quot;, me-&gt;pulse_count, pulse_length);
-pbuffer[pindex] = pulse_length;
-pindex++;
+
 me-&gt;pulse_count++;
 
 //first 2 pulses are garbage -&gt;  Skip next 2 pulses (response: 80µs LOW + 80µs HIGH) 
@@ -312,8 +307,6 @@ if (me-&gt;reading_high) {
         me-&gt;bits[me-&gt;byte_index] &amp;= ~(1 &lt;&lt; (7 - me-&gt;bit_index)); // optional: ensure 0
     }
 
-    // Optionally store in a pulse buffer for debugging
-    pulsesbuffer[pulsesindex++] = bit_val;
 
     // Move to next bit
     me-&gt;bit_index++;
@@ -325,17 +318,32 @@ if (me-&gt;reading_high) {
 
         // If 5 bytes (40 bits) are read, finalize
         if (me-&gt;byte_index &gt;= 5) {
-            // Print the raw pulse buffer (optional)
-            //for (size_t i = 0; i &lt; pulsesindex; i++) {
-            //    printf(&quot;%u &quot;, pulsesbuffer[i]);
-            //}
+
 
             // Verify checksum
             uint8_t checksum = me-&gt;bits[0] + me-&gt;bits[1] + me-&gt;bits[2] + me-&gt;bits[3];
             if (checksum == me-&gt;bits[4]) {
-                printf(&quot;Humidity: %u.%u%%  Temperature: %u.%u°C\n&quot;,
-                       me-&gt;bits[0], me-&gt;bits[1],
-                       me-&gt;bits[2], me-&gt;bits[3]);
+
+
+uint16_t dryness_val;
+
+// Start ADC conversion
+HAL_ADC_Start(&amp;hadc1);
+
+// Wait for conversion to complete
+if (HAL_ADC_PollForConversion(&amp;hadc1, 10) == HAL_OK) { // timeout in ms
+    // Read the converted value
+    dryness_val = (uint16_t)HAL_ADC_GetValue(&amp;hadc1);
+}
+
+
+            SensorEvent *evt = Q_NEW(SensorEvent, SENSOR_DONE_SIG);  // SENSOR_SIG is the signal identifier
+
+            evt-&gt;dryness = dryness_val;
+            evt-&gt;temperature = me-&gt;bits[2];
+
+            // 3. Post the event to the AO
+            QACTIVE_POST(AO_Main_App, &amp;evt-&gt;super, NULL);
             } else {
                 printf(&quot;Checksum error! Expected: %u, Got: %u\n&quot;,
                        checksum, me-&gt;bits[4]);
@@ -529,11 +537,6 @@ $define${Shared}
 #include &quot;app_config.h&quot;
 #include &quot;temp_sensor.h&quot;
 
-uint32_t pbuffer[100];
-uint16_t pindex = 0;
-
-uint32_t pulsesbuffer[100];
-uint16_t pulsesindex = 0;
 extern ADC_HandleTypeDef hadc1;
 //extern TIM_HandleTypeDef htim3;
 //extern DMA_HandleTypeDef hdma;
