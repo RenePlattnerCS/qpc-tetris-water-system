@@ -50,6 +50,7 @@ Core/Src/main_app.o: ../Core/Src/main_app.c ../Core/Inc/main_app.h \
  M:/embedded/stm32C0_Nucleus/qpc-tetris-water-system/libraries/OLED_SSD1306/include/ssd1306_fonts.h \
  M:/embedded/stm32C0_Nucleus/qpc-tetris-water-system/libraries/OLED_SSD1306/include/ssd1306.h \
  ../Core/Inc/plant_sensor.h ../Core/Inc/sensor.h ../Core/Inc/rfbutton.h \
+ ../Core/Inc/tetris_board.h ../Core/Inc/tetromino.h \
  ../Core/Inc/app_config.h ../Core/Inc/NRF_chip.h \
  M:/embedded/stm32C0_Nucleus/qpc-tetris-water-system/libraries/NRF24/includes/NRF24.h \
  M:/embedded/stm32C0_Nucleus/qpc-tetris-water-system/libraries/NRF24/includes/NRF24_reg_addresses.h \
@@ -121,6 +122,8 @@ M:/embedded/stm32C0_Nucleus/qpc-tetris-water-system/libraries/OLED_SSD1306/inclu
 ../Core/Inc/plant_sensor.h:
 ../Core/Inc/sensor.h:
 ../Core/Inc/rfbutton.h:
+../Core/Inc/tetris_board.h:
+../Core/Inc/tetromino.h:
 ../Core/Inc/app_config.h:
 ../Core/Inc/NRF_chip.h:
 M:/embedded/stm32C0_Nucleus/qpc-tetris-water-system/libraries/NRF24/includes/NRF24.h:

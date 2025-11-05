@@ -45,6 +45,7 @@
 
 //DMA buffer
 static __attribute__((section(".bss"))) __attribute__((aligned(4))) volatile uint32_t Sensor_dht11_dma_buffer[DHT11_MAX_EDGES];
+static uint8_t gridArray[200];
 
 //$skip${QP_VERSION} vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 // Check for the minimum required QP version
@@ -74,6 +75,29 @@ uint8_t MainApp_calc_dryness_percent(uint16_t dryness) {
     percent = ((dryness - MAX_WET) * 100) / (MAX_DRY - MAX_WET);
 
     return percent;
+}
+
+//${AOs::MainApp::init_line_state} ...........................................
+void MainApp_init_line_state(
+    LineState * ls,
+    int x0,
+    int x1,
+    int y0,
+    int y1)
+{
+    ls->x0 = x0;
+    ls->x1 = x1;
+    ls->y0 = y0;
+    ls->y1 = y1;
+    ls->x0 = x0;
+    ls->dx = abs(x1 - x0);
+    ls->dy = abs(y1 - y0);
+    ls->sx = (x0 < x1) ? 1 : -1;
+    ls->sy = (y0 < y1) ? 1 : -1;
+    ls->err = ls->dx - ls->dy;
+    ls->done = false;
+
+
 }
 
 //${AOs::MainApp::SM} ........................................................
@@ -336,7 +360,8 @@ QState MainApp_start_screen(MainApp * const me, QEvt const * const e) {
         //${AOs::MainApp::SM::tetris::start_screen}
         case Q_ENTRY_SIG: {
             QTimeEvt_armX(&me->dryTimerEvt, 400U , 0U);
-            display_tetris_start();
+            display_tetris_logo();
+
             status_ = Q_HANDLED();
             break;
         }
@@ -349,7 +374,8 @@ QState MainApp_start_screen(MainApp * const me, QEvt const * const e) {
         }
         //${AOs::MainApp::SM::tetris::start_screen::WATER_PLANT}
         case WATER_PLANT_SIG: {
-            status_ = Q_TRAN(&MainApp_game);
+            clear_board();
+            status_ = Q_TRAN(&MainApp_init_board);
             break;
         }
         default: {
@@ -366,8 +392,94 @@ QState MainApp_game(MainApp * const me, QEvt const * const e) {
     switch (e->sig) {
         //${AOs::MainApp::SM::tetris::game}
         case Q_ENTRY_SIG: {
-            printf("timer triggered\n");
+            printf("entered tetris game\n");
+            /*
+            Tetromino t1;
+            Tetromino_ctor(&t1, TETRO_I);
+            Board_placeTetromino(&board, &t1);
+            t1.y = 5;
+            Board_placeTetromino(&board, &t1);
+            draw_board(&board);
+            */
             status_ = Q_HANDLED();
+            break;
+        }
+        default: {
+            status_ = Q_SUPER(&MainApp_tetris);
+            break;
+        }
+    }
+    return status_;
+}
+
+//${AOs::MainApp::SM::tetris::init_board} ....................................
+QState MainApp_init_board(MainApp * const me, QEvt const * const e) {
+    QState status_;
+    switch (e->sig) {
+        //${AOs::MainApp::SM::tetris::init_board}
+        case Q_ENTRY_SIG: {
+            Board_init(&me->board_inst);
+            printf("board initialized\n");
+            static QEvt const e = {DRAW_OUTLINE_SIG, 0U, 0U};
+            QACTIVE_POST(AO_Main_App, &e, me);
+            status_ = Q_HANDLED();
+            break;
+        }
+        //${AOs::MainApp::SM::tetris::init_board::BOARD_SETUP_DONE}
+        case BOARD_SETUP_DONE_SIG: {
+            status_ = Q_TRAN(&MainApp_game);
+            break;
+        }
+        //${AOs::MainApp::SM::tetris::init_board::DRAW_OUTLINE}
+        case DRAW_OUTLINE_SIG: {
+
+
+
+            status_ = Q_TRAN(&MainApp_top_border);
+            break;
+        }
+        default: {
+            status_ = Q_SUPER(&MainApp_tetris);
+            break;
+        }
+    }
+    return status_;
+}
+
+//${AOs::MainApp::SM::tetris::top_border} ....................................
+QState MainApp_top_border(MainApp * const me, QEvt const * const e) {
+    QState status_;
+    switch (e->sig) {
+        //${AOs::MainApp::SM::tetris::top_border}
+        case Q_ENTRY_SIG: {
+            int w = me->board_inst.width  * me->board_inst.blockSize;
+            int h = me->board_inst.height * me->board_inst.blockSize;
+
+            int x0 = me->board_inst.pos_x;
+            int y0 = me->board_inst.pos_y;
+
+            MainApp_init_line_state(&me->line_state_inst, x0, y0, x0 + w - 1, y0);
+            printf("init struct \n");
+
+            static QEvt const e = {DRAW_OUTLINE_SIG, 0U, 0U};
+            QACTIVE_POST(AO_Main_App, &e, me);
+
+            status_ = Q_HANDLED();
+            break;
+        }
+        //${AOs::MainApp::SM::tetris::top_border::DRAW_OUTLINE}
+        case DRAW_OUTLINE_SIG: {
+            printf("line step: \n");
+            draw_line_step(&me->line_state_inst);
+
+
+            status_ = Q_HANDLED();
+            break;
+        }
+        //${AOs::MainApp::SM::tetris::top_border::DRAW_OUTLINE_DONE}
+        case DRAW_OUTLINE_DONE_SIG: {
+            printf("done drawing line\n");
+            status_ = Q_TRAN(&MainApp_init_board);
             break;
         }
         default: {
@@ -389,6 +501,9 @@ void Main_App_ctor(MainApp * const me) {
     QTimeEvt_ctorX(&me->tempPollEvt, &me->super, POLL_SENSOR_SIG, 0U);
     QTimeEvt_ctorX(&me->longPressEvt, &me->super, BUTTON_LONG_SIG, 0U);
     QTimeEvt_ctorX(&me->dryTimerEvt, &me->super, WATER_PLANT_SIG, 0U);
+
+    Board_ctor(&me->board_inst, gridArray, 10, 10, 0,0, true, 3);
+
 
     me->currentTemp = 0.0f;
 }

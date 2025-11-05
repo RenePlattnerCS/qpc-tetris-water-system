@@ -7,9 +7,48 @@
 extern I2C_HandleTypeDef hi2c1;
 
 
+void init_accelerometer(void) //tap detection
+{
+	// NOW clear the interrupt
+	    uint8_t int_source;
+	    HAL_I2C_Mem_Read(&hi2c1, ADXL_ADDR, 0x30, 1, &int_source, 1, HAL_MAX_DELAY);
 
+    uint8_t data;
 
-void init_accelerometer(void)
+    // Full resolution ±2g
+    data = 0x08;
+    HAL_I2C_Mem_Write(&hi2c1, ADXL_ADDR, 0x31, 1, &data, 1, HAL_MAX_DELAY);
+
+    // Tap threshold (adjust)
+    data = 0x20; // 0.5g
+    HAL_I2C_Mem_Write(&hi2c1, ADXL_ADDR, 0x1D, 1, &data, 1, HAL_MAX_DELAY);
+
+    // Tap duration
+    data = 0x10; // ~10ms
+    HAL_I2C_Mem_Write(&hi2c1, ADXL_ADDR, 0x21, 1, &data, 1, HAL_MAX_DELAY);
+
+    // Enable tap on XYZ
+    data = 0x07;
+    HAL_I2C_Mem_Write(&hi2c1, ADXL_ADDR, 0x2A, 1, &data, 1, HAL_MAX_DELAY);
+
+    // Route single-tap interrupt to INT1
+    data = 0x00;
+    HAL_I2C_Mem_Write(&hi2c1, ADXL_ADDR, 0x2F, 1, &data, 1, HAL_MAX_DELAY);
+
+    // Enable single tap interrupt
+    data = 0x40;
+    HAL_I2C_Mem_Write(&hi2c1, ADXL_ADDR, 0x2E, 1, &data, 1, HAL_MAX_DELAY);
+
+    // Measurement mode
+    data = 0x08;
+    HAL_I2C_Mem_Write(&hi2c1, ADXL_ADDR, 0x2D, 1, &data, 1, HAL_MAX_DELAY);
+
+    // NOW clear the interrupt
+
+	HAL_I2C_Mem_Read(&hi2c1, ADXL_ADDR, 0x30, 1, &int_source, 1, HAL_MAX_DELAY);
+}
+
+void init_accelerometer2(void)
 {
 
     uint8_t data = 0;
@@ -31,7 +70,7 @@ void init_accelerometer(void)
 		data = 0x20;  // Threshold ~0.5g (adjust as needed)
 		HAL_I2C_Mem_Write(&hi2c1, ADXL_ADDR, ADXL_THRESH_ACT, 1, &data, 1, HAL_MAX_DELAY);
 
-		//data = 0x10;  // Tap duration = 16 * 625us = 10ms
+		data = 0x10;  // Tap duration = 16 * 625us = 10ms
 		HAL_I2C_Mem_Write(&hi2c1, ADXL_ADDR, TAP_DUR, 1, &data, 1, HAL_MAX_DELAY);
 
 		data = 0x07;  // TAP_AXES = 0x07 -> X, Y, Z enabled
@@ -42,7 +81,7 @@ void init_accelerometer(void)
 		HAL_I2C_Mem_Write(&hi2c1, ADXL_ADDR, ADXL_INT_MAP, 1, &data, 1, HAL_MAX_DELAY);
 
 		// 4. Enable single tap interrupt
-		data = 0x40;  // SINGLE_TAP
+		data = 0x10;  // SINGLE_TAP
 		HAL_I2C_Mem_Write(&hi2c1, ADXL_ADDR, INT_TAP_ENABLE, 1, &data, 1, HAL_MAX_DELAY);
 
 

@@ -37,7 +37,19 @@ Core/Src/display.o: ../Core/Src/display.c ../Core/Inc/display.h \
  ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_spi_ex.h \
  M:/embedded/stm32C0_Nucleus/qpc-tetris-water-system/libraries/OLED_SSD1306/include/ssd1306_conf.h \
  M:/embedded/stm32C0_Nucleus/qpc-tetris-water-system/libraries/OLED_SSD1306/include/ssd1306_fonts.h \
- M:/embedded/stm32C0_Nucleus/qpc-tetris-water-system/libraries/OLED_SSD1306/include/ssd1306.h
+ M:/embedded/stm32C0_Nucleus/qpc-tetris-water-system/libraries/OLED_SSD1306/include/ssd1306.h \
+ ../Middlewares/Third_Party/QuantumLeaps_RTEF_qpc/include/qpc.h \
+ ../Middlewares/Third_Party/QuantumLeaps_RTEF_qpc/ports/arm-cm/qk/gnu/qp_port.h \
+ ../Middlewares/Third_Party/QuantumLeaps_RTEF_qpc/ports/arm-cm/config/qp_config.h \
+ ../Middlewares/Third_Party/QuantumLeaps_RTEF_qpc/include/qequeue.h \
+ ../Middlewares/Third_Party/QuantumLeaps_RTEF_qpc/include/qmpool.h \
+ ../Middlewares/Third_Party/QuantumLeaps_RTEF_qpc/include/qp.h \
+ ../Middlewares/Third_Party/QuantumLeaps_RTEF_qpc/include/qk.h \
+ ../Middlewares/Third_Party/QuantumLeaps_RTEF_qpc/include/qsafe.h \
+ ../Middlewares/Third_Party/QuantumLeaps_RTEF_qpc/include/qs_dummy.h \
+ ../Core/Inc/main_app.h ../Core/Inc/temp_sensor.h ../Core/Inc/display.h \
+ ../Core/Inc/plant_sensor.h ../Core/Inc/sensor.h ../Core/Inc/rfbutton.h \
+ ../Core/Inc/tetris_board.h ../Core/Inc/tetromino.h
 ../Core/Inc/display.h:
 M:/embedded/stm32C0_Nucleus/qpc-tetris-water-system/libraries/OLED_SSD1306/include/ssd1306.h:
 M:/embedded/stm32C0_Nucleus/qpc-tetris-water-system/libraries/OLED_SSD1306/include/ssd1306_conf.h:
@@ -78,3 +90,20 @@ M:/embedded/stm32C0_Nucleus/qpc-tetris-water-system/libraries/OLED_SSD1306/inclu
 M:/embedded/stm32C0_Nucleus/qpc-tetris-water-system/libraries/OLED_SSD1306/include/ssd1306_conf.h:
 M:/embedded/stm32C0_Nucleus/qpc-tetris-water-system/libraries/OLED_SSD1306/include/ssd1306_fonts.h:
 M:/embedded/stm32C0_Nucleus/qpc-tetris-water-system/libraries/OLED_SSD1306/include/ssd1306.h:
+../Middlewares/Third_Party/QuantumLeaps_RTEF_qpc/include/qpc.h:
+../Middlewares/Third_Party/QuantumLeaps_RTEF_qpc/ports/arm-cm/qk/gnu/qp_port.h:
+../Middlewares/Third_Party/QuantumLeaps_RTEF_qpc/ports/arm-cm/config/qp_config.h:
+../Middlewares/Third_Party/QuantumLeaps_RTEF_qpc/include/qequeue.h:
+../Middlewares/Third_Party/QuantumLeaps_RTEF_qpc/include/qmpool.h:
+../Middlewares/Third_Party/QuantumLeaps_RTEF_qpc/include/qp.h:
+../Middlewares/Third_Party/QuantumLeaps_RTEF_qpc/include/qk.h:
+../Middlewares/Third_Party/QuantumLeaps_RTEF_qpc/include/qsafe.h:
+../Middlewares/Third_Party/QuantumLeaps_RTEF_qpc/include/qs_dummy.h:
+../Core/Inc/main_app.h:
+../Core/Inc/temp_sensor.h:
+../Core/Inc/display.h:
+../Core/Inc/plant_sensor.h:
+../Core/Inc/sensor.h:
+../Core/Inc/rfbutton.h:
+../Core/Inc/tetris_board.h:
+../Core/Inc/tetromino.h:

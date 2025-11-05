@@ -99,9 +99,6 @@ void Error_Handler(void);
 #define DEBUG_SWDIO_GPIO_Port GPIOA
 #define DEBUG_SWCLK_Pin GPIO_PIN_14
 #define DEBUG_SWCLK_GPIO_Port GPIOA
-#define accelerometer_Pin GPIO_PIN_7
-#define accelerometer_GPIO_Port GPIOB
-#define accelerometer_EXTI_IRQn EXTI4_15_IRQn
 
 /* USER CODE BEGIN Private defines */
 

@@ -13,6 +13,8 @@
 "./Core/Src/sysmem.o"
 "./Core/Src/system_stm32c0xx.o"
 "./Core/Src/temp_sensor.o"
+"./Core/Src/tetris_board.o"
+"./Core/Src/tetromino.o"
 "./Core/Startup/startup_stm32c031c6tx.o"
 "./Drivers/STM32C0xx_HAL_Driver/Src/stm32c0xx_hal.o"
 "./Drivers/STM32C0xx_HAL_Driver/Src/stm32c0xx_hal_adc.o"

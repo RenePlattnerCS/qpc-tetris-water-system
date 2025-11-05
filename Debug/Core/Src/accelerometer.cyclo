@@ -1,1 +1,2 @@
-../Core/Src/accelerometer.c:12:6:init_accelerometer	1
+../Core/Src/accelerometer.c:10:6:init_accelerometer	1
+../Core/Src/accelerometer.c:51:6:init_accelerometer2	1

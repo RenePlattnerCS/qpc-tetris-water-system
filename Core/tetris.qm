@@ -18,6 +18,9 @@ QTimeEvt_ctorX(&amp;me-&gt;tempPollEvt, &amp;me-&gt;super, POLL_SENSOR_SIG, 0U);
 QTimeEvt_ctorX(&amp;me-&gt;longPressEvt, &amp;me-&gt;super, BUTTON_LONG_SIG, 0U);
 QTimeEvt_ctorX(&amp;me-&gt;dryTimerEvt, &amp;me-&gt;super, WATER_PLANT_SIG, 0U);
 
+Board_ctor(&amp;me-&gt;board_inst, gridArray, 10, 10, 0,0, true, 3);
+
+
 me-&gt;currentTemp = 0.0f;</code>
   </operation>
   <!--${Shared::AO_Sensor}-->
@@ -67,6 +70,10 @@ me-&gt;dma_index = 0;
    <attribute name="longPressEvt" type="QTimeEvt" visibility="0x00" properties="0x00"/>
    <!--${AOs::MainApp::dryTimerEvt}-->
    <attribute name="dryTimerEvt" type="QTimeEvt" visibility="0x00" properties="0x00"/>
+   <!--${AOs::MainApp::line_state_inst}-->
+   <attribute name="line_state_inst" type="LineState" visibility="0x02" properties="0x00"/>
+   <!--${AOs::MainApp::board_inst}-->
+   <attribute name="board_inst" type="Board" visibility="0x02" properties="0x00"/>
    <!--${AOs::MainApp::calc_dryness_percent}-->
    <operation name="calc_dryness_percent" type="uint8_t" visibility="0x02" properties="0x01">
     <!--${AOs::MainApp::calc_dryness_per~::dryness}-->
@@ -86,6 +93,32 @@ uint8_t percent = 0;
 percent = ((dryness - MAX_WET) * 100) / (MAX_DRY - MAX_WET);
 
 return percent;</code>
+   </operation>
+   <!--${AOs::MainApp::init_line_state}-->
+   <operation name="init_line_state" type="void" visibility="0x02" properties="0x01">
+    <!--${AOs::MainApp::init_line_state::ls}-->
+    <parameter name="ls" type="LineState *"/>
+    <!--${AOs::MainApp::init_line_state::x0}-->
+    <parameter name="x0" type="int"/>
+    <!--${AOs::MainApp::init_line_state::x1}-->
+    <parameter name="x1" type="int"/>
+    <!--${AOs::MainApp::init_line_state::y0}-->
+    <parameter name="y0" type="int"/>
+    <!--${AOs::MainApp::init_line_state::y1}-->
+    <parameter name="y1" type="int"/>
+    <code>ls-&gt;x0 = x0;
+ls-&gt;x1 = x1;
+ls-&gt;y0 = y0;
+ls-&gt;y1 = y1;
+ls-&gt;x0 = x0;
+ls-&gt;dx = abs(x1 - x0);
+ls-&gt;dy = abs(y1 - y0);
+ls-&gt;sx = (x0 &lt; x1) ? 1 : -1;
+ls-&gt;sy = (y0 &lt; y1) ? 1 : -1;
+ls-&gt;err = ls-&gt;dx - ls-&gt;dy;
+ls-&gt;done = false;
+
+</code>
    </operation>
    <!--${AOs::MainApp::SM}-->
    <statechart properties="0x00">
@@ -291,12 +324,14 @@ HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_RESET);</action>
      <!--${AOs::MainApp::SM::tetris::start_screen}-->
      <state name="start_screen">
       <entry>QTimeEvt_armX(&amp;me-&gt;dryTimerEvt, 400U , 0U);
-display_tetris_start();</entry>
+display_tetris_logo();
+</entry>
       <exit>QTimeEvt_disarm(&amp;me-&gt;dryTimerEvt);
 </exit>
       <!--${AOs::MainApp::SM::tetris::start_screen::WATER_PLANT}-->
-      <tran trig="WATER_PLANT" target="../../2">
-       <tran_glyph conn="158,44,1,3,17">
+      <tran trig="WATER_PLANT" target="../../3">
+       <action brief="clear">clear_board();</action>
+       <tran_glyph conn="158,44,5,3,14">
         <action box="0,-2,10,2"/>
        </tran_glyph>
       </tran>
@@ -307,14 +342,82 @@ display_tetris_start();</entry>
      </state>
      <!--${AOs::MainApp::SM::tetris::game}-->
      <state name="game">
-      <entry>printf(&quot;timer triggered\n&quot;);</entry>
-      <state_glyph node="175,33,43,60">
+      <entry>printf(&quot;entered tetris game\n&quot;);
+/*
+Tetromino t1;
+Tetromino_ctor(&amp;t1, TETRO_I);
+Board_placeTetromino(&amp;board, &amp;t1);
+t1.y = 5;
+Board_placeTetromino(&amp;board, &amp;t1);
+draw_board(&amp;board);
+*/</entry>
+      <state_glyph node="233,26,43,60">
        <entry box="0,3,6,2"/>
       </state_glyph>
      </state>
-     <state_glyph node="129,12,90,87"/>
+     <!--${AOs::MainApp::SM::tetris::init_board}-->
+     <state name="init_board">
+      <entry>Board_init(&amp;me-&gt;board_inst);
+printf(&quot;board initialized\n&quot;);
+static QEvt const e = {DRAW_OUTLINE_SIG, 0U, 0U};
+QACTIVE_POST(AO_Main_App, &amp;e, me);</entry>
+      <!--${AOs::MainApp::SM::tetris::init_board::BOARD_SETUP_DONE}-->
+      <tran trig="BOARD_SETUP_DONE" target="../../2">
+       <tran_glyph conn="194,45,1,3,39">
+        <action box="0,-2,10,2"/>
+       </tran_glyph>
+      </tran>
+      <!--${AOs::MainApp::SM::tetris::init_board::DRAW_OUTLINE}-->
+      <tran trig="DRAW_OUTLINE" target="../../4">
+       <action>
+
+</action>
+       <tran_glyph conn="183,52,4,0,7">
+        <action box="0,-2,10,2"/>
+       </tran_glyph>
+      </tran>
+      <state_glyph node="172,38,22,14">
+       <entry box="0,3,6,2"/>
+      </state_glyph>
+     </state>
+     <!--${AOs::MainApp::SM::tetris::top_border}-->
+     <state name="top_border">
+      <entry>int w = me-&gt;board_inst.width  * me-&gt;board_inst.blockSize;
+int h = me-&gt;board_inst.height * me-&gt;board_inst.blockSize;
+
+int x0 = me-&gt;board_inst.pos_x;
+int y0 = me-&gt;board_inst.pos_y;
+
+MainApp_init_line_state(&amp;me-&gt;line_state_inst, x0, y0, x0 + w - 1, y0);
+printf(&quot;init struct \n&quot;);
+
+static QEvt const e = {DRAW_OUTLINE_SIG, 0U, 0U};
+QACTIVE_POST(AO_Main_App, &amp;e, me);
+</entry>
+      <!--${AOs::MainApp::SM::tetris::top_border::DRAW_OUTLINE}-->
+      <tran trig="DRAW_OUTLINE">
+       <action>printf(&quot;line step: \n&quot;);
+draw_line_step(&amp;me-&gt;line_state_inst);
+
+</action>
+       <tran_glyph conn="193,69,1,-1,-12">
+        <action box="0,-2,10,2"/>
+       </tran_glyph>
+      </tran>
+      <!--${AOs::MainApp::SM::tetris::top_border::DRAW_OUTLINE_DONE}-->
+      <tran trig="DRAW_OUTLINE_DONE" target="../../3">
+       <action>printf(&quot;done drawing line\n&quot;);</action>
+       <tran_glyph conn="190,59,0,2,-7">
+        <action box="0,-2,10,2"/>
+       </tran_glyph>
+      </tran>
+      <state_glyph node="173,59,20,16">
+       <entry box="0,3,6,2"/>
+      </state_glyph>
+     </state>
+     <state_glyph node="129,12,171,125"/>
     </state>
-    <state_diagram size="238,164"/>
+    <state_diagram size="333,204"/>
    </statechart>
   </class>
   <!--${AOs::Sensor}-->
@@ -558,7 +661,8 @@ Delay_us(30);  // 20–40 µs wait</action>
 #include &quot;plant_sensor.h&quot;
 #include &quot;sensor.h&quot;
 #include &quot;rfbutton.h&quot;
-
+#include &quot;tetris_board.h&quot;
+//#include &quot;tetromino.h&quot;
 
 //keep track of substates
 typedef enum {
@@ -586,6 +690,9 @@ enum MenuGameSignals {
     PLANT_DRY_SIG,
     WATER_PLANT_SIG,
     START_TETRIS_SIG,
+    BOARD_SETUP_DONE_SIG,
+    DRAW_OUTLINE_SIG,
+    DRAW_OUTLINE_DONE_SIG,
     MAX_SIG  
 };
 
@@ -646,6 +753,7 @@ $declare${AOs::RFButton}
 
 //DMA buffer
 static __attribute__((section(&quot;.bss&quot;))) __attribute__((aligned(4))) volatile uint32_t Sensor_dht11_dma_buffer[DHT11_MAX_EDGES];
+static uint8_t gridArray[200];
 
 $define${AOs::MainApp}
 $define${Shared}

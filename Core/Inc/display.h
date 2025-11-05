@@ -13,10 +13,19 @@
 #include "ssd1306_fonts.h"
 #include <string.h>
 #include <stdint.h>
+#include <stdbool.h>
 
+
+typedef struct {
+    int x0, y0, x1, y1, dx, dy, sx, sy, err;
+    bool done;
+} LineState;
 
 void display_temp(uint16_t temp);
 void display_dry(uint8_t dryness_percent);
-void display_tetris_start();
+void display_tetris_logo();
+void clear_display(void);
+void draw_pixel(uint8_t x, uint8_t y, uint8_t width, uint8_t height);
+void draw_line_step(LineState *ls);
 
 #endif /* INC_DISPLAY_H_ */

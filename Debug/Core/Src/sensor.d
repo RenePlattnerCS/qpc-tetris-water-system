@@ -50,6 +50,7 @@ Core/Src/sensor.o: ../Core/Src/sensor.c ../Core/Inc/sensor.h \
  M:/embedded/stm32C0_Nucleus/qpc-tetris-water-system/libraries/OLED_SSD1306/include/ssd1306_fonts.h \
  M:/embedded/stm32C0_Nucleus/qpc-tetris-water-system/libraries/OLED_SSD1306/include/ssd1306.h \
  ../Core/Inc/plant_sensor.h ../Core/Inc/sensor.h ../Core/Inc/rfbutton.h \
+ ../Core/Inc/tetris_board.h ../Core/Inc/tetromino.h \
  ../Core/Inc/app_config.h ../Core/Inc/temp_sensor.h
 ../Core/Inc/sensor.h:
 ../Middlewares/Third_Party/QuantumLeaps_RTEF_qpc/include/qpc.h:
@@ -106,5 +107,7 @@ M:/embedded/stm32C0_Nucleus/qpc-tetris-water-system/libraries/OLED_SSD1306/inclu
 ../Core/Inc/plant_sensor.h:
 ../Core/Inc/sensor.h:
 ../Core/Inc/rfbutton.h:
+../Core/Inc/tetris_board.h:
+../Core/Inc/tetromino.h:
 ../Core/Inc/app_config.h:
 ../Core/Inc/temp_sensor.h:

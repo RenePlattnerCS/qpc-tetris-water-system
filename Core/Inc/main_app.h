@@ -44,7 +44,8 @@
 #include "plant_sensor.h"
 #include "sensor.h"
 #include "rfbutton.h"
-
+#include "tetris_board.h"
+//#include "tetromino.h"
 
 //keep track of substates
 typedef enum {
@@ -72,12 +73,22 @@ typedef struct MainApp {
 // public:
     QTimeEvt longPressEvt;
     QTimeEvt dryTimerEvt;
+
+// private:
+    LineState line_state_inst;
+    Board board_inst;
 } MainApp;
 
 extern MainApp MainApp_inst;
 
 // private:
 uint8_t MainApp_calc_dryness_percent(uint16_t dryness);
+void MainApp_init_line_state(
+    LineState * ls,
+    int x0,
+    int x1,
+    int y0,
+    int y1);
 
 // protected:
 QState MainApp_initial(MainApp * const me, void const * const par);
@@ -88,6 +99,8 @@ QState MainApp_pump(MainApp * const me, QEvt const * const e);
 QState MainApp_tetris(MainApp * const me, QEvt const * const e);
 QState MainApp_start_screen(MainApp * const me, QEvt const * const e);
 QState MainApp_game(MainApp * const me, QEvt const * const e);
+QState MainApp_init_board(MainApp * const me, QEvt const * const e);
+QState MainApp_top_border(MainApp * const me, QEvt const * const e);
 //$enddecl${AOs::MainApp} ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 //$declare${Shared} vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
@@ -127,6 +140,9 @@ enum MenuGameSignals {
     PLANT_DRY_SIG,
     WATER_PLANT_SIG,
     START_TETRIS_SIG,
+    BOARD_SETUP_DONE_SIG,
+    DRAW_OUTLINE_SIG,
+    DRAW_OUTLINE_DONE_SIG,
     MAX_SIG
 };
 

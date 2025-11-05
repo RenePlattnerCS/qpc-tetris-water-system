@@ -154,89 +154,7 @@ void EXTI0_1_IRQHandler(void)
 
     QK_ISR_EXIT();
 }
-/*
-    // Disable EXTI temporarily to avoid bounce interrupts
-    HAL_NVIC_DisableIRQ(EXTI0_1_IRQn);
 
-    // Post debounce event
-    QEvt *e = Q_NEW(QEvt, BUTTON_DEBOUNCE_SIG);
-    QACTIVE_POST(AO_Main_App, e, &l_EXTI_IRQHandler);
-	*/
-
-
-
-/*
- * static QEvt const buttonLongEvt = {BUTTON_RELEASED_SIG, 0U, 0U};
- *
- *
-void ADC1_IRQHandler(void)
-{
-	QK_ISR_ENTRY();
-	HAL_ADC_IRQHandler(&hadc1);
-	QK_ISR_EXIT();
-}
-
-void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc)
-{
-    if (hadc->Instance == ADC1) {
-        uint16_t adcValue = (uint16_t)HAL_ADC_GetValue(hadc);
-
-        ADCEvent *e = Q_NEW(ADCEvent, ADC_DONE_SIG);
-        e->value = adcValue;
-
-        QACTIVE_POST(&AO_Sensor, &e, &ADC1_IRQHandler);
-    }
-}
-*/
-
-/*
-void TIM3_IRQHandler(void);
-void TIM3_IRQHandler(void)
-{
-	if (__HAL_TIM_GET_FLAG(&htim3, TIM_FLAG_UPDATE)) {
-		__HAL_TIM_CLEAR_FLAG(&htim3, TIM_FLAG_UPDATE);
-	}
-
-	QK_ISR_ENTRY();
-    HAL_TIM_IRQHandler(&htim3);
-    QK_ISR_EXIT();
-}
-static uint8_t ii = 0;
-
-void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim)
-{
-	// Read captured pulse width (in timer ticks / µs)
-	    uint32_t pulse_length = HAL_TIM_ReadCapturedValue(htim, TIM_CHANNEL_1);
-
-	    // Post event to DHT11 AO (optional)
-	    // DHT11Evt *evt = Q_NEW(DHT11Evt, DHT11_TIMER_IC_SIG);
-	    // evt->pulse_length = pulse_length;
-	    // QACTIVE_POST(AO_Sensor, &evt->super, NULL);
-
-	    // Debug output
-	    uint32_t sr = htim->Instance->SR;
-	    uint32_t dier = htim->Instance->DIER;
-	    printf("SR=0x%04lx DIER=0x%04lx i=%u pulse=%lu\n", sr, dier, ii++, pulse_length);
-
-
-	uint32_t pulse_length = HAL_TIM_ReadCapturedValue(htim, TIM_CHANNEL_1);
-    static uint32_t last_tick = 0;
-    uint32_t current_tick = HAL_TIM_ReadCapturedValue(&htim3, TIM_CHANNEL_1);
-    uint32_t pulse_length = current_tick - last_tick; // µs
-    last_tick = current_tick;
-
-    // Post event to DHT11 AO
-    //DHT11Evt *evt = Q_NEW(DHT11Evt, DHT11_TIMER_IC_SIG);
-
-    //evt->pulse_length = pulse_length;
-    //QACTIVE_POST(AO_Sensor, &evt->super, NULL);
-    uint32_t sr = htim->Instance->SR;
-	uint32_t dier = htim->Instance->DIER;
-	printf("SR=0x%04lx DIER=0x%04lx i=%u\n", sr, dier, ii++);
-
-}
-
-*/
 
 static uint32_t timestamps[TIMESTAMP_SIZE];
 static uint8_t pulseCount = 0;
@@ -290,7 +208,7 @@ void BSP_get_timestamps(uint32_t *dest) {
 void EXTI4_15_IRQHandler(void)
 {
 	QK_ISR_ENTRY();
-    HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_7);
+    HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_6);
     QK_ISR_EXIT();
 }
 
@@ -298,7 +216,7 @@ void EXTI4_15_IRQHandler(void)
 void HAL_GPIO_EXTI_Rising_Callback(uint16_t GPIO_Pin)
 {
 		printf("rising edge \n");
-		 if (GPIO_Pin == GPIO_PIN_7) {
+		 if (GPIO_Pin == GPIO_PIN_6) {
 		        uint8_t src;
 		        //HAL_I2C_Mem_Read(&hi2c1, ADXL_ADDR, ADXL_INT_SOURCE, 1, &src, 1, HAL_MAX_DELAY);
 		        HAL_I2C_Mem_Read(&hi2c1, ADXL_ADDR, 0x30, 1, &src, 1, HAL_MAX_DELAY);
@@ -369,21 +287,6 @@ void BSP_init(void) {
 	LL_TIM_EnableCounter(TIM14);
 	LL_TIM_EnableCounter(TIM3);
 
-
-	//TIM3->CR1 |= TIM_CR1_UDIS;
-
-	//if (HAL_TIM_Base_Start(&htim3) != HAL_OK) {
-	//		Error_Handler();
-	//	}
-
-	//HAL_TIM_IC_Start_IT(&htim3, TIM_CHANNEL_1);
-	//__HAL_TIM_DISABLE_IT(&htim3, TIM_IT_UPDATE);
-	//__HAL_TIM_CLEAR_FLAG(&htim3, TIM_FLAG_UPDATE);
-
-	// Enable CC1 interrupt
-	//LL_TIM_EnableIT_CC1(TIM3);
-	// Enable counter
-	//LL_TIM_EnableCounter(TIM3);
 	LL_TIM_SetSlaveMode(TIM3, LL_TIM_SLAVEMODE_RESET);
 	LL_TIM_SetTriggerInput(TIM3, LL_TIM_TS_TI1FP1);
 
