@@ -13,6 +13,6 @@
 ../Core/Src/main_app.c:491:8:MainApp_left_border	40	static
 ../Core/Src/main_app.c:542:8:MainApp_btm_border	40	static
 ../Core/Src/main_app.c:592:8:MainApp_right_border	40	static
-../Core/Src/main_app.c:649:6:Main_App_ctor	32	static
+../Core/Src/main_app.c:649:6:Main_App_ctor	24	static
 ../Core/Src/main_app.c:665:6:Sensor_ctor	8	static
 ../Core/Src/main_app.c:678:6:RFButton_ctor	8	static

@@ -606,7 +606,7 @@ QState MainApp_right_border(MainApp * const me, QEvt const * const e) {
             printf("board h: %u \n", h);
 
             MainApp_init_line_state(&me->line_state_inst,
-                                                x0 , y0 + h - 1,
+                                                x0 , y0 + h -1,
                                                 x0 , y0 );
 
             static QEvt const e = {DRAW_OUTLINE_SIG, 0U, 0U};
@@ -652,7 +652,7 @@ void Main_App_ctor(MainApp * const me) {
     QTimeEvt_ctorX(&me->longPressEvt, &me->super, BUTTON_LONG_SIG, 0U);
     QTimeEvt_ctorX(&me->dryTimerEvt, &me->super, WATER_PLANT_SIG, 0U);
 
-    Board_ctor(&me->board_inst, gridArray, 8, 8, 0,0, true, 2);
+    Board_ctor(&me->board_inst, gridArray, 20, 10, 32,1, true, 3);
 
 
     me->currentTemp = 0.0f;

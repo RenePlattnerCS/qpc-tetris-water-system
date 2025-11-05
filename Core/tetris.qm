@@ -18,7 +18,7 @@ QTimeEvt_ctorX(&amp;me-&gt;tempPollEvt, &amp;me-&gt;super, POLL_SENSOR_SIG, 0U);
 QTimeEvt_ctorX(&amp;me-&gt;longPressEvt, &amp;me-&gt;super, BUTTON_LONG_SIG, 0U);
 QTimeEvt_ctorX(&amp;me-&gt;dryTimerEvt, &amp;me-&gt;super, WATER_PLANT_SIG, 0U);
 
-Board_ctor(&amp;me-&gt;board_inst, gridArray, 8, 8, 0,0, true, 2);
+Board_ctor(&amp;me-&gt;board_inst, gridArray, 20, 10, 32,1, true, 3);
 
 
 me-&gt;currentTemp = 0.0f;</code>
@@ -508,7 +508,7 @@ printf(&quot;board w: %u \n&quot;, w);
 printf(&quot;board h: %u \n&quot;, h);
 
 MainApp_init_line_state(&amp;me-&gt;line_state_inst,
-                                    x0 , y0 + h - 1,
+                                    x0 , y0 + h -1,
                                     x0 , y0 );
 
 static QEvt const e = {DRAW_OUTLINE_SIG, 0U, 0U};
