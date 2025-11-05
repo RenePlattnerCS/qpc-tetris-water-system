@@ -1,5 +1,5 @@
-../Core/Src/sensor.c:80:8:Sensor_waiting	3
-../Core/Src/sensor.c:200:8:Sensor_start_dht	3
+../Core/Src/sensor.c:94:8:Sensor_waiting	3
+../Core/Src/sensor.c:214:8:Sensor_start_dht	3
 ../Core/Src/sensor.c:60:10:Sensor_get_adc_dryness	2
-../Core/Src/sensor.c:105:8:Sensor_wait_response	11
-../Core/Src/sensor.c:74:8:Sensor_initial	1
+../Core/Src/sensor.c:119:8:Sensor_wait_response	11
+../Core/Src/sensor.c:88:8:Sensor_initial	1

@@ -542,7 +542,8 @@ draw_line_step(&amp;me-&gt;line_state_inst);
    <attribute name="dht11StartEvt" type="QTimeEvt" visibility="0x02" properties="0x00"/>
    <!--${AOs::Sensor::get_adc_dryness}-->
    <operation name="get_adc_dryness" type="uint16_t" visibility="0x02" properties="0x01">
-    <code>// Start ADC conversion
+    <code>/*
+// Start ADC conversion
 HAL_ADC_Start(&amp;hadc1);
 
 // Wait for conversion to complete
@@ -551,7 +552,22 @@ if (HAL_ADC_PollForConversion(&amp;hadc1, 10) == HAL_OK) { // timeout in ms
     return (uint16_t)HAL_ADC_GetValue(&amp;hadc1);
 }
 
-return 0;</code>
+return 0;
+*/
+LL_ADC_Enable(ADC1);
+
+LL_ADC_REG_StartConversion(ADC1);
+
+// Wait for conversion to complete
+while(!LL_ADC_IsActiveFlag_EOC(ADC1));
+
+// Read ADC value
+uint16_t adc_value = LL_ADC_REG_ReadConversionData12(ADC1);
+
+// Clear end-of-conversion flag (optional, sometimes auto-cleared)
+LL_ADC_ClearFlag_EOC(ADC1);
+
+return adc_value;</code>
    </operation>
    <!--${AOs::Sensor::SM}-->
    <statechart properties="0x00">
@@ -863,8 +879,8 @@ $define${Shared}
 #include &quot;main_app.h&quot;
 #include &quot;app_config.h&quot;
 #include &quot;temp_sensor.h&quot;
-
-extern ADC_HandleTypeDef hadc1;
+#include &quot;stm32c0xx_ll_adc.h&quot;
+//extern ADC_HandleTypeDef hadc1;
 //extern TIM_HandleTypeDef htim3;
 //extern DMA_HandleTypeDef hdma;
 //extern DMA_HandleTypeDef hdma_tim3_ch1;

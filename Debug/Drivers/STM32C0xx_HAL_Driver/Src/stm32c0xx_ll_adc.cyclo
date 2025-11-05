@@ -1,0 +1,8 @@
+../Drivers/STM32C0xx_HAL_Driver/Src/stm32c0xx_ll_adc.c:219:13:LL_ADC_CommonDeInit	1
+../Drivers/STM32C0xx_HAL_Driver/Src/stm32c0xx_ll_adc.c:251:13:LL_ADC_CommonInit	2
+../Drivers/STM32C0xx_HAL_Driver/Src/stm32c0xx_ll_adc.c:288:6:LL_ADC_CommonStructInit	1
+../Drivers/STM32C0xx_HAL_Driver/Src/stm32c0xx_ll_adc.c:312:13:LL_ADC_DeInit	11
+../Drivers/STM32C0xx_HAL_Driver/Src/stm32c0xx_ll_adc.c:522:13:LL_ADC_Init	2
+../Drivers/STM32C0xx_HAL_Driver/Src/stm32c0xx_ll_adc.c:575:6:LL_ADC_StructInit	1
+../Drivers/STM32C0xx_HAL_Driver/Src/stm32c0xx_ll_adc.c:626:13:LL_ADC_REG_Init	5
+../Drivers/STM32C0xx_HAL_Driver/Src/stm32c0xx_ll_adc.c:734:6:LL_ADC_REG_StructInit	1

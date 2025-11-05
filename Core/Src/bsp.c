@@ -40,13 +40,14 @@
 #include "NRF_chip.h"
 #include "temp_sensor.h"
 #include "stm32c0xx_ll_tim.h"
+#include "stm32c0xx_ll_adc.h"
 #include "accelerometer.h"
 // add other drivers if necessary...
 extern MainApp MainApp_inst;
 //extern TIM_HandleTypeDef  htim14;
 //extern TIM_HandleTypeDef  htim3;
 //extern TIM_HandleTypeDef  htim17;
-extern ADC_HandleTypeDef hadc1;
+//extern ADC_HandleTypeDef hadc1;
 //extern uint32_t dht11_dma_buffer;
 //extern QActive AO_RFButton;
 //extern DMA_HandleTypeDef hdma_tim3_ch1;
@@ -303,7 +304,8 @@ void BSP_init(void) {
 	LL_TIM_EnableCounter(TIM3);          // counter enabled
 	LL_TIM_EnableIT_CC1(TIM3);           // interrupt enabled
 
-
+	//ADC
+	LL_ADC_Enable(ADC1);
 
 	ssd1306_Init();
 	init_nrf();

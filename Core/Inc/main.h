@@ -28,6 +28,7 @@ extern "C" {
 
 /* Includes ------------------------------------------------------------------*/
 #include "stm32c0xx_hal.h"
+#include "stm32c0xx_ll_adc.h"
 #include "stm32c0xx_ll_tim.h"
 #include "stm32c0xx_ll_usart.h"
 #include "stm32c0xx_ll_rcc.h"

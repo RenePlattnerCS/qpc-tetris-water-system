@@ -30,10 +30,6 @@ Core/Src/main_app.o: ../Core/Src/main_app.c ../Core/Inc/main_app.h \
  ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_dma.h \
  ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_dma_ex.h \
  ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_cortex.h \
- ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_adc.h \
- ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_adc.h \
- ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_adc_ex.h \
- ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_adc_ex.h \
  ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_exti.h \
  ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_flash.h \
  ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_flash_ex.h \
@@ -56,6 +52,7 @@ Core/Src/main_app.o: ../Core/Src/main_app.c ../Core/Inc/main_app.h \
  M:/embedded/stm32C0_Nucleus/qpc-tetris-water-system/libraries/NRF24/includes/NRF24_reg_addresses.h \
  M:/embedded/stm32C0_Nucleus/qpc-tetris-water-system/libraries/NRF24/includes/NRF24_conf.h \
  ../Core/Inc/main.h \
+ ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_adc.h \
  ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_tim.h \
  ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_usart.h \
  ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_rcc.h \
@@ -100,10 +97,6 @@ Core/Src/main_app.o: ../Core/Src/main_app.c ../Core/Inc/main_app.h \
 ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_dma.h:
 ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_dma_ex.h:
 ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_cortex.h:
-../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_adc.h:
-../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_adc.h:
-../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_adc_ex.h:
-../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_adc_ex.h:
 ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_exti.h:
 ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_flash.h:
 ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_flash_ex.h:
@@ -130,6 +123,7 @@ M:/embedded/stm32C0_Nucleus/qpc-tetris-water-system/libraries/NRF24/includes/NRF
 M:/embedded/stm32C0_Nucleus/qpc-tetris-water-system/libraries/NRF24/includes/NRF24_reg_addresses.h:
 M:/embedded/stm32C0_Nucleus/qpc-tetris-water-system/libraries/NRF24/includes/NRF24_conf.h:
 ../Core/Inc/main.h:
+../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_adc.h:
 ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_tim.h:
 ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_usart.h:
 ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_rcc.h:

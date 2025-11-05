@@ -40,8 +40,8 @@
 #include "main_app.h"
 #include "app_config.h"
 #include "temp_sensor.h"
-
-extern ADC_HandleTypeDef hadc1;
+#include "stm32c0xx_ll_adc.h"
+//extern ADC_HandleTypeDef hadc1;
 //extern TIM_HandleTypeDef htim3;
 //extern DMA_HandleTypeDef hdma;
 //extern DMA_HandleTypeDef hdma_tim3_ch1;
@@ -58,6 +58,7 @@ Sensor Sensor_inst;
 
 //${AOs::Sensor::get_adc_dryness} ............................................
 uint16_t Sensor_get_adc_dryness(void) {
+    /*
     // Start ADC conversion
     HAL_ADC_Start(&hadc1);
 
@@ -68,6 +69,19 @@ uint16_t Sensor_get_adc_dryness(void) {
     }
 
     return 0;
+    */
+    LL_ADC_REG_StartConversion(ADC1);
+
+    // Wait for conversion to complete
+    while(!LL_ADC_IsActiveFlag_EOC(ADC1));
+
+    // Read ADC value
+    uint16_t adc_value = LL_ADC_REG_ReadConversionData12(ADC1);
+
+    // Clear end-of-conversion flag (optional, sometimes auto-cleared)
+    LL_ADC_ClearFlag_EOC(ADC1);
+
+    return adc_value;
 }
 
 //${AOs::Sensor::SM} .........................................................
