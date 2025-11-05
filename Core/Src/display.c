@@ -31,8 +31,8 @@ void draw_pixel_block(uint8_t x, uint8_t y, uint8_t width, uint8_t height)
 			ssd1306_DrawPixel(x+i, y+j, White);
 		}
 	}
-
 	ssd1306_UpdateScreen();
+
 }
 
 void draw_pixel(uint8_t x, uint8_t y)
@@ -71,35 +71,6 @@ void draw_line_step(LineState *ls)
     QACTIVE_POST(AO_Main_App, Q_NEW(QEvt, DRAW_OUTLINE_SIG), 0);
 }
 
-
-
-
-void draw_line_step2(LineState *ls)
-{
-    if(ls->done)
-	{
-		return;
-	}
-
-    draw_pixel(ls->x0, ls->y0);
-
-    if(ls->x0 == ls->x1 && ls->y0 == ls->y1) {
-        ls->done = true;
-        static QEvt const e = {DRAW_OUTLINE_DONE_SIG, 0U, 0U};
-        QACTIVE_POST(AO_Main_App, &e, NULL);
-        return;
-    }
-
-    int e2 = 2 * ls->err;
-    if(e2 > -ls->dy) { ls->err -= ls->dy; ls->x0 += ls->sx; }
-    if(e2 < ls->dx)  { ls->err += ls->dx; ls->y0 += ls->sy; }
-
-    //static QEvt const e = {DRAW_OUTLINE_SIG, 0U, 0U};
-    //QACTIVE_POST(AO_Main_App, &e, NULL);
-
-    QEvt *e = Q_NEW(QEvt, DRAW_OUTLINE_SIG);
-    QACTIVE_POST(AO_Main_App, e, 0);
-}
 
 void display_dry(uint8_t dryness_percent)
 {

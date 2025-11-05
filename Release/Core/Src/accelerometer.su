@@ -1,0 +1,2 @@
+../Core/Src/accelerometer.c:10:6:init_accelerometer	48	static
+../Core/Src/accelerometer.c:51:6:init_accelerometer2	48	static

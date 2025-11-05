@@ -22,7 +22,7 @@ typedef struct {
 } Tetromino;
 
 
-void Tetromino_init(Tetromino *t, TetrominoType type);
+void Tetromino_ctor(Tetromino *t, TetrominoType type);
 
 
 

@@ -392,14 +392,26 @@ QState MainApp_game(MainApp * const me, QEvt const * const e) {
         //${AOs::MainApp::SM::tetris::game}
         case Q_ENTRY_SIG: {
             printf("entered tetris game\n");
-            /*
+            //QTimeEvt_armX(&me->tickEvt, 50U, 50U); //20 fps
+            QTimeEvt_armX(&me->dryTimerEvt, 50U , 50U);
+
+
             Tetromino t1;
             Tetromino_ctor(&t1, TETRO_I);
-            Board_placeTetromino(&board, &t1);
-            t1.y = 5;
-            Board_placeTetromino(&board, &t1);
-            draw_board(&board);
-            */
+            Tetromino t2;
+            Tetromino_ctor(&t2, TETRO_O);
+            Board_placeTetromino( &me->board_inst, &t1);
+            draw_board(&me->board_inst);
+            t2.y = 20;
+            Board_placeTetromino( &me->board_inst, &t2);
+
+            draw_board(&me->board_inst);
+            status_ = Q_HANDLED();
+            break;
+        }
+        //${AOs::MainApp::SM::tetris::game::WATER_PLANT}
+        case WATER_PLANT_SIG: {
+            //printf("tick\n");
             status_ = Q_HANDLED();
             break;
         }
@@ -419,16 +431,27 @@ QState MainApp_init_board(MainApp * const me, QEvt const * const e) {
         case Q_ENTRY_SIG: {
             Board_init(&me->board_inst);
             printf("board initialized\n");
-            static QEvt const e = {DRAW_OUTLINE_SIG, 0U, 0U};
-            QACTIVE_POST(AO_Main_App, &e, me);
+
             status_ = Q_HANDLED();
             break;
         }
-        //${AOs::MainApp::SM::tetris::init_board::DRAW_OUTLINE}
-        case DRAW_OUTLINE_SIG: {
+        //${AOs::MainApp::SM::tetris::init_board::initial}
+        case Q_INIT_SIG: {
+            int w, h, x0, y0;
+
+            w = me->board_inst.width  * me->board_inst.blockSize;
+            h = me->board_inst.height * me->board_inst.blockSize;
+            x0 = me->board_inst.pos_x;
+            y0 = me->board_inst.pos_y;
 
 
+            me->line_w = w;
+            me->line_h = h;
+            me->line_x0 = x0;
+            me->line_y0 = y0;
 
+            static QEvt const e = {DRAW_OUTLINE_SIG, 0U, 0U};
+            QACTIVE_POST(AO_Main_App, &e, me);
             status_ = Q_TRAN(&MainApp_top_border);
             break;
         }
@@ -440,24 +463,25 @@ QState MainApp_init_board(MainApp * const me, QEvt const * const e) {
     return status_;
 }
 
-//${AOs::MainApp::SM::tetris::top_border} ....................................
+//${AOs::MainApp::SM::tetris::init_board::top_border} ........................
 QState MainApp_top_border(MainApp * const me, QEvt const * const e) {
     QState status_;
     switch (e->sig) {
-        //${AOs::MainApp::SM::tetris::top_border}
+        //${AOs::MainApp::SM::tetris::init_board::top_border}
         case Q_ENTRY_SIG: {
 
-            int w = me->board_inst.width  * me->board_inst.blockSize;
-            int h = me->board_inst.height * me->board_inst.blockSize;
 
-            int x0 = me->board_inst.pos_x;
-            int y0 = me->board_inst.pos_y;
-            printf("board x: %u \n", x0);
-            printf("board y: %u \n", y0);
-            printf("board w: %u \n", w);
-            printf("board h: %u \n", h);
-
-            MainApp_init_line_state(&me->line_state_inst, x0, y0, x0 + w - 1, y0);
+            if(!me->board_inst.rotate_90)
+            {
+                MainApp_init_line_state(&me->line_state_inst, me->line_x0, me->line_y0, me->line_x0 + me->line_w - 1, me->line_y0);
+            }
+            else
+            {
+                MainApp_init_line_state(
+                    &me->line_state_inst,
+                    me->line_x0 + me->line_h , me->line_y0,
+                    me->line_x0 + me->line_h , me->line_y0 + me->line_w );
+            }
             printf("init struct \n");
 
             static QEvt const e = {DRAW_OUTLINE_SIG, 0U, 0U};
@@ -466,7 +490,7 @@ QState MainApp_top_border(MainApp * const me, QEvt const * const e) {
             status_ = Q_HANDLED();
             break;
         }
-        //${AOs::MainApp::SM::tetris::top_border::DRAW_OUTLINE}
+        //${AOs::MainApp::SM::tetris::init_board::top_border::DRAW_OUTLINE}
         case DRAW_OUTLINE_SIG: {
             draw_line_step(&me->line_state_inst);
 
@@ -474,40 +498,44 @@ QState MainApp_top_border(MainApp * const me, QEvt const * const e) {
             status_ = Q_HANDLED();
             break;
         }
-        //${AOs::MainApp::SM::tetris::top_border::DRAW_OUTLINE_DONE}
+        //${AOs::MainApp::SM::tetris::init_board::top_border::DRAW_OUTLINE_DONE}
         case DRAW_OUTLINE_DONE_SIG: {
             status_ = Q_TRAN(&MainApp_left_border);
             break;
         }
         default: {
-            status_ = Q_SUPER(&MainApp_tetris);
+            status_ = Q_SUPER(&MainApp_init_board);
             break;
         }
     }
     return status_;
 }
 
-//${AOs::MainApp::SM::tetris::left_border} ...................................
+//${AOs::MainApp::SM::tetris::init_board::left_border} .......................
 QState MainApp_left_border(MainApp * const me, QEvt const * const e) {
     QState status_;
     switch (e->sig) {
-        //${AOs::MainApp::SM::tetris::left_border}
+        //${AOs::MainApp::SM::tetris::init_board::left_border}
         case Q_ENTRY_SIG: {
-            int w = me->board_inst.width  * me->board_inst.blockSize;
-            int h = me->board_inst.height * me->board_inst.blockSize;
 
-            int x0 = me->board_inst.pos_x;
-            int y0 = me->board_inst.pos_y;
 
-            printf("board x: %u \n", x0);
-            printf("board y: %u \n", y0);
-            printf("board w: %u \n", w);
-            printf("board h: %u \n", h);
-
-            MainApp_init_line_state(&me->line_state_inst,
-                                                x0 + w - 1, y0,
-                                                x0 + w - 1, y0 + h - 1);
+            //MainApp_init_line_state(&me->line_state_inst,
+             //                                   me->line_x0 + me->line_w - 1, me->line_y0,
+            //                                    me->line_x0 + me->line_w - 1, me->line_y0 + me->line_h - 1);
             printf("init struct \n");
+            if (!me->board_inst.rotate_90) {
+                // original right vertical line
+                MainApp_init_line_state(
+                    &me->line_state_inst,
+                    me->line_x0 + me->line_w , me->line_y0,
+                    me->line_x0 + me->line_w , me->line_y0 + me->line_h );
+            } else {
+                // rotated 90° → horizontal bottom line
+                MainApp_init_line_state(
+                    &me->line_state_inst,
+                    me->line_x0, me->line_y0 + me->line_w,
+                    me->line_x0 + me->line_h, me->line_y0 + me->line_w);
+            }
 
             static QEvt const e = {DRAW_OUTLINE_SIG, 0U, 0U};
             QACTIVE_POST(AO_Main_App, &e, me);
@@ -517,7 +545,7 @@ QState MainApp_left_border(MainApp * const me, QEvt const * const e) {
             status_ = Q_HANDLED();
             break;
         }
-        //${AOs::MainApp::SM::tetris::left_border::DRAW_OUTLINE}
+        //${AOs::MainApp::SM::tetris::init_board::left_border::DRAW_OUTLINE}
         case DRAW_OUTLINE_SIG: {
             draw_line_step(&me->line_state_inst);
 
@@ -525,40 +553,44 @@ QState MainApp_left_border(MainApp * const me, QEvt const * const e) {
             status_ = Q_HANDLED();
             break;
         }
-        //${AOs::MainApp::SM::tetris::left_border::DRAW_OUTLINE_DONE}
+        //${AOs::MainApp::SM::tetris::init_board::left_border::DRAW_OUTLINE_DONE}
         case DRAW_OUTLINE_DONE_SIG: {
             status_ = Q_TRAN(&MainApp_btm_border);
             break;
         }
         default: {
-            status_ = Q_SUPER(&MainApp_tetris);
+            status_ = Q_SUPER(&MainApp_init_board);
             break;
         }
     }
     return status_;
 }
 
-//${AOs::MainApp::SM::tetris::btm_border} ....................................
+//${AOs::MainApp::SM::tetris::init_board::btm_border} ........................
 QState MainApp_btm_border(MainApp * const me, QEvt const * const e) {
     QState status_;
     switch (e->sig) {
-        //${AOs::MainApp::SM::tetris::btm_border}
+        //${AOs::MainApp::SM::tetris::init_board::btm_border}
         case Q_ENTRY_SIG: {
-            int w = me->board_inst.width  * me->board_inst.blockSize;
-            int h = me->board_inst.height * me->board_inst.blockSize;
 
-            int x0 = me->board_inst.pos_x;
-            int y0 = me->board_inst.pos_y;
 
-            printf("board x: %u \n", x0);
-            printf("board y: %u \n", y0);
-            printf("board w: %u \n", w);
-            printf("board h: %u \n", h);
-
-            MainApp_init_line_state(&me->line_state_inst,
-                                                x0 + w -1, y0 + h - 1,
-                                                x0 , y0 + h - 1);
-
+            //MainApp_init_line_state(&me->line_state_inst,
+            //                                    me->line_x0 + me->line_w -1, me->line_y0 + me->line_h - 1,
+            //                                    me->line_x0 , me->line_y0 + me->line_h - 1);
+            if (!me->board_inst.rotate_90) {
+                // original bottom horizontal line
+                MainApp_init_line_state(
+                    &me->line_state_inst,
+                    me->line_x0 + me->line_w, me->line_y0 + me->line_h,
+                    me->line_x0, me->line_y0 + me->line_h);
+            } else {
+                // rotated 90° → vertical left line
+                MainApp_init_line_state(
+                    &me->line_state_inst,
+                    me->line_x0, me->line_y0 + me->line_w,
+                    me->line_x0, me->line_y0
+                );
+            }
             static QEvt const e = {DRAW_OUTLINE_SIG, 0U, 0U};
             QACTIVE_POST(AO_Main_App, &e, me);
 
@@ -567,7 +599,7 @@ QState MainApp_btm_border(MainApp * const me, QEvt const * const e) {
             status_ = Q_HANDLED();
             break;
         }
-        //${AOs::MainApp::SM::tetris::btm_border::DRAW_OUTLINE}
+        //${AOs::MainApp::SM::tetris::init_board::btm_border::DRAW_OUTLINE}
         case DRAW_OUTLINE_SIG: {
             draw_line_step(&me->line_state_inst);
 
@@ -575,39 +607,41 @@ QState MainApp_btm_border(MainApp * const me, QEvt const * const e) {
             status_ = Q_HANDLED();
             break;
         }
-        //${AOs::MainApp::SM::tetris::btm_border::DRAW_OUTLINE_DONE}
+        //${AOs::MainApp::SM::tetris::init_board::btm_border::DRAW_OUTLINE_DONE}
         case DRAW_OUTLINE_DONE_SIG: {
             status_ = Q_TRAN(&MainApp_right_border);
             break;
         }
         default: {
-            status_ = Q_SUPER(&MainApp_tetris);
+            status_ = Q_SUPER(&MainApp_init_board);
             break;
         }
     }
     return status_;
 }
 
-//${AOs::MainApp::SM::tetris::right_border} ..................................
+//${AOs::MainApp::SM::tetris::init_board::right_border} ......................
 QState MainApp_right_border(MainApp * const me, QEvt const * const e) {
     QState status_;
     switch (e->sig) {
-        //${AOs::MainApp::SM::tetris::right_border}
+        //${AOs::MainApp::SM::tetris::init_board::right_border}
         case Q_ENTRY_SIG: {
-            int w = me->board_inst.width  * me->board_inst.blockSize;
-            int h = me->board_inst.height * me->board_inst.blockSize;
 
-            int x0 = me->board_inst.pos_x;
-            int y0 = me->board_inst.pos_y;
-
-            printf("board x: %u \n", x0);
-            printf("board y: %u \n", y0);
-            printf("board w: %u \n", w);
-            printf("board h: %u \n", h);
-
-            MainApp_init_line_state(&me->line_state_inst,
-                                                x0 , y0 + h -1,
-                                                x0 , y0 );
+            if (!me->board_inst.rotate_90) {
+                // original left vertical line
+                MainApp_init_line_state(
+                    &me->line_state_inst,
+                    me->line_x0, me->line_y0 + me->line_h,
+                    me->line_x0, me->line_y0
+                );
+            } else {
+                // rotated 90° → horizontal top line
+                MainApp_init_line_state(
+                    &me->line_state_inst,
+                    me->line_x0, me->line_y0,
+                    me->line_x0 + me->line_h, me->line_y0
+                );
+            }
 
             static QEvt const e = {DRAW_OUTLINE_SIG, 0U, 0U};
             QACTIVE_POST(AO_Main_App, &e, me);
@@ -618,7 +652,7 @@ QState MainApp_right_border(MainApp * const me, QEvt const * const e) {
             status_ = Q_HANDLED();
             break;
         }
-        //${AOs::MainApp::SM::tetris::right_border::DRAW_OUTLINE}
+        //${AOs::MainApp::SM::tetris::init_board::right_border::DRAW_OUTLINE}
         case DRAW_OUTLINE_SIG: {
             draw_line_step(&me->line_state_inst);
 
@@ -626,14 +660,14 @@ QState MainApp_right_border(MainApp * const me, QEvt const * const e) {
             status_ = Q_HANDLED();
             break;
         }
-        //${AOs::MainApp::SM::tetris::right_border::DRAW_OUTLINE_DONE}
+        //${AOs::MainApp::SM::tetris::init_board::right_border::DRAW_OUTLINE_DONE}
         case DRAW_OUTLINE_DONE_SIG: {
             printf("done drawing line\n");
             status_ = Q_TRAN(&MainApp_game);
             break;
         }
         default: {
-            status_ = Q_SUPER(&MainApp_tetris);
+            status_ = Q_SUPER(&MainApp_init_board);
             break;
         }
     }
@@ -651,8 +685,8 @@ void Main_App_ctor(MainApp * const me) {
     QTimeEvt_ctorX(&me->tempPollEvt, &me->super, POLL_SENSOR_SIG, 0U);
     QTimeEvt_ctorX(&me->longPressEvt, &me->super, BUTTON_LONG_SIG, 0U);
     QTimeEvt_ctorX(&me->dryTimerEvt, &me->super, WATER_PLANT_SIG, 0U);
-
-    Board_ctor(&me->board_inst, gridArray, 20, 10, 32,1, true, 3);
+    QTimeEvt_ctorX(&me->tickEvt, &me->super, TICK_SIG, 0U);
+    Board_ctor(&me->board_inst, gridArray, 10, 20, 16,1, true, 3);
 
 
     me->currentTemp = 0.0f;

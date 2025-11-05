@@ -30,10 +30,6 @@ Core/Src/rfbutton.o: ../Core/Src/rfbutton.c ../Core/Inc/rfbutton.h \
  ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_dma.h \
  ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_dma_ex.h \
  ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_cortex.h \
- ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_adc.h \
- ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_adc.h \
- ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_adc_ex.h \
- ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_adc_ex.h \
  ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_exti.h \
  ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_flash.h \
  ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_flash_ex.h \
@@ -43,10 +39,6 @@ Core/Src/rfbutton.o: ../Core/Src/rfbutton.c ../Core/Inc/rfbutton.h \
  ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_pwr_ex.h \
  ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_spi.h \
  ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_spi_ex.h \
- ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_tim.h \
- ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_tim_ex.h \
- ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_uart.h \
- ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_uart_ex.h \
  ../Core/Inc/display.h \
  M:/embedded/stm32C0_Nucleus/qpc-tetris-water-system/libraries/OLED_SSD1306/include/ssd1306.h \
  M:/embedded/stm32C0_Nucleus/qpc-tetris-water-system/libraries/OLED_SSD1306/include/ssd1306_conf.h \
@@ -54,6 +46,7 @@ Core/Src/rfbutton.o: ../Core/Src/rfbutton.c ../Core/Inc/rfbutton.h \
  M:/embedded/stm32C0_Nucleus/qpc-tetris-water-system/libraries/OLED_SSD1306/include/ssd1306_fonts.h \
  M:/embedded/stm32C0_Nucleus/qpc-tetris-water-system/libraries/OLED_SSD1306/include/ssd1306.h \
  ../Core/Inc/plant_sensor.h ../Core/Inc/sensor.h ../Core/Inc/rfbutton.h \
+ ../Core/Inc/tetris_board.h ../Core/Inc/tetromino.h \
  ../Core/Inc/NRF_chip.h \
  M:/embedded/stm32C0_Nucleus/qpc-tetris-water-system/libraries/NRF24/includes/NRF24.h \
  M:/embedded/stm32C0_Nucleus/qpc-tetris-water-system/libraries/NRF24/includes/NRF24_reg_addresses.h \
@@ -91,10 +84,6 @@ Core/Src/rfbutton.o: ../Core/Src/rfbutton.c ../Core/Inc/rfbutton.h \
 ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_dma.h:
 ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_dma_ex.h:
 ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_cortex.h:
-../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_adc.h:
-../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_adc.h:
-../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_adc_ex.h:
-../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_adc_ex.h:
 ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_exti.h:
 ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_flash.h:
 ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_flash_ex.h:
@@ -104,10 +93,6 @@ Core/Src/rfbutton.o: ../Core/Src/rfbutton.c ../Core/Inc/rfbutton.h \
 ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_pwr_ex.h:
 ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_spi.h:
 ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_spi_ex.h:
-../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_tim.h:
-../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_tim_ex.h:
-../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_uart.h:
-../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_uart_ex.h:
 ../Core/Inc/display.h:
 M:/embedded/stm32C0_Nucleus/qpc-tetris-water-system/libraries/OLED_SSD1306/include/ssd1306.h:
 M:/embedded/stm32C0_Nucleus/qpc-tetris-water-system/libraries/OLED_SSD1306/include/ssd1306_conf.h:
@@ -117,6 +102,8 @@ M:/embedded/stm32C0_Nucleus/qpc-tetris-water-system/libraries/OLED_SSD1306/inclu
 ../Core/Inc/plant_sensor.h:
 ../Core/Inc/sensor.h:
 ../Core/Inc/rfbutton.h:
+../Core/Inc/tetris_board.h:
+../Core/Inc/tetromino.h:
 ../Core/Inc/NRF_chip.h:
 M:/embedded/stm32C0_Nucleus/qpc-tetris-water-system/libraries/NRF24/includes/NRF24.h:
 M:/embedded/stm32C0_Nucleus/qpc-tetris-water-system/libraries/NRF24/includes/NRF24_reg_addresses.h:

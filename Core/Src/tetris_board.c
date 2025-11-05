@@ -46,7 +46,32 @@ static void Board_draw_outline(const Board *me)
     draw_line(x0 + w - 1, y0, x0 + w - 1, y0 + h - 1);
 }
 
+void Board_placeTetromino(Board *me, const Tetromino *t)
+{
+    for (int row = 0; row < 4; row++) {
+        for (int col = 0; col < 4; col++) {
+            if (t->grid4x4[row][col] == 0) {
+                continue; // skip empty cells
+            }
 
+            int boardX, boardY;
+
+                // normal orientation
+			boardX = t->x + col;
+			boardY = t->y + row;
+
+
+            // bounds check
+            if (boardX >= 0 && boardX < me->width &&
+                boardY >= 0 && boardY < me->height)
+            {
+                me->grid[boardY * me->width + boardX] = t->grid4x4[row][col];
+            }
+        }
+    }
+}
+
+/*
 void Board_placeTetromino(Board *me, const Tetromino *t)
 {
     for (int row = 0; row < 4; row++) {
@@ -64,7 +89,7 @@ void Board_placeTetromino(Board *me, const Tetromino *t)
         }
     }
 }
-
+*/
 
 void clear_board(Board *me)
 {
@@ -84,15 +109,17 @@ void draw_board(Board *me)
 	                {
 	            		if(me->rotate_90)
 	            		{
-	            			draw_pixel_block((me->pos_x + (me->height - 1 - row)) * me->blockSize, (me->pos_y + col) * me->blockSize, me->blockSize, me->blockSize);
+	            			draw_pixel_block(me->pos_x + (row* me->blockSize) , me->pos_y + (col* me->blockSize), me->blockSize, me->blockSize);
 	            		}
 	            		else
 	            		{
-	            			draw_pixel_block((me->pos_x + col) * me->blockSize  , (me->pos_y + row) * me->blockSize , me->blockSize, me->blockSize);
+	            			//TODO
+	            			//draw_pixel_block((me->pos_x + col) * me->blockSize  , (me->pos_y + row) * me->blockSize , me->blockSize, me->blockSize);
 	            		}
 
 	                }
 	            }
 	        }
 	    }
+	ssd1306_UpdateScreen();
 }

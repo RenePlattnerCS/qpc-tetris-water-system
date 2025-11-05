@@ -17,8 +17,8 @@
 QTimeEvt_ctorX(&amp;me-&gt;tempPollEvt, &amp;me-&gt;super, POLL_SENSOR_SIG, 0U);
 QTimeEvt_ctorX(&amp;me-&gt;longPressEvt, &amp;me-&gt;super, BUTTON_LONG_SIG, 0U);
 QTimeEvt_ctorX(&amp;me-&gt;dryTimerEvt, &amp;me-&gt;super, WATER_PLANT_SIG, 0U);
-
-Board_ctor(&amp;me-&gt;board_inst, gridArray, 20, 10, 32,1, true, 3);
+QTimeEvt_ctorX(&amp;me-&gt;tickEvt, &amp;me-&gt;super, TICK_SIG, 0U);
+Board_ctor(&amp;me-&gt;board_inst, gridArray, 10, 20, 16,1, true, 3);
 
 
 me-&gt;currentTemp = 0.0f;</code>
@@ -74,6 +74,16 @@ me-&gt;dma_index = 0;
    <attribute name="line_state_inst" type="LineState" visibility="0x02" properties="0x00"/>
    <!--${AOs::MainApp::board_inst}-->
    <attribute name="board_inst" type="Board" visibility="0x02" properties="0x00"/>
+   <!--${AOs::MainApp::tickEvt}-->
+   <attribute name="tickEvt" type="QTimeEvt " visibility="0x00" properties="0x00"/>
+   <!--${AOs::MainApp::line_w }-->
+   <attribute name="line_w " type="uint8_t" visibility="0x02" properties="0x00"/>
+   <!--${AOs::MainApp::line_h }-->
+   <attribute name="line_h " type="uint8_t" visibility="0x02" properties="0x00"/>
+   <!--${AOs::MainApp::line_x0 }-->
+   <attribute name="line_x0 " type="uint8_t" visibility="0x02" properties="0x00"/>
+   <!--${AOs::MainApp::line_y0 }-->
+   <attribute name="line_y0 " type="uint8_t" visibility="0x02" properties="0x00"/>
    <!--${AOs::MainApp::calc_dryness_percent}-->
    <operation name="calc_dryness_percent" type="uint8_t" visibility="0x02" properties="0x01">
     <!--${AOs::MainApp::calc_dryness_per~::dryness}-->
@@ -342,15 +352,28 @@ display_tetris_logo();
      <!--${AOs::MainApp::SM::tetris::game}-->
      <state name="game">
       <entry>printf(&quot;entered tetris game\n&quot;);
-/*
+//QTimeEvt_armX(&amp;me-&gt;tickEvt, 50U, 50U); //20 fps
+QTimeEvt_armX(&amp;me-&gt;dryTimerEvt, 50U , 50U);
+
+
 Tetromino t1;
 Tetromino_ctor(&amp;t1, TETRO_I);
-Board_placeTetromino(&amp;board, &amp;t1);
-t1.y = 5;
-Board_placeTetromino(&amp;board, &amp;t1);
-draw_board(&amp;board);
-*/</entry>
-      <state_glyph node="233,26,43,60">
+Tetromino t2;
+Tetromino_ctor(&amp;t2, TETRO_O);
+Board_placeTetromino( &amp;me-&gt;board_inst, &amp;t1);
+draw_board(&amp;me-&gt;board_inst);
+t2.y = 20;
+Board_placeTetromino( &amp;me-&gt;board_inst, &amp;t2);
+
+draw_board(&amp;me-&gt;board_inst);</entry>
+      <!--${AOs::MainApp::SM::tetris::game::WATER_PLANT}-->
+      <tran trig="WATER_PLANT">
+       <action>//printf(&quot;tick\n&quot;);</action>
+       <tran_glyph conn="276,42,1,-1,-19">
+        <action box="0,-2,10,2"/>
+       </tran_glyph>
+      </tran>
+      <state_glyph node="233,28,43,60">
        <entry box="0,3,6,2"/>
       </state_glyph>
      </state>
@@ -358,158 +381,176 @@ draw_board(&amp;board);
      <state name="init_board">
       <entry>Board_init(&amp;me-&gt;board_inst);
 printf(&quot;board initialized\n&quot;);
+</entry>
+      <!--${AOs::MainApp::SM::tetris::init_board::initial}-->
+      <initial target="../1">
+       <action>int w, h, x0, y0;
+
+w = me-&gt;board_inst.width  * me-&gt;board_inst.blockSize;
+h = me-&gt;board_inst.height * me-&gt;board_inst.blockSize;
+x0 = me-&gt;board_inst.pos_x;
+y0 = me-&gt;board_inst.pos_y;
+
+
+me-&gt;line_w = w;
+me-&gt;line_h = h;
+me-&gt;line_x0 = x0;
+me-&gt;line_y0 = y0;
+
 static QEvt const e = {DRAW_OUTLINE_SIG, 0U, 0U};
-QACTIVE_POST(AO_Main_App, &amp;e, me);</entry>
-      <!--${AOs::MainApp::SM::tetris::init_board::DRAW_OUTLINE}-->
-      <tran trig="DRAW_OUTLINE" target="../../4">
-       <action>
-
-</action>
-       <tran_glyph conn="183,52,4,0,7">
+QACTIVE_POST(AO_Main_App, &amp;e, me);</action>
+       <initial_glyph conn="187,50,5,0,-4,9">
         <action box="0,-2,10,2"/>
-       </tran_glyph>
-      </tran>
-      <state_glyph node="172,38,22,14">
-       <entry box="0,3,6,2"/>
-      </state_glyph>
-     </state>
-     <!--${AOs::MainApp::SM::tetris::top_border}-->
-     <state name="top_border">
-      <entry>
-int w = me-&gt;board_inst.width  * me-&gt;board_inst.blockSize;
-int h = me-&gt;board_inst.height * me-&gt;board_inst.blockSize;
+       </initial_glyph>
+      </initial>
+      <!--${AOs::MainApp::SM::tetris::init_board::top_border}-->
+      <state name="top_border">
+       <entry>
 
-int x0 = me-&gt;board_inst.pos_x;
-int y0 = me-&gt;board_inst.pos_y;
-printf(&quot;board x: %u \n&quot;, x0);
-printf(&quot;board y: %u \n&quot;, y0);
-printf(&quot;board w: %u \n&quot;, w);
-printf(&quot;board h: %u \n&quot;, h);
-
-MainApp_init_line_state(&amp;me-&gt;line_state_inst, x0, y0, x0 + w - 1, y0);
+if(!me-&gt;board_inst.rotate_90) 
+{
+    MainApp_init_line_state(&amp;me-&gt;line_state_inst, me-&gt;line_x0, me-&gt;line_y0, me-&gt;line_x0 + me-&gt;line_w - 1, me-&gt;line_y0);
+}
+else
+{
+    MainApp_init_line_state(
+        &amp;me-&gt;line_state_inst,
+        me-&gt;line_x0 + me-&gt;line_h , me-&gt;line_y0,
+        me-&gt;line_x0 + me-&gt;line_h , me-&gt;line_y0 + me-&gt;line_w );
+}
 printf(&quot;init struct \n&quot;);
 
 static QEvt const e = {DRAW_OUTLINE_SIG, 0U, 0U};
 QACTIVE_POST(AO_Main_App, &amp;e, me);
 </entry>
-      <!--${AOs::MainApp::SM::tetris::top_border::DRAW_OUTLINE}-->
-      <tran trig="DRAW_OUTLINE">
-       <action>draw_line_step(&amp;me-&gt;line_state_inst);
+       <!--${AOs::MainApp::SM::tetris::init_board::top_border::DRAW_OUTLINE}-->
+       <tran trig="DRAW_OUTLINE">
+        <action>draw_line_step(&amp;me-&gt;line_state_inst);
 
 </action>
-       <tran_glyph conn="193,65,1,-1,-12">
-        <action box="0,-2,10,2"/>
-       </tran_glyph>
-      </tran>
-      <!--${AOs::MainApp::SM::tetris::top_border::DRAW_OUTLINE_DONE}-->
-      <tran trig="DRAW_OUTLINE_DONE" target="../../5">
-       <tran_glyph conn="183,68,2,0,8">
-        <action box="0,-2,10,2"/>
-       </tran_glyph>
-      </tran>
-      <state_glyph node="173,59,20,9">
-       <entry box="0,3,6,2"/>
-      </state_glyph>
-     </state>
-     <!--${AOs::MainApp::SM::tetris::left_border}-->
-     <state name="left_border">
-      <entry>int w = me-&gt;board_inst.width  * me-&gt;board_inst.blockSize;
-int h = me-&gt;board_inst.height * me-&gt;board_inst.blockSize;
+        <tran_glyph conn="193,65,1,-1,-12">
+         <action box="0,-2,10,2"/>
+        </tran_glyph>
+       </tran>
+       <!--${AOs::MainApp::SM::tetris::init_board::top_border::DRAW_OUTLINE_DONE}-->
+       <tran trig="DRAW_OUTLINE_DONE" target="../../2">
+        <tran_glyph conn="183,68,2,0,8">
+         <action box="0,-2,10,2"/>
+        </tran_glyph>
+       </tran>
+       <state_glyph node="173,59,20,9">
+        <entry box="0,3,6,2"/>
+       </state_glyph>
+      </state>
+      <!--${AOs::MainApp::SM::tetris::init_board::left_border}-->
+      <state name="left_border">
+       <entry>
 
-int x0 = me-&gt;board_inst.pos_x;
-int y0 = me-&gt;board_inst.pos_y;
-
-printf(&quot;board x: %u \n&quot;, x0);
-printf(&quot;board y: %u \n&quot;, y0);
-printf(&quot;board w: %u \n&quot;, w);
-printf(&quot;board h: %u \n&quot;, h);
-
-MainApp_init_line_state(&amp;me-&gt;line_state_inst,
-                                    x0 + w - 1, y0,
-                                    x0 + w - 1, y0 + h - 1);
+//MainApp_init_line_state(&amp;me-&gt;line_state_inst,
+ //                                   me-&gt;line_x0 + me-&gt;line_w - 1, me-&gt;line_y0,
+//                                    me-&gt;line_x0 + me-&gt;line_w - 1, me-&gt;line_y0 + me-&gt;line_h - 1);
 printf(&quot;init struct \n&quot;);
+if (!me-&gt;board_inst.rotate_90) {
+    // original right vertical line
+    MainApp_init_line_state(
+        &amp;me-&gt;line_state_inst,
+        me-&gt;line_x0 + me-&gt;line_w , me-&gt;line_y0,
+        me-&gt;line_x0 + me-&gt;line_w , me-&gt;line_y0 + me-&gt;line_h );
+} else {
+    // rotated 90° → horizontal bottom line
+    MainApp_init_line_state(
+        &amp;me-&gt;line_state_inst,
+        me-&gt;line_x0, me-&gt;line_y0 + me-&gt;line_w,
+        me-&gt;line_x0 + me-&gt;line_h, me-&gt;line_y0 + me-&gt;line_w);
+}
 
 static QEvt const e = {DRAW_OUTLINE_SIG, 0U, 0U};
 QACTIVE_POST(AO_Main_App, &amp;e, me);
 
 printf(&quot;line left: \n&quot;);
 </entry>
-      <!--${AOs::MainApp::SM::tetris::left_border::DRAW_OUTLINE}-->
-      <tran trig="DRAW_OUTLINE">
-       <action>draw_line_step(&amp;me-&gt;line_state_inst);
+       <!--${AOs::MainApp::SM::tetris::init_board::left_border::DRAW_OUTLINE}-->
+       <tran trig="DRAW_OUTLINE">
+        <action>draw_line_step(&amp;me-&gt;line_state_inst);
 
 </action>
-       <tran_glyph conn="193,81,1,-1,-12">
-        <action box="0,-2,10,2"/>
-       </tran_glyph>
-      </tran>
-      <!--${AOs::MainApp::SM::tetris::left_border::DRAW_OUTLINE_DONE}-->
-      <tran trig="DRAW_OUTLINE_DONE" target="../../6">
-       <tran_glyph conn="183,84,2,0,3">
-        <action box="0,-2,10,2"/>
-       </tran_glyph>
-      </tran>
-      <state_glyph node="173,76,20,8">
-       <entry box="0,3,6,2"/>
-      </state_glyph>
-     </state>
-     <!--${AOs::MainApp::SM::tetris::btm_border}-->
-     <state name="btm_border">
-      <entry>int w = me-&gt;board_inst.width  * me-&gt;board_inst.blockSize;
-int h = me-&gt;board_inst.height * me-&gt;board_inst.blockSize;
+        <tran_glyph conn="193,81,1,-1,-12">
+         <action box="0,-2,10,2"/>
+        </tran_glyph>
+       </tran>
+       <!--${AOs::MainApp::SM::tetris::init_board::left_border::DRAW_OUTLINE_DONE}-->
+       <tran trig="DRAW_OUTLINE_DONE" target="../../3">
+        <tran_glyph conn="183,84,2,0,3">
+         <action box="0,-2,10,2"/>
+        </tran_glyph>
+       </tran>
+       <state_glyph node="173,76,20,8">
+        <entry box="0,3,6,2"/>
+       </state_glyph>
+      </state>
+      <!--${AOs::MainApp::SM::tetris::init_board::btm_border}-->
+      <state name="btm_border">
+       <entry>
 
-int x0 = me-&gt;board_inst.pos_x;
-int y0 = me-&gt;board_inst.pos_y;
-
-printf(&quot;board x: %u \n&quot;, x0);
-printf(&quot;board y: %u \n&quot;, y0);
-printf(&quot;board w: %u \n&quot;, w);
-printf(&quot;board h: %u \n&quot;, h);
-
-MainApp_init_line_state(&amp;me-&gt;line_state_inst,
-                                    x0 + w -1, y0 + h - 1,
-                                    x0 , y0 + h - 1);
-
+//MainApp_init_line_state(&amp;me-&gt;line_state_inst,
+//                                    me-&gt;line_x0 + me-&gt;line_w -1, me-&gt;line_y0 + me-&gt;line_h - 1,
+//                                    me-&gt;line_x0 , me-&gt;line_y0 + me-&gt;line_h - 1);
+if (!me-&gt;board_inst.rotate_90) {
+    // original bottom horizontal line
+    MainApp_init_line_state(
+        &amp;me-&gt;line_state_inst,
+        me-&gt;line_x0 + me-&gt;line_w, me-&gt;line_y0 + me-&gt;line_h,
+        me-&gt;line_x0, me-&gt;line_y0 + me-&gt;line_h);
+} else {
+    // rotated 90° → vertical left line
+    MainApp_init_line_state(
+        &amp;me-&gt;line_state_inst,
+        me-&gt;line_x0, me-&gt;line_y0 + me-&gt;line_w,
+        me-&gt;line_x0, me-&gt;line_y0
+    );
+}
 static QEvt const e = {DRAW_OUTLINE_SIG, 0U, 0U};
 QACTIVE_POST(AO_Main_App, &amp;e, me);
 
 printf(&quot;line btn: \n&quot;);
 </entry>
-      <!--${AOs::MainApp::SM::tetris::btm_border::DRAW_OUTLINE}-->
-      <tran trig="DRAW_OUTLINE">
-       <action>draw_line_step(&amp;me-&gt;line_state_inst);
+       <!--${AOs::MainApp::SM::tetris::init_board::btm_border::DRAW_OUTLINE}-->
+       <tran trig="DRAW_OUTLINE">
+        <action>draw_line_step(&amp;me-&gt;line_state_inst);
 
 </action>
-       <tran_glyph conn="193,92,1,-1,-12">
-        <action box="0,-2,10,2"/>
-       </tran_glyph>
-      </tran>
-      <!--${AOs::MainApp::SM::tetris::btm_border::DRAW_OUTLINE_DONE}-->
-      <tran trig="DRAW_OUTLINE_DONE" target="../../7">
-       <tran_glyph conn="183,95,2,0,6">
-        <action box="0,-2,10,2"/>
-       </tran_glyph>
-      </tran>
-      <state_glyph node="173,87,20,8">
-       <entry box="0,3,6,2"/>
-      </state_glyph>
-     </state>
-     <!--${AOs::MainApp::SM::tetris::right_border}-->
-     <state name="right_border">
-      <entry>int w = me-&gt;board_inst.width  * me-&gt;board_inst.blockSize;
-int h = me-&gt;board_inst.height * me-&gt;board_inst.blockSize;
-
-int x0 = me-&gt;board_inst.pos_x;
-int y0 = me-&gt;board_inst.pos_y;
-
-printf(&quot;board x: %u \n&quot;, x0);
-printf(&quot;board y: %u \n&quot;, y0);
-printf(&quot;board w: %u \n&quot;, w);
-printf(&quot;board h: %u \n&quot;, h);
-
-MainApp_init_line_state(&amp;me-&gt;line_state_inst,
-                                    x0 , y0 + h -1,
-                                    x0 , y0 );
+        <tran_glyph conn="193,92,1,-1,-12">
+         <action box="0,-2,10,2"/>
+        </tran_glyph>
+       </tran>
+       <!--${AOs::MainApp::SM::tetris::init_board::btm_border::DRAW_OUTLINE_DONE}-->
+       <tran trig="DRAW_OUTLINE_DONE" target="../../4">
+        <tran_glyph conn="183,95,2,0,6">
+         <action box="0,-2,10,2"/>
+        </tran_glyph>
+       </tran>
+       <state_glyph node="173,87,20,8">
+        <entry box="0,3,6,2"/>
+       </state_glyph>
+      </state>
+      <!--${AOs::MainApp::SM::tetris::init_board::right_border}-->
+      <state name="right_border">
+       <entry>
+if (!me-&gt;board_inst.rotate_90) {
+    // original left vertical line
+    MainApp_init_line_state(
+        &amp;me-&gt;line_state_inst,
+        me-&gt;line_x0, me-&gt;line_y0 + me-&gt;line_h,
+        me-&gt;line_x0, me-&gt;line_y0
+    );
+} else {
+    // rotated 90° → horizontal top line
+    MainApp_init_line_state(
+        &amp;me-&gt;line_state_inst,
+        me-&gt;line_x0, me-&gt;line_y0,
+        me-&gt;line_x0 + me-&gt;line_h, me-&gt;line_y0
+    );
+}
 
 static QEvt const e = {DRAW_OUTLINE_SIG, 0U, 0U};
 QACTIVE_POST(AO_Main_App, &amp;e, me);
@@ -517,23 +558,27 @@ QACTIVE_POST(AO_Main_App, &amp;e, me);
 
 printf(&quot;line right: \n&quot;);
 </entry>
-      <!--${AOs::MainApp::SM::tetris::right_border::DRAW_OUTLINE}-->
-      <tran trig="DRAW_OUTLINE">
-       <action>draw_line_step(&amp;me-&gt;line_state_inst);
+       <!--${AOs::MainApp::SM::tetris::init_board::right_border::DRAW_OUTLINE}-->
+       <tran trig="DRAW_OUTLINE">
+        <action>draw_line_step(&amp;me-&gt;line_state_inst);
 
 </action>
-       <tran_glyph conn="193,106,1,-1,-12">
-        <action box="0,-2,10,2"/>
-       </tran_glyph>
-      </tran>
-      <!--${AOs::MainApp::SM::tetris::right_border::DRAW_OUTLINE_DONE}-->
-      <tran trig="DRAW_OUTLINE_DONE" target="../../2">
-       <action>printf(&quot;done drawing line\n&quot;);</action>
-       <tran_glyph conn="183,109,2,2,2,74,-25">
-        <action box="1,3,10,2"/>
-       </tran_glyph>
-      </tran>
-      <state_glyph node="173,101,20,8">
+        <tran_glyph conn="193,106,1,-1,-12">
+         <action box="0,-2,10,2"/>
+        </tran_glyph>
+       </tran>
+       <!--${AOs::MainApp::SM::tetris::init_board::right_border::DRAW_OUTLINE_DONE}-->
+       <tran trig="DRAW_OUTLINE_DONE" target="../../../2">
+        <action>printf(&quot;done drawing line\n&quot;);</action>
+        <tran_glyph conn="183,109,2,2,2,74,-23">
+         <action box="1,3,10,2"/>
+        </tran_glyph>
+       </tran>
+       <state_glyph node="173,101,20,8">
+        <entry box="0,3,6,2"/>
+       </state_glyph>
+      </state>
+      <state_glyph node="172,38,22,82">
        <entry box="0,3,6,2"/>
       </state_glyph>
      </state>
@@ -800,7 +845,7 @@ Delay_us(30);  // 20–40 µs wait</action>
 #include &quot;sensor.h&quot;
 #include &quot;rfbutton.h&quot;
 #include &quot;tetris_board.h&quot;
-//#include &quot;tetromino.h&quot;
+#include &quot;tetromino.h&quot;
 
 //keep track of substates
 typedef enum {
@@ -830,6 +875,7 @@ enum MenuGameSignals {
     START_TETRIS_SIG,
     DRAW_OUTLINE_SIG,
     DRAW_OUTLINE_DONE_SIG,
+    TICK_SIG,
     MAX_SIG  
 };
 
