@@ -101,6 +101,9 @@ QState MainApp_start_screen(MainApp * const me, QEvt const * const e);
 QState MainApp_game(MainApp * const me, QEvt const * const e);
 QState MainApp_init_board(MainApp * const me, QEvt const * const e);
 QState MainApp_top_border(MainApp * const me, QEvt const * const e);
+QState MainApp_left_border(MainApp * const me, QEvt const * const e);
+QState MainApp_btm_border(MainApp * const me, QEvt const * const e);
+QState MainApp_right_border(MainApp * const me, QEvt const * const e);
 //$enddecl${AOs::MainApp} ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 //$declare${Shared} vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
@@ -140,7 +143,6 @@ enum MenuGameSignals {
     PLANT_DRY_SIG,
     WATER_PLANT_SIG,
     START_TETRIS_SIG,
-    BOARD_SETUP_DONE_SIG,
     DRAW_OUTLINE_SIG,
     DRAW_OUTLINE_DONE_SIG,
     MAX_SIG

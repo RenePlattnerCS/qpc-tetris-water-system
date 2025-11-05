@@ -9,7 +9,10 @@
 ../Core/Src/main_app.c:62:9:MainApp_calc_dryness_percent	8	static
 ../Core/Src/main_app.c:110:8:MainApp_display	16	static
 ../Core/Src/main_app.c:81:6:MainApp_init_line_state	20	static
-../Core/Src/main_app.c:450:8:MainApp_top_border	16	static
-../Core/Src/main_app.c:499:6:Main_App_ctor	32	static
-../Core/Src/main_app.c:515:6:Sensor_ctor	8	static
-../Core/Src/main_app.c:528:6:RFButton_ctor	8	static
+../Core/Src/main_app.c:445:8:MainApp_top_border	16	static
+../Core/Src/main_app.c:488:8:MainApp_left_border	16	static
+../Core/Src/main_app.c:531:8:MainApp_btm_border	16	static
+../Core/Src/main_app.c:574:8:MainApp_right_border	16	static
+../Core/Src/main_app.c:623:6:Main_App_ctor	32	static
+../Core/Src/main_app.c:639:6:Sensor_ctor	8	static
+../Core/Src/main_app.c:652:6:RFButton_ctor	8	static
