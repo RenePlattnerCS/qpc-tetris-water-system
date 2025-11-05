@@ -505,8 +505,8 @@ QState MainApp_left_border(MainApp * const me, QEvt const * const e) {
             printf("board h: %u \n", h);
 
             MainApp_init_line_state(&me->line_state_inst,
-                                                x0, y0,
-                                                x0, y0 + h - 1);
+                                                x0 + w - 1, y0,
+                                                x0 + w - 1, y0 + h - 1);
             printf("init struct \n");
 
             static QEvt const e = {DRAW_OUTLINE_SIG, 0U, 0U};
@@ -556,8 +556,8 @@ QState MainApp_btm_border(MainApp * const me, QEvt const * const e) {
             printf("board h: %u \n", h);
 
             MainApp_init_line_state(&me->line_state_inst,
-                                                x0, y0 + h - 1,
-                                                x0 + w - 1, y0 + h - 1);
+                                                x0 + w -1, y0 + h - 1,
+                                                x0 , y0 + h - 1);
 
             static QEvt const e = {DRAW_OUTLINE_SIG, 0U, 0U};
             QACTIVE_POST(AO_Main_App, &e, me);
@@ -606,8 +606,8 @@ QState MainApp_right_border(MainApp * const me, QEvt const * const e) {
             printf("board h: %u \n", h);
 
             MainApp_init_line_state(&me->line_state_inst,
-                                                x0 + w - 1, y0,
-                                                x0 + w - 1, y0 + h - 1);
+                                                x0 , y0 + h - 1,
+                                                x0 , y0 );
 
             static QEvt const e = {DRAW_OUTLINE_SIG, 0U, 0U};
             QACTIVE_POST(AO_Main_App, &e, me);
