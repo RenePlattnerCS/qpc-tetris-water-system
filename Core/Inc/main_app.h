@@ -86,8 +86,8 @@ uint8_t MainApp_calc_dryness_percent(uint16_t dryness);
 void MainApp_init_line_state(
     LineState * ls,
     int x0,
-    int x1,
     int y0,
+    int x1,
     int y1);
 
 // protected:

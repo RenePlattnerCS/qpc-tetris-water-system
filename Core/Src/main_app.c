@@ -81,20 +81,19 @@ uint8_t MainApp_calc_dryness_percent(uint16_t dryness) {
 void MainApp_init_line_state(
     LineState * ls,
     int x0,
-    int x1,
     int y0,
+    int x1,
     int y1)
 {
     ls->x0 = x0;
     ls->x1 = x1;
     ls->y0 = y0;
     ls->y1 = y1;
-    ls->x0 = x0;
     ls->dx = abs(x1 - x0);
     ls->dy = abs(y1 - y0);
     ls->sx = (x0 < x1) ? 1 : -1;
     ls->sy = (y0 < y1) ? 1 : -1;
-    ls->err = ls->dx - ls->dy;
+    ls->err = (ls->dx > ls->dy ? ls->dx : -ls->dy) / 2;
     ls->done = false;
 
 
@@ -447,11 +446,16 @@ QState MainApp_top_border(MainApp * const me, QEvt const * const e) {
     switch (e->sig) {
         //${AOs::MainApp::SM::tetris::top_border}
         case Q_ENTRY_SIG: {
+
             int w = me->board_inst.width  * me->board_inst.blockSize;
             int h = me->board_inst.height * me->board_inst.blockSize;
 
             int x0 = me->board_inst.pos_x;
             int y0 = me->board_inst.pos_y;
+            printf("board x: %u \n", x0);
+            printf("board y: %u \n", y0);
+            printf("board w: %u \n", w);
+            printf("board h: %u \n", h);
 
             MainApp_init_line_state(&me->line_state_inst, x0, y0, x0 + w - 1, y0);
             printf("init struct \n");
@@ -464,7 +468,6 @@ QState MainApp_top_border(MainApp * const me, QEvt const * const e) {
         }
         //${AOs::MainApp::SM::tetris::top_border::DRAW_OUTLINE}
         case DRAW_OUTLINE_SIG: {
-            printf("line step: \n");
             draw_line_step(&me->line_state_inst);
 
 
@@ -496,18 +499,26 @@ QState MainApp_left_border(MainApp * const me, QEvt const * const e) {
             int x0 = me->board_inst.pos_x;
             int y0 = me->board_inst.pos_y;
 
-            MainApp_init_line_state(&me->line_state_inst, x0, y0, x0, y0 + h - 1);
+            printf("board x: %u \n", x0);
+            printf("board y: %u \n", y0);
+            printf("board w: %u \n", w);
+            printf("board h: %u \n", h);
+
+            MainApp_init_line_state(&me->line_state_inst,
+                                                x0, y0,
+                                                x0, y0 + h - 1);
             printf("init struct \n");
 
             static QEvt const e = {DRAW_OUTLINE_SIG, 0U, 0U};
             QACTIVE_POST(AO_Main_App, &e, me);
+
+            printf("line left: \n");
 
             status_ = Q_HANDLED();
             break;
         }
         //${AOs::MainApp::SM::tetris::left_border::DRAW_OUTLINE}
         case DRAW_OUTLINE_SIG: {
-            printf("line step: \n");
             draw_line_step(&me->line_state_inst);
 
 
@@ -539,18 +550,25 @@ QState MainApp_btm_border(MainApp * const me, QEvt const * const e) {
             int x0 = me->board_inst.pos_x;
             int y0 = me->board_inst.pos_y;
 
-            MainApp_init_line_state(&me->line_state_inst, x0, y0 + h - 1, x0 + w - 1, y0 + h - 1);
-            printf("init struct \n");
+            printf("board x: %u \n", x0);
+            printf("board y: %u \n", y0);
+            printf("board w: %u \n", w);
+            printf("board h: %u \n", h);
+
+            MainApp_init_line_state(&me->line_state_inst,
+                                                x0, y0 + h - 1,
+                                                x0 + w - 1, y0 + h - 1);
 
             static QEvt const e = {DRAW_OUTLINE_SIG, 0U, 0U};
             QACTIVE_POST(AO_Main_App, &e, me);
+
+            printf("line btn: \n");
 
             status_ = Q_HANDLED();
             break;
         }
         //${AOs::MainApp::SM::tetris::btm_border::DRAW_OUTLINE}
         case DRAW_OUTLINE_SIG: {
-            printf("line step: \n");
             draw_line_step(&me->line_state_inst);
 
 
@@ -582,18 +600,26 @@ QState MainApp_right_border(MainApp * const me, QEvt const * const e) {
             int x0 = me->board_inst.pos_x;
             int y0 = me->board_inst.pos_y;
 
-            MainApp_init_line_state(&me->line_state_inst, x0 + w - 1, y0, x0 + w - 1, y0 + h - 1);
-            printf("init struct \n");
+            printf("board x: %u \n", x0);
+            printf("board y: %u \n", y0);
+            printf("board w: %u \n", w);
+            printf("board h: %u \n", h);
+
+            MainApp_init_line_state(&me->line_state_inst,
+                                                x0 + w - 1, y0,
+                                                x0 + w - 1, y0 + h - 1);
 
             static QEvt const e = {DRAW_OUTLINE_SIG, 0U, 0U};
             QACTIVE_POST(AO_Main_App, &e, me);
+
+
+            printf("line right: \n");
 
             status_ = Q_HANDLED();
             break;
         }
         //${AOs::MainApp::SM::tetris::right_border::DRAW_OUTLINE}
         case DRAW_OUTLINE_SIG: {
-            printf("line step: \n");
             draw_line_step(&me->line_state_inst);
 
 
@@ -626,7 +652,7 @@ void Main_App_ctor(MainApp * const me) {
     QTimeEvt_ctorX(&me->longPressEvt, &me->super, BUTTON_LONG_SIG, 0U);
     QTimeEvt_ctorX(&me->dryTimerEvt, &me->super, WATER_PLANT_SIG, 0U);
 
-    Board_ctor(&me->board_inst, gridArray, 10, 10, 0,0, true, 3);
+    Board_ctor(&me->board_inst, gridArray, 8, 8, 0,0, true, 2);
 
 
     me->currentTemp = 0.0f;

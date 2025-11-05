@@ -70,6 +70,8 @@ uint16_t Sensor_get_adc_dryness(void) {
 
     return 0;
     */
+
+
     LL_ADC_REG_StartConversion(ADC1);
 
     // Wait for conversion to complete

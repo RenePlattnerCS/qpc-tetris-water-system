@@ -84,11 +84,11 @@ void draw_board(Board *me)
 	                {
 	            		if(me->rotate_90)
 	            		{
-	            			draw_pixel((me->pos_x + (me->height - 1 - row)) * me->blockSize, (me->pos_y + col) * me->blockSize, me->blockSize, me->blockSize);
+	            			draw_pixel_block((me->pos_x + (me->height - 1 - row)) * me->blockSize, (me->pos_y + col) * me->blockSize, me->blockSize, me->blockSize);
 	            		}
 	            		else
 	            		{
-	            			draw_pixel((me->pos_x + col) * me->blockSize  , (me->pos_y + row) * me->blockSize , me->blockSize, me->blockSize);
+	            			draw_pixel_block((me->pos_x + col) * me->blockSize  , (me->pos_y + row) * me->blockSize , me->blockSize, me->blockSize);
 	            		}
 
 	                }

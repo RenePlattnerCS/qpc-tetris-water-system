@@ -18,7 +18,7 @@ QTimeEvt_ctorX(&amp;me-&gt;tempPollEvt, &amp;me-&gt;super, POLL_SENSOR_SIG, 0U);
 QTimeEvt_ctorX(&amp;me-&gt;longPressEvt, &amp;me-&gt;super, BUTTON_LONG_SIG, 0U);
 QTimeEvt_ctorX(&amp;me-&gt;dryTimerEvt, &amp;me-&gt;super, WATER_PLANT_SIG, 0U);
 
-Board_ctor(&amp;me-&gt;board_inst, gridArray, 10, 10, 0,0, true, 3);
+Board_ctor(&amp;me-&gt;board_inst, gridArray, 8, 8, 0,0, true, 2);
 
 
 me-&gt;currentTemp = 0.0f;</code>
@@ -100,22 +100,21 @@ return percent;</code>
     <parameter name="ls" type="LineState *"/>
     <!--${AOs::MainApp::init_line_state::x0}-->
     <parameter name="x0" type="int"/>
-    <!--${AOs::MainApp::init_line_state::x1}-->
-    <parameter name="x1" type="int"/>
     <!--${AOs::MainApp::init_line_state::y0}-->
     <parameter name="y0" type="int"/>
+    <!--${AOs::MainApp::init_line_state::x1}-->
+    <parameter name="x1" type="int"/>
     <!--${AOs::MainApp::init_line_state::y1}-->
     <parameter name="y1" type="int"/>
     <code>ls-&gt;x0 = x0;
 ls-&gt;x1 = x1;
 ls-&gt;y0 = y0;
 ls-&gt;y1 = y1;
-ls-&gt;x0 = x0;
 ls-&gt;dx = abs(x1 - x0);
 ls-&gt;dy = abs(y1 - y0);
 ls-&gt;sx = (x0 &lt; x1) ? 1 : -1;
 ls-&gt;sy = (y0 &lt; y1) ? 1 : -1;
-ls-&gt;err = ls-&gt;dx - ls-&gt;dy;
+ls-&gt;err = (ls-&gt;dx &gt; ls-&gt;dy ? ls-&gt;dx : -ls-&gt;dy) / 2;
 ls-&gt;done = false;
 
 </code>
@@ -376,11 +375,16 @@ QACTIVE_POST(AO_Main_App, &amp;e, me);</entry>
      </state>
      <!--${AOs::MainApp::SM::tetris::top_border}-->
      <state name="top_border">
-      <entry>int w = me-&gt;board_inst.width  * me-&gt;board_inst.blockSize;
+      <entry>
+int w = me-&gt;board_inst.width  * me-&gt;board_inst.blockSize;
 int h = me-&gt;board_inst.height * me-&gt;board_inst.blockSize;
 
 int x0 = me-&gt;board_inst.pos_x;
 int y0 = me-&gt;board_inst.pos_y;
+printf(&quot;board x: %u \n&quot;, x0);
+printf(&quot;board y: %u \n&quot;, y0);
+printf(&quot;board w: %u \n&quot;, w);
+printf(&quot;board h: %u \n&quot;, h);
 
 MainApp_init_line_state(&amp;me-&gt;line_state_inst, x0, y0, x0 + w - 1, y0);
 printf(&quot;init struct \n&quot;);
@@ -390,8 +394,7 @@ QACTIVE_POST(AO_Main_App, &amp;e, me);
 </entry>
       <!--${AOs::MainApp::SM::tetris::top_border::DRAW_OUTLINE}-->
       <tran trig="DRAW_OUTLINE">
-       <action>printf(&quot;line step: \n&quot;);
-draw_line_step(&amp;me-&gt;line_state_inst);
+       <action>draw_line_step(&amp;me-&gt;line_state_inst);
 
 </action>
        <tran_glyph conn="193,65,1,-1,-12">
@@ -416,16 +419,24 @@ int h = me-&gt;board_inst.height * me-&gt;board_inst.blockSize;
 int x0 = me-&gt;board_inst.pos_x;
 int y0 = me-&gt;board_inst.pos_y;
 
-MainApp_init_line_state(&amp;me-&gt;line_state_inst, x0, y0, x0, y0 + h - 1);
+printf(&quot;board x: %u \n&quot;, x0);
+printf(&quot;board y: %u \n&quot;, y0);
+printf(&quot;board w: %u \n&quot;, w);
+printf(&quot;board h: %u \n&quot;, h);
+
+MainApp_init_line_state(&amp;me-&gt;line_state_inst,
+                                    x0, y0,
+                                    x0, y0 + h - 1);
 printf(&quot;init struct \n&quot;);
 
 static QEvt const e = {DRAW_OUTLINE_SIG, 0U, 0U};
 QACTIVE_POST(AO_Main_App, &amp;e, me);
+
+printf(&quot;line left: \n&quot;);
 </entry>
       <!--${AOs::MainApp::SM::tetris::left_border::DRAW_OUTLINE}-->
       <tran trig="DRAW_OUTLINE">
-       <action>printf(&quot;line step: \n&quot;);
-draw_line_step(&amp;me-&gt;line_state_inst);
+       <action>draw_line_step(&amp;me-&gt;line_state_inst);
 
 </action>
        <tran_glyph conn="193,81,1,-1,-12">
@@ -450,16 +461,23 @@ int h = me-&gt;board_inst.height * me-&gt;board_inst.blockSize;
 int x0 = me-&gt;board_inst.pos_x;
 int y0 = me-&gt;board_inst.pos_y;
 
-MainApp_init_line_state(&amp;me-&gt;line_state_inst, x0, y0 + h - 1, x0 + w - 1, y0 + h - 1);
-printf(&quot;init struct \n&quot;);
+printf(&quot;board x: %u \n&quot;, x0);
+printf(&quot;board y: %u \n&quot;, y0);
+printf(&quot;board w: %u \n&quot;, w);
+printf(&quot;board h: %u \n&quot;, h);
+
+MainApp_init_line_state(&amp;me-&gt;line_state_inst,
+                                    x0, y0 + h - 1,
+                                    x0 + w - 1, y0 + h - 1);
 
 static QEvt const e = {DRAW_OUTLINE_SIG, 0U, 0U};
 QACTIVE_POST(AO_Main_App, &amp;e, me);
+
+printf(&quot;line btn: \n&quot;);
 </entry>
       <!--${AOs::MainApp::SM::tetris::btm_border::DRAW_OUTLINE}-->
       <tran trig="DRAW_OUTLINE">
-       <action>printf(&quot;line step: \n&quot;);
-draw_line_step(&amp;me-&gt;line_state_inst);
+       <action>draw_line_step(&amp;me-&gt;line_state_inst);
 
 </action>
        <tran_glyph conn="193,92,1,-1,-12">
@@ -484,16 +502,24 @@ int h = me-&gt;board_inst.height * me-&gt;board_inst.blockSize;
 int x0 = me-&gt;board_inst.pos_x;
 int y0 = me-&gt;board_inst.pos_y;
 
-MainApp_init_line_state(&amp;me-&gt;line_state_inst, x0 + w - 1, y0, x0 + w - 1, y0 + h - 1);
-printf(&quot;init struct \n&quot;);
+printf(&quot;board x: %u \n&quot;, x0);
+printf(&quot;board y: %u \n&quot;, y0);
+printf(&quot;board w: %u \n&quot;, w);
+printf(&quot;board h: %u \n&quot;, h);
+
+MainApp_init_line_state(&amp;me-&gt;line_state_inst,
+                                    x0 + w - 1, y0,
+                                    x0 + w - 1, y0 + h - 1);
 
 static QEvt const e = {DRAW_OUTLINE_SIG, 0U, 0U};
 QACTIVE_POST(AO_Main_App, &amp;e, me);
+
+
+printf(&quot;line right: \n&quot;);
 </entry>
       <!--${AOs::MainApp::SM::tetris::right_border::DRAW_OUTLINE}-->
       <tran trig="DRAW_OUTLINE">
-       <action>printf(&quot;line step: \n&quot;);
-draw_line_step(&amp;me-&gt;line_state_inst);
+       <action>draw_line_step(&amp;me-&gt;line_state_inst);
 
 </action>
        <tran_glyph conn="193,106,1,-1,-12">
@@ -554,7 +580,7 @@ if (HAL_ADC_PollForConversion(&amp;hadc1, 10) == HAL_OK) { // timeout in ms
 
 return 0;
 */
-LL_ADC_Enable(ADC1);
+
 
 LL_ADC_REG_StartConversion(ADC1);
 
