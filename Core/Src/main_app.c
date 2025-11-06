@@ -57,6 +57,8 @@ static uint8_t gridArray[200];
 
 //${AOs::MainApp} ............................................................
 MainApp MainApp_inst;
+uint32_t  MainApp_delta_time = (MS_PER_SEC / FPS);
+
 
 //${AOs::MainApp::calc_dryness_percent} ......................................
 uint8_t MainApp_calc_dryness_percent(uint16_t dryness) {
@@ -392,26 +394,25 @@ QState MainApp_game(MainApp * const me, QEvt const * const e) {
         //${AOs::MainApp::SM::tetris::game}
         case Q_ENTRY_SIG: {
             printf("entered tetris game\n");
-            //QTimeEvt_armX(&me->tickEvt, 50U, 50U); //20 fps
-            QTimeEvt_armX(&me->dryTimerEvt, 50U , 50U);
+
+            QTimeEvt_armX(&me->dryTimerEvt, MainApp_delta_time / 10U , MainApp_delta_time / 10U);
 
 
-            Tetromino t1;
-            Tetromino_ctor(&t1, TETRO_I);
-            Tetromino t2;
-            Tetromino_ctor(&t2, TETRO_O);
-            Board_placeTetromino( &me->board_inst, &t1);
+            Tetromino_ctor(&me->active_tetromino, TETRO_I);
+            me->active_tetromino.y = 18;
+
+            Board_placeTetromino( &me->board_inst, &me->active_tetromino);
             draw_board(&me->board_inst);
-            t2.y = 20;
-            Board_placeTetromino( &me->board_inst, &t2);
 
-            draw_board(&me->board_inst);
             status_ = Q_HANDLED();
             break;
         }
         //${AOs::MainApp::SM::tetris::game::WATER_PLANT}
         case WATER_PLANT_SIG: {
             //printf("tick\n");
+            move_down(&me->active_tetromino);
+            Board_placeTetromino( &me->board_inst, &me->active_tetromino);
+            draw_board(&me->board_inst);
             status_ = Q_HANDLED();
             break;
         }

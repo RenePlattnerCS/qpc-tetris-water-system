@@ -19,11 +19,13 @@ typedef struct {
     uint8_t grid4x4[4][4];   // 4x4 shape
     int x;                // position on board
     int y;
+    uint16_t tickCounter;   // counts ticks
+    uint16_t speed;     // how many ticks between drops
 } Tetromino;
 
 
 void Tetromino_ctor(Tetromino *t, TetrominoType type);
-
+void move_down(Tetromino *me);
 
 
 #endif

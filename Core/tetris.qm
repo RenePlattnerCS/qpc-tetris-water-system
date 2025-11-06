@@ -84,6 +84,12 @@ me-&gt;dma_index = 0;
    <attribute name="line_x0 " type="uint8_t" visibility="0x02" properties="0x00"/>
    <!--${AOs::MainApp::line_y0 }-->
    <attribute name="line_y0 " type="uint8_t" visibility="0x02" properties="0x00"/>
+   <!--${AOs::MainApp::delta_time}-->
+   <attribute name="delta_time" type="uint32_t " visibility="0x02" properties="0x01">
+    <code>= (MS_PER_SEC / FPS);</code>
+   </attribute>
+   <!--${AOs::MainApp::active_tetromino}-->
+   <attribute name="active_tetromino" type="Tetromino" visibility="0x02" properties="0x00"/>
    <!--${AOs::MainApp::calc_dryness_percent}-->
    <operation name="calc_dryness_percent" type="uint8_t" visibility="0x02" properties="0x01">
     <!--${AOs::MainApp::calc_dryness_per~::dryness}-->
@@ -352,23 +358,22 @@ display_tetris_logo();
      <!--${AOs::MainApp::SM::tetris::game}-->
      <state name="game">
       <entry>printf(&quot;entered tetris game\n&quot;);
-//QTimeEvt_armX(&amp;me-&gt;tickEvt, 50U, 50U); //20 fps
-QTimeEvt_armX(&amp;me-&gt;dryTimerEvt, 50U , 50U);
+
+QTimeEvt_armX(&amp;me-&gt;dryTimerEvt, MainApp_delta_time / 10U , MainApp_delta_time / 10U);
 
 
-Tetromino t1;
-Tetromino_ctor(&amp;t1, TETRO_I);
-Tetromino t2;
-Tetromino_ctor(&amp;t2, TETRO_O);
-Board_placeTetromino( &amp;me-&gt;board_inst, &amp;t1);
+Tetromino_ctor(&amp;me-&gt;active_tetromino, TETRO_I);
+me-&gt;active_tetromino.y = 18;
+
+Board_placeTetromino( &amp;me-&gt;board_inst, &amp;me-&gt;active_tetromino);
 draw_board(&amp;me-&gt;board_inst);
-t2.y = 20;
-Board_placeTetromino( &amp;me-&gt;board_inst, &amp;t2);
-
-draw_board(&amp;me-&gt;board_inst);</entry>
+</entry>
       <!--${AOs::MainApp::SM::tetris::game::WATER_PLANT}-->
       <tran trig="WATER_PLANT">
-       <action>//printf(&quot;tick\n&quot;);</action>
+       <action>//printf(&quot;tick\n&quot;);
+move_down(&amp;me-&gt;active_tetromino);
+Board_placeTetromino( &amp;me-&gt;board_inst, &amp;me-&gt;active_tetromino);
+draw_board(&amp;me-&gt;board_inst);</action>
        <tran_glyph conn="276,42,1,-1,-19">
         <action box="0,-2,10,2"/>
        </tran_glyph>

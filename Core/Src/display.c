@@ -31,7 +31,6 @@ void draw_pixel_block(uint8_t x, uint8_t y, uint8_t width, uint8_t height)
 			ssd1306_DrawPixel(x+i, y+j, White);
 		}
 	}
-	ssd1306_UpdateScreen();
 
 }
 

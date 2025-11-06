@@ -86,9 +86,12 @@ typedef struct MainApp {
     uint8_t line_h ;
     uint8_t line_x0 ;
     uint8_t line_y0 ;
+    Tetromino active_tetromino;
 } MainApp;
 
 extern MainApp MainApp_inst;
+
+extern uint32_t  MainApp_delta_time;
 
 // private:
 uint8_t MainApp_calc_dryness_percent(uint16_t dryness);
