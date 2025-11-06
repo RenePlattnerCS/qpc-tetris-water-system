@@ -368,7 +368,8 @@ accelerometer_init_polling();
 </entry>
       <!--${AOs::MainApp::SM::tetris::game::WATER_PLANT}-->
       <tran trig="WATER_PLANT">
-       <action>int16_t tilt = read_accelerometer_tilt();
+       <action>/*
+int16_t tilt = read_accelerometer_tilt();
 process_tilt_move(&amp;me-&gt;board_inst, me-&gt;active_tetromino, tilt);
 
 
@@ -381,7 +382,8 @@ if(! (move_down(&amp;me-&gt;board_inst, &amp;me-&gt;active_tetromino)) )
 
 
 //
-draw_board(&amp;me-&gt;board_inst, &amp;me-&gt;active_tetromino);</action>
+draw_board(&amp;me-&gt;board_inst, &amp;me-&gt;active_tetromino);
+*/</action>
        <tran_glyph conn="276,42,1,-1,-19">
         <action box="0,-2,10,2"/>
        </tran_glyph>

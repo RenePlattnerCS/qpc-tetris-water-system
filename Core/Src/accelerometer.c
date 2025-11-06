@@ -82,7 +82,7 @@ void read_accelerometer(int16_t *x, int16_t *y, int16_t *z)
 uint16_t read_accelerometer_tilt()
 {
 	int16_t rawX, rawY, rawZ;
-	ADXL345_ReadXYZ(&rawX, &rawY, &rawZ);
+	read_accelerometer(&rawX, &rawY, &rawZ);
 
 
 	//g force conversion

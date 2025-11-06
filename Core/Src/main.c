@@ -265,10 +265,10 @@ static void MX_ADC1_Init(void)
   /**ADC1 GPIO Configuration
   PA4   ------> ADC1_IN4
   */
-  GPIO_InitStruct.Pin = LL_GPIO_PIN_4;
+  GPIO_InitStruct.Pin = ADC_MOIST_Pin;
   GPIO_InitStruct.Mode = LL_GPIO_MODE_ANALOG;
   GPIO_InitStruct.Pull = LL_GPIO_PULL_NO;
-  LL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+  LL_GPIO_Init(ADC_MOIST_GPIO_Port, &GPIO_InitStruct);
 
   /* USER CODE BEGIN ADC1_Init 1 */
 
@@ -545,21 +545,21 @@ static void MX_USART2_UART_Init(void)
   PA2   ------> USART2_TX
   PA3   ------> USART2_RX
   */
-  GPIO_InitStruct.Pin = LL_GPIO_PIN_2;
+  GPIO_InitStruct.Pin = VCP_USART2_TX_Pin;
   GPIO_InitStruct.Mode = LL_GPIO_MODE_ALTERNATE;
   GPIO_InitStruct.Speed = LL_GPIO_SPEED_FREQ_LOW;
   GPIO_InitStruct.OutputType = LL_GPIO_OUTPUT_PUSHPULL;
   GPIO_InitStruct.Pull = LL_GPIO_PULL_NO;
   GPIO_InitStruct.Alternate = LL_GPIO_AF_1;
-  LL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+  LL_GPIO_Init(VCP_USART2_TX_GPIO_Port, &GPIO_InitStruct);
 
-  GPIO_InitStruct.Pin = LL_GPIO_PIN_3;
+  GPIO_InitStruct.Pin = VCP_USART2_RX_Pin;
   GPIO_InitStruct.Mode = LL_GPIO_MODE_ALTERNATE;
   GPIO_InitStruct.Speed = LL_GPIO_SPEED_FREQ_LOW;
   GPIO_InitStruct.OutputType = LL_GPIO_OUTPUT_PUSHPULL;
   GPIO_InitStruct.Pull = LL_GPIO_PULL_NO;
   GPIO_InitStruct.Alternate = LL_GPIO_AF_1;
-  LL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+  LL_GPIO_Init(VCP_USART2_RX_GPIO_Port, &GPIO_InitStruct);
 
   /* USER CODE BEGIN USART2_Init 1 */
 
@@ -598,52 +598,97 @@ static void MX_USART2_UART_Init(void)
   */
 static void MX_GPIO_Init(void)
 {
-  GPIO_InitTypeDef GPIO_InitStruct = {0};
+  LL_EXTI_InitTypeDef EXTI_InitStruct = {0};
+  LL_GPIO_InitTypeDef GPIO_InitStruct = {0};
   /* USER CODE BEGIN MX_GPIO_Init_1 */
 
   /* USER CODE END MX_GPIO_Init_1 */
 
   /* GPIO Ports Clock Enable */
-  __HAL_RCC_GPIOC_CLK_ENABLE();
-  __HAL_RCC_GPIOF_CLK_ENABLE();
-  __HAL_RCC_GPIOA_CLK_ENABLE();
-  __HAL_RCC_GPIOB_CLK_ENABLE();
+  LL_IOP_GRP1_EnableClock(LL_IOP_GRP1_PERIPH_GPIOC);
+  LL_IOP_GRP1_EnableClock(LL_IOP_GRP1_PERIPH_GPIOF);
+  LL_IOP_GRP1_EnableClock(LL_IOP_GRP1_PERIPH_GPIOA);
+  LL_IOP_GRP1_EnableClock(LL_IOP_GRP1_PERIPH_GPIOB);
 
-  /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOA, TEMP_Pin|Water_Pump_Pin, GPIO_PIN_RESET);
+  /**/
+  LL_GPIO_ResetOutputPin(TEMP_GPIO_Port, TEMP_Pin);
 
-  /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOB, CE_Pin|CSN_Pin, GPIO_PIN_RESET);
+  /**/
+  LL_GPIO_ResetOutputPin(Water_Pump_GPIO_Port, Water_Pump_Pin);
 
-  /*Configure GPIO pin : RF_BTN_Pin */
-  GPIO_InitStruct.Pin = RF_BTN_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(RF_BTN_GPIO_Port, &GPIO_InitStruct);
+  /**/
+  LL_GPIO_ResetOutputPin(CE_GPIO_Port, CE_Pin);
 
-  /*Configure GPIO pins : TEMP_Pin Water_Pump_Pin */
-  GPIO_InitStruct.Pin = TEMP_Pin|Water_Pump_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+  /**/
+  LL_GPIO_ResetOutputPin(CSN_GPIO_Port, CSN_Pin);
 
-  /*Configure GPIO pins : CE_Pin CSN_Pin */
-  GPIO_InitStruct.Pin = CE_Pin|CSN_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
-  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+  /**/
+  EXTI_InitStruct.Line_0_31 = LL_EXTI_LINE_0;
+  EXTI_InitStruct.LineCommand = ENABLE;
+  EXTI_InitStruct.Mode = LL_EXTI_MODE_IT;
+  EXTI_InitStruct.Trigger = LL_EXTI_TRIGGER_FALLING;
+  LL_EXTI_Init(&EXTI_InitStruct);
 
-  /*Configure GPIO pin : PB6 */
-  GPIO_InitStruct.Pin = GPIO_PIN_6;
-  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+  /**/
+  EXTI_InitStruct.Line_0_31 = LL_EXTI_LINE_6;
+  EXTI_InitStruct.LineCommand = ENABLE;
+  EXTI_InitStruct.Mode = LL_EXTI_MODE_IT;
+  EXTI_InitStruct.Trigger = LL_EXTI_TRIGGER_RISING;
+  LL_EXTI_Init(&EXTI_InitStruct);
+
+  /**/
+  LL_GPIO_SetPinMode(RF_BTN_GPIO_Port, RF_BTN_Pin, LL_GPIO_MODE_INPUT);
+
+  /**/
+  LL_GPIO_SetPinMode(GPIOB, LL_GPIO_PIN_6, LL_GPIO_MODE_INPUT);
+
+  /**/
+  LL_GPIO_SetPinPull(RF_BTN_GPIO_Port, RF_BTN_Pin, LL_GPIO_PULL_NO);
+
+  /**/
+  LL_GPIO_SetPinPull(GPIOB, LL_GPIO_PIN_6, LL_GPIO_PULL_NO);
+
+  /**/
+  LL_EXTI_SetEXTISource(LL_EXTI_CONFIG_PORTA, LL_EXTI_CONFIG_LINE0);
+
+  /**/
+  LL_EXTI_SetEXTISource(LL_EXTI_CONFIG_PORTB, LL_EXTI_CONFIG_LINE6);
+
+  /**/
+  GPIO_InitStruct.Pin = TEMP_Pin;
+  GPIO_InitStruct.Mode = LL_GPIO_MODE_OUTPUT;
+  GPIO_InitStruct.Speed = LL_GPIO_SPEED_FREQ_LOW;
+  GPIO_InitStruct.OutputType = LL_GPIO_OUTPUT_PUSHPULL;
+  GPIO_InitStruct.Pull = LL_GPIO_PULL_NO;
+  LL_GPIO_Init(TEMP_GPIO_Port, &GPIO_InitStruct);
+
+  /**/
+  GPIO_InitStruct.Pin = Water_Pump_Pin;
+  GPIO_InitStruct.Mode = LL_GPIO_MODE_OUTPUT;
+  GPIO_InitStruct.Speed = LL_GPIO_SPEED_FREQ_LOW;
+  GPIO_InitStruct.OutputType = LL_GPIO_OUTPUT_PUSHPULL;
+  GPIO_InitStruct.Pull = LL_GPIO_PULL_NO;
+  LL_GPIO_Init(Water_Pump_GPIO_Port, &GPIO_InitStruct);
+
+  /**/
+  GPIO_InitStruct.Pin = CE_Pin;
+  GPIO_InitStruct.Mode = LL_GPIO_MODE_OUTPUT;
+  GPIO_InitStruct.Speed = LL_GPIO_SPEED_FREQ_HIGH;
+  GPIO_InitStruct.OutputType = LL_GPIO_OUTPUT_PUSHPULL;
+  GPIO_InitStruct.Pull = LL_GPIO_PULL_NO;
+  LL_GPIO_Init(CE_GPIO_Port, &GPIO_InitStruct);
+
+  /**/
+  GPIO_InitStruct.Pin = CSN_Pin;
+  GPIO_InitStruct.Mode = LL_GPIO_MODE_OUTPUT;
+  GPIO_InitStruct.Speed = LL_GPIO_SPEED_FREQ_HIGH;
+  GPIO_InitStruct.OutputType = LL_GPIO_OUTPUT_PUSHPULL;
+  GPIO_InitStruct.Pull = LL_GPIO_PULL_NO;
+  LL_GPIO_Init(CSN_GPIO_Port, &GPIO_InitStruct);
 
   /* EXTI interrupt init*/
-  HAL_NVIC_SetPriority(EXTI0_1_IRQn, 0, 0);
-  HAL_NVIC_SetPriority(EXTI4_15_IRQn, 0, 0);
+  NVIC_SetPriority(EXTI0_1_IRQn, 0);
+  NVIC_SetPriority(EXTI4_15_IRQn, 0);
 
   /* USER CODE BEGIN MX_GPIO_Init_2 */
 

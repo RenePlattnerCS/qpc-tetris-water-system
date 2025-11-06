@@ -411,6 +411,7 @@ QState MainApp_game(MainApp * const me, QEvt const * const e) {
         }
         //${AOs::MainApp::SM::tetris::game::WATER_PLANT}
         case WATER_PLANT_SIG: {
+            /*
             int16_t tilt = read_accelerometer_tilt();
             process_tilt_move(&me->board_inst, me->active_tetromino, tilt);
 
@@ -425,6 +426,7 @@ QState MainApp_game(MainApp * const me, QEvt const * const e) {
 
             //
             draw_board(&me->board_inst, &me->active_tetromino);
+            */
             status_ = Q_HANDLED();
             break;
         }

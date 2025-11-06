@@ -32,15 +32,14 @@ extern "C" {
 #include "stm32c0xx_ll_tim.h"
 #include "stm32c0xx_ll_usart.h"
 #include "stm32c0xx_ll_rcc.h"
+#include "stm32c0xx_ll_system.h"
+#include "stm32c0xx_ll_gpio.h"
+#include "stm32c0xx_ll_exti.h"
 #include "stm32c0xx_ll_bus.h"
 #include "stm32c0xx_ll_cortex.h"
-#include "stm32c0xx_ll_system.h"
 #include "stm32c0xx_ll_utils.h"
 #include "stm32c0xx_ll_pwr.h"
-#include "stm32c0xx_ll_gpio.h"
 #include "stm32c0xx_ll_dma.h"
-
-#include "stm32c0xx_ll_exti.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -71,34 +70,34 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
-#define RCC_OSCX_IN_Pin GPIO_PIN_14
+#define RCC_OSCX_IN_Pin LL_GPIO_PIN_14
 #define RCC_OSCX_IN_GPIO_Port GPIOC
-#define RCC_OSCX_OUT_Pin GPIO_PIN_15
+#define RCC_OSCX_OUT_Pin LL_GPIO_PIN_15
 #define RCC_OSCX_OUT_GPIO_Port GPIOC
-#define RCC_OSC_IN_Pin GPIO_PIN_0
+#define RCC_OSC_IN_Pin LL_GPIO_PIN_0
 #define RCC_OSC_IN_GPIO_Port GPIOF
-#define RCC_OSC_OUT_Pin GPIO_PIN_1
+#define RCC_OSC_OUT_Pin LL_GPIO_PIN_1
 #define RCC_OSC_OUT_GPIO_Port GPIOF
-#define RF_BTN_Pin GPIO_PIN_0
+#define RF_BTN_Pin LL_GPIO_PIN_0
 #define RF_BTN_GPIO_Port GPIOA
 #define RF_BTN_EXTI_IRQn EXTI0_1_IRQn
-#define TEMP_Pin GPIO_PIN_1
+#define TEMP_Pin LL_GPIO_PIN_1
 #define TEMP_GPIO_Port GPIOA
-#define VCP_USART2_TX_Pin GPIO_PIN_2
+#define VCP_USART2_TX_Pin LL_GPIO_PIN_2
 #define VCP_USART2_TX_GPIO_Port GPIOA
-#define VCP_USART2_RX_Pin GPIO_PIN_3
+#define VCP_USART2_RX_Pin LL_GPIO_PIN_3
 #define VCP_USART2_RX_GPIO_Port GPIOA
-#define ADC_MOIST_Pin GPIO_PIN_4
+#define ADC_MOIST_Pin LL_GPIO_PIN_4
 #define ADC_MOIST_GPIO_Port GPIOA
-#define Water_Pump_Pin GPIO_PIN_5
+#define Water_Pump_Pin LL_GPIO_PIN_5
 #define Water_Pump_GPIO_Port GPIOA
-#define CE_Pin GPIO_PIN_0
+#define CE_Pin LL_GPIO_PIN_0
 #define CE_GPIO_Port GPIOB
-#define CSN_Pin GPIO_PIN_1
+#define CSN_Pin LL_GPIO_PIN_1
 #define CSN_GPIO_Port GPIOB
-#define DEBUG_SWDIO_Pin GPIO_PIN_13
+#define DEBUG_SWDIO_Pin LL_GPIO_PIN_13
 #define DEBUG_SWDIO_GPIO_Port GPIOA
-#define DEBUG_SWCLK_Pin GPIO_PIN_14
+#define DEBUG_SWCLK_Pin LL_GPIO_PIN_14
 #define DEBUG_SWCLK_GPIO_Port GPIOA
 
 /* USER CODE BEGIN Private defines */
