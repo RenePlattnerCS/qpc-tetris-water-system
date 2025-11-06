@@ -34,8 +34,8 @@ Core/Src/tetris_board.o: ../Core/Src/tetris_board.c ../Core/Inc/display.h \
  M:/embedded/stm32C0_Nucleus/qpc-tetris-water-system/libraries/OLED_SSD1306/include/ssd1306_conf.h \
  M:/embedded/stm32C0_Nucleus/qpc-tetris-water-system/libraries/OLED_SSD1306/include/ssd1306_fonts.h \
  M:/embedded/stm32C0_Nucleus/qpc-tetris-water-system/libraries/OLED_SSD1306/include/ssd1306.h \
- ../Core/Inc/tetris_board.h ../Core/Inc/tetris_board.h \
- ../Core/Inc/tetromino.h
+ ../Core/Inc/tetris_board.h ../Core/Inc/tetromino.h \
+ ../Core/Inc/tetris_board.h ../Core/Inc/app_config.h
 ../Core/Inc/display.h:
 M:/embedded/stm32C0_Nucleus/qpc-tetris-water-system/libraries/OLED_SSD1306/include/ssd1306.h:
 M:/embedded/stm32C0_Nucleus/qpc-tetris-water-system/libraries/OLED_SSD1306/include/ssd1306_conf.h:
@@ -73,5 +73,6 @@ M:/embedded/stm32C0_Nucleus/qpc-tetris-water-system/libraries/OLED_SSD1306/inclu
 M:/embedded/stm32C0_Nucleus/qpc-tetris-water-system/libraries/OLED_SSD1306/include/ssd1306_fonts.h:
 M:/embedded/stm32C0_Nucleus/qpc-tetris-water-system/libraries/OLED_SSD1306/include/ssd1306.h:
 ../Core/Inc/tetris_board.h:
-../Core/Inc/tetris_board.h:
 ../Core/Inc/tetromino.h:
+../Core/Inc/tetris_board.h:
+../Core/Inc/app_config.h:

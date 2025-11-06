@@ -362,18 +362,22 @@ display_tetris_logo();
 QTimeEvt_armX(&amp;me-&gt;dryTimerEvt, MainApp_delta_time / 10U , MainApp_delta_time / 10U);
 
 
-Tetromino_ctor(&amp;me-&gt;active_tetromino, TETRO_I);
-me-&gt;active_tetromino.y = 18;
+Tetromino_ctor(&amp;me-&gt;active_tetromino, TETRO_L);
+me-&gt;active_tetromino.y = 19;
+draw_board(&amp;me-&gt;board_inst, &amp;me-&gt;active_tetromino);
 
-Board_placeTetromino( &amp;me-&gt;board_inst, &amp;me-&gt;active_tetromino);
-draw_board(&amp;me-&gt;board_inst);
+
+
 </entry>
       <!--${AOs::MainApp::SM::tetris::game::WATER_PLANT}-->
       <tran trig="WATER_PLANT">
        <action>//printf(&quot;tick\n&quot;);
-move_down(&amp;me-&gt;active_tetromino);
-Board_placeTetromino( &amp;me-&gt;board_inst, &amp;me-&gt;active_tetromino);
-draw_board(&amp;me-&gt;board_inst);</action>
+if(! (move_down(&amp;me-&gt;board_inst, &amp;me-&gt;active_tetromino)) )
+{
+    Board_placeTetromino( &amp;me-&gt;board_inst, &amp;me-&gt;active_tetromino);
+}
+//
+draw_board(&amp;me-&gt;board_inst, &amp;me-&gt;active_tetromino);</action>
        <tran_glyph conn="276,42,1,-1,-19">
         <action box="0,-2,10,2"/>
        </tran_glyph>
@@ -465,8 +469,8 @@ if (!me-&gt;board_inst.rotate_90) {
     // rotated 90° → horizontal bottom line
     MainApp_init_line_state(
         &amp;me-&gt;line_state_inst,
-        me-&gt;line_x0, me-&gt;line_y0 + me-&gt;line_w,
-        me-&gt;line_x0 + me-&gt;line_h, me-&gt;line_y0 + me-&gt;line_w);
+        me-&gt;line_x0 + me-&gt;line_h , me-&gt;line_y0 + me-&gt;line_w,
+        me-&gt;line_x0 , me-&gt;line_y0 + me-&gt;line_w);
 }
 
 static QEvt const e = {DRAW_OUTLINE_SIG, 0U, 0U};

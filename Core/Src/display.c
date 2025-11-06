@@ -3,6 +3,7 @@
 #include "qpc.h"
 #include "main_app.h"
 
+
 static void display_text(char * text, uint8_t x, uint8_t y);
 static void RectangleFill(uint8_t percent);
 
@@ -16,10 +17,21 @@ void display_temp(uint16_t temp)
 	display_text("C", 30,4 );
 }
 
-void clear_display(void)
+void clear_display()
 {
 	ssd1306_Fill(Black);
+
+
 	ssd1306_UpdateScreen();
+}
+
+void draw_border(Board * board)
+{
+	//redraw border
+		if(board->rotate_90)
+		{
+			ssd1306_DrawRectangle(board->pos_x, board->pos_y, board->pos_x + (board->height) * board->blockSize, board->pos_y + (board->width) * board->blockSize, White);
+		}
 }
 
 void draw_pixel_block(uint8_t x, uint8_t y, uint8_t width, uint8_t height)

@@ -398,11 +398,12 @@ QState MainApp_game(MainApp * const me, QEvt const * const e) {
             QTimeEvt_armX(&me->dryTimerEvt, MainApp_delta_time / 10U , MainApp_delta_time / 10U);
 
 
-            Tetromino_ctor(&me->active_tetromino, TETRO_I);
-            me->active_tetromino.y = 18;
+            Tetromino_ctor(&me->active_tetromino, TETRO_L);
+            me->active_tetromino.y = 19;
+            draw_board(&me->board_inst, &me->active_tetromino);
 
-            Board_placeTetromino( &me->board_inst, &me->active_tetromino);
-            draw_board(&me->board_inst);
+
+
 
             status_ = Q_HANDLED();
             break;
@@ -410,9 +411,12 @@ QState MainApp_game(MainApp * const me, QEvt const * const e) {
         //${AOs::MainApp::SM::tetris::game::WATER_PLANT}
         case WATER_PLANT_SIG: {
             //printf("tick\n");
-            move_down(&me->active_tetromino);
-            Board_placeTetromino( &me->board_inst, &me->active_tetromino);
-            draw_board(&me->board_inst);
+            if(! (move_down(&me->board_inst, &me->active_tetromino)) )
+            {
+                Board_placeTetromino( &me->board_inst, &me->active_tetromino);
+            }
+            //
+            draw_board(&me->board_inst, &me->active_tetromino);
             status_ = Q_HANDLED();
             break;
         }
@@ -534,8 +538,8 @@ QState MainApp_left_border(MainApp * const me, QEvt const * const e) {
                 // rotated 90° → horizontal bottom line
                 MainApp_init_line_state(
                     &me->line_state_inst,
-                    me->line_x0, me->line_y0 + me->line_w,
-                    me->line_x0 + me->line_h, me->line_y0 + me->line_w);
+                    me->line_x0 + me->line_h , me->line_y0 + me->line_w,
+                    me->line_x0 , me->line_y0 + me->line_w);
             }
 
             static QEvt const e = {DRAW_OUTLINE_SIG, 0U, 0U};

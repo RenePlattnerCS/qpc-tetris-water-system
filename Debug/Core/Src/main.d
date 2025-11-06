@@ -58,9 +58,9 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
  M:/embedded/stm32C0_Nucleus/qpc-tetris-water-system/libraries/OLED_SSD1306/include/ssd1306_conf.h \
  M:/embedded/stm32C0_Nucleus/qpc-tetris-water-system/libraries/OLED_SSD1306/include/ssd1306_fonts.h \
  M:/embedded/stm32C0_Nucleus/qpc-tetris-water-system/libraries/OLED_SSD1306/include/ssd1306.h \
+ ../Core/Inc/tetris_board.h ../Core/Inc/tetromino.h \
  ../Core/Inc/plant_sensor.h ../Core/Inc/sensor.h ../Core/Inc/rfbutton.h \
- ../Core/Inc/tetris_board.h ../Core/Inc/tetromino.h ../Core/Inc/sensor.h \
- ../Core/Inc/temp_sensor.h ../Core/Inc/rfbutton.h \
+ ../Core/Inc/sensor.h ../Core/Inc/temp_sensor.h ../Core/Inc/rfbutton.h \
  ../Core/Inc/accelerometer.h ../Core/Inc/app_config.h
 ../Core/Inc/main.h:
 ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal.h:
@@ -124,11 +124,11 @@ M:/embedded/stm32C0_Nucleus/qpc-tetris-water-system/libraries/OLED_SSD1306/inclu
 M:/embedded/stm32C0_Nucleus/qpc-tetris-water-system/libraries/OLED_SSD1306/include/ssd1306_conf.h:
 M:/embedded/stm32C0_Nucleus/qpc-tetris-water-system/libraries/OLED_SSD1306/include/ssd1306_fonts.h:
 M:/embedded/stm32C0_Nucleus/qpc-tetris-water-system/libraries/OLED_SSD1306/include/ssd1306.h:
+../Core/Inc/tetris_board.h:
+../Core/Inc/tetromino.h:
 ../Core/Inc/plant_sensor.h:
 ../Core/Inc/sensor.h:
 ../Core/Inc/rfbutton.h:
-../Core/Inc/tetris_board.h:
-../Core/Inc/tetromino.h:
 ../Core/Inc/sensor.h:
 ../Core/Inc/temp_sensor.h:
 ../Core/Inc/rfbutton.h:
