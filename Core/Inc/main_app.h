@@ -77,11 +77,6 @@ typedef struct MainApp {
 // private:
     LineState line_state_inst;
     Board board_inst;
-
-// public:
-    QTimeEvt  tickEvt;
-
-// private:
     uint8_t line_w ;
     uint8_t line_h ;
     uint8_t line_x0 ;
@@ -157,7 +152,6 @@ enum MenuGameSignals {
     START_TETRIS_SIG,
     DRAW_OUTLINE_SIG,
     DRAW_OUTLINE_DONE_SIG,
-    TICK_SIG,
     MAX_SIG
 };
 

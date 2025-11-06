@@ -17,7 +17,6 @@
 QTimeEvt_ctorX(&amp;me-&gt;tempPollEvt, &amp;me-&gt;super, POLL_SENSOR_SIG, 0U);
 QTimeEvt_ctorX(&amp;me-&gt;longPressEvt, &amp;me-&gt;super, BUTTON_LONG_SIG, 0U);
 QTimeEvt_ctorX(&amp;me-&gt;dryTimerEvt, &amp;me-&gt;super, WATER_PLANT_SIG, 0U);
-QTimeEvt_ctorX(&amp;me-&gt;tickEvt, &amp;me-&gt;super, TICK_SIG, 0U);
 Board_ctor(&amp;me-&gt;board_inst, gridArray, 10, 20, 16,1, true, 3);
 
 
@@ -74,8 +73,6 @@ me-&gt;dma_index = 0;
    <attribute name="line_state_inst" type="LineState" visibility="0x02" properties="0x00"/>
    <!--${AOs::MainApp::board_inst}-->
    <attribute name="board_inst" type="Board" visibility="0x02" properties="0x00"/>
-   <!--${AOs::MainApp::tickEvt}-->
-   <attribute name="tickEvt" type="QTimeEvt " visibility="0x00" properties="0x00"/>
    <!--${AOs::MainApp::line_w }-->
    <attribute name="line_w " type="uint8_t" visibility="0x02" properties="0x00"/>
    <!--${AOs::MainApp::line_h }-->
@@ -367,18 +364,32 @@ me-&gt;active_tetromino.y = 19;
 draw_board(&amp;me-&gt;board_inst, &amp;me-&gt;active_tetromino);
 
 
-
+accelerometer_init_polling();
 </entry>
       <!--${AOs::MainApp::SM::tetris::game::WATER_PLANT}-->
       <tran trig="WATER_PLANT">
-       <action>//printf(&quot;tick\n&quot;);
+       <action>int16_t tilt = read_accelerometer_tilt();
+process_tilt_move(&amp;me-&gt;board_inst, me-&gt;active_tetromino, tilt);
+
+
 if(! (move_down(&amp;me-&gt;board_inst, &amp;me-&gt;active_tetromino)) )
 {
     Board_placeTetromino( &amp;me-&gt;board_inst, &amp;me-&gt;active_tetromino);
 }
+
+
+
+
 //
 draw_board(&amp;me-&gt;board_inst, &amp;me-&gt;active_tetromino);</action>
        <tran_glyph conn="276,42,1,-1,-19">
+        <action box="0,-2,10,2"/>
+       </tran_glyph>
+      </tran>
+      <!--${AOs::MainApp::SM::tetris::game::BUTTON_RELEASE}-->
+      <tran trig="BUTTON_RELEASE">
+       <action>Tetromino_rotate(&amp;me-&gt;active_tetromino);</action>
+       <tran_glyph conn="276,48,1,-1,-19">
         <action box="0,-2,10,2"/>
        </tran_glyph>
       </tran>
@@ -884,7 +895,6 @@ enum MenuGameSignals {
     START_TETRIS_SIG,
     DRAW_OUTLINE_SIG,
     DRAW_OUTLINE_DONE_SIG,
-    TICK_SIG,
     MAX_SIG  
 };
 
@@ -942,6 +952,7 @@ $declare${AOs::RFButton}
 #include &quot;app_config.h&quot;
 #include &quot;NRF_chip.h&quot;
 #include &quot;main.h&quot;;
+#include &quot;tetris_input_handler.h&quot;
 
 //DMA buffer
 static __attribute__((section(&quot;.bss&quot;))) __attribute__((aligned(4))) volatile uint32_t Sensor_dht11_dma_buffer[DHT11_MAX_EDGES];

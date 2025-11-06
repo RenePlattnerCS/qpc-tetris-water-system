@@ -42,6 +42,7 @@
 #include "app_config.h"
 #include "NRF_chip.h"
 #include "main.h";
+#include "tetris_input_handler.h"
 
 //DMA buffer
 static __attribute__((section(".bss"))) __attribute__((aligned(4))) volatile uint32_t Sensor_dht11_dma_buffer[DHT11_MAX_EDGES];
@@ -403,20 +404,33 @@ QState MainApp_game(MainApp * const me, QEvt const * const e) {
             draw_board(&me->board_inst, &me->active_tetromino);
 
 
-
+            accelerometer_init_polling();
 
             status_ = Q_HANDLED();
             break;
         }
         //${AOs::MainApp::SM::tetris::game::WATER_PLANT}
         case WATER_PLANT_SIG: {
-            //printf("tick\n");
+            int16_t tilt = read_accelerometer_tilt();
+            process_tilt_move(&me->board_inst, me->active_tetromino, tilt);
+
+
             if(! (move_down(&me->board_inst, &me->active_tetromino)) )
             {
                 Board_placeTetromino( &me->board_inst, &me->active_tetromino);
             }
+
+
+
+
             //
             draw_board(&me->board_inst, &me->active_tetromino);
+            status_ = Q_HANDLED();
+            break;
+        }
+        //${AOs::MainApp::SM::tetris::game::BUTTON_RELEASE}
+        case BUTTON_RELEASE_SIG: {
+            Tetromino_rotate(&me->active_tetromino);
             status_ = Q_HANDLED();
             break;
         }
@@ -690,7 +704,6 @@ void Main_App_ctor(MainApp * const me) {
     QTimeEvt_ctorX(&me->tempPollEvt, &me->super, POLL_SENSOR_SIG, 0U);
     QTimeEvt_ctorX(&me->longPressEvt, &me->super, BUTTON_LONG_SIG, 0U);
     QTimeEvt_ctorX(&me->dryTimerEvt, &me->super, WATER_PLANT_SIG, 0U);
-    QTimeEvt_ctorX(&me->tickEvt, &me->super, TICK_SIG, 0U);
     Board_ctor(&me->board_inst, gridArray, 10, 20, 16,1, true, 3);
 
 
