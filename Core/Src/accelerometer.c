@@ -5,7 +5,7 @@
 #include "temp_sensor.h"
 
 extern I2C_HandleTypeDef hi2c1;
-
+static int compute_tiltX(int32_t rawX, int32_t rawZ);
 
 void init_accelerometer(void) //tap detection
 {
@@ -89,24 +89,23 @@ uint16_t read_accelerometer_tilt()
 	//float x_g = rawX * 0.0039f;
 	//float y_g = rawY * 0.0039f;
 	//float z_g = rawZ * 0.0039f;
-	int32_t x_mg = (int32_t)rawX * 3900 / 1000;  // or simply * 39 if you prefer smaller numbers
-	int32_t y_mg = (int32_t)rawY * 3900 / 1000;
-	int32_t z_mg = (int32_t)rawZ * 3900 / 1000;
+	int x_mg = (rawX * 1000) / 256;  // or simply * 39 if you prefer smaller numbers
+	int y_mg = (rawY * 1000) / 256;
+	int z_mg = (rawZ * 1000) / 256;
 
 	//float tiltX = atan2f(-x_g, z_g) * 180.0f / 3.14159f; // tilt left/right
 	//float tiltY = atan2f(-y_g, z_g) * 180.0f / 3.14159f; // tilt forward/back
 
-	compute_tiltX(x_mg, z_mg);
+	return compute_tiltX(y_mg, z_mg);
 
 }
 
-int compute_tiltX(int32_t rawX, int32_t rawZ)
+static int compute_tiltX(int32_t x_mg, int32_t z_mg)
 {
-    if(rawZ == 0) rawZ = 1;  // avoid division by zero
+    if(z_mg == 0) z_mg = 1; // avoid divide by zero
 
-    int tiltX = (int32_t)rawX * 100 / rawZ;
+    int tiltX = (x_mg * 100) / z_mg;
 
-    // clamp to -100 … +100
     if(tiltX > 100) tiltX = 100;
     if(tiltX < -100) tiltX = -100;
 

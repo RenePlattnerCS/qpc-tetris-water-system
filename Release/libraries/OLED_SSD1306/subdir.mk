@@ -6,18 +6,15 @@
 # Add inputs and outputs from these tool invocations to the build variables 
 C_SRCS += \
 ../libraries/OLED_SSD1306/ssd1306.c \
-../libraries/OLED_SSD1306/ssd1306_fonts.c \
-../libraries/OLED_SSD1306/ssd1306_tests.c 
+../libraries/OLED_SSD1306/ssd1306_fonts.c 
 
 OBJS += \
 ./libraries/OLED_SSD1306/ssd1306.o \
-./libraries/OLED_SSD1306/ssd1306_fonts.o \
-./libraries/OLED_SSD1306/ssd1306_tests.o 
+./libraries/OLED_SSD1306/ssd1306_fonts.o 
 
 C_DEPS += \
 ./libraries/OLED_SSD1306/ssd1306.d \
-./libraries/OLED_SSD1306/ssd1306_fonts.d \
-./libraries/OLED_SSD1306/ssd1306_tests.d 
+./libraries/OLED_SSD1306/ssd1306_fonts.d 
 
 
 # Each subdirectory must supply rules for building sources it contributes
@@ -27,7 +24,7 @@ libraries/OLED_SSD1306/%.o libraries/OLED_SSD1306/%.su libraries/OLED_SSD1306/%.
 clean: clean-libraries-2f-OLED_SSD1306
 
 clean-libraries-2f-OLED_SSD1306:
-	-$(RM) ./libraries/OLED_SSD1306/ssd1306.cyclo ./libraries/OLED_SSD1306/ssd1306.d ./libraries/OLED_SSD1306/ssd1306.o ./libraries/OLED_SSD1306/ssd1306.su ./libraries/OLED_SSD1306/ssd1306_fonts.cyclo ./libraries/OLED_SSD1306/ssd1306_fonts.d ./libraries/OLED_SSD1306/ssd1306_fonts.o ./libraries/OLED_SSD1306/ssd1306_fonts.su ./libraries/OLED_SSD1306/ssd1306_tests.cyclo ./libraries/OLED_SSD1306/ssd1306_tests.d ./libraries/OLED_SSD1306/ssd1306_tests.o ./libraries/OLED_SSD1306/ssd1306_tests.su
+	-$(RM) ./libraries/OLED_SSD1306/ssd1306.cyclo ./libraries/OLED_SSD1306/ssd1306.d ./libraries/OLED_SSD1306/ssd1306.o ./libraries/OLED_SSD1306/ssd1306.su ./libraries/OLED_SSD1306/ssd1306_fonts.cyclo ./libraries/OLED_SSD1306/ssd1306_fonts.d ./libraries/OLED_SSD1306/ssd1306_fonts.o ./libraries/OLED_SSD1306/ssd1306_fonts.su
 
 .PHONY: clean-libraries-2f-OLED_SSD1306
 

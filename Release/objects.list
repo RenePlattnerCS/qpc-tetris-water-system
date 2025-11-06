@@ -14,6 +14,7 @@
 "./Core/Src/system_stm32c0xx.o"
 "./Core/Src/temp_sensor.o"
 "./Core/Src/tetris_board.o"
+"./Core/Src/tetris_input_handler.o"
 "./Core/Src/tetromino.o"
 "./Core/Startup/startup_stm32c031c6tx.o"
 "./Drivers/STM32C0xx_HAL_Driver/Src/stm32c0xx_hal.o"
@@ -57,4 +58,3 @@
 "./libraries/NRF24/NRF24.o"
 "./libraries/OLED_SSD1306/ssd1306.o"
 "./libraries/OLED_SSD1306/ssd1306_fonts.o"
-"./libraries/OLED_SSD1306/ssd1306_tests.o"

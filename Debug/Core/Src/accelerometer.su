@@ -1,5 +1,4 @@
 ../Core/Src/accelerometer.c:10:6:init_accelerometer	48	static
 ../Core/Src/accelerometer.c:51:6:accelerometer_init_polling	48	static
 ../Core/Src/accelerometer.c:69:6:read_accelerometer	48	static
-../Core/Src/accelerometer.c:82:10:read_accelerometer_tilt	16	static
-../Core/Src/accelerometer.c:103:5:compute_tiltX	8	static
+../Core/Src/accelerometer.c:82:10:read_accelerometer_tilt	24	static

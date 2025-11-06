@@ -45,8 +45,8 @@ Core/Src/rfbutton.o: ../Core/Src/rfbutton.c ../Core/Inc/rfbutton.h \
  M:/embedded/stm32C0_Nucleus/qpc-tetris-water-system/libraries/OLED_SSD1306/include/ssd1306_conf.h \
  M:/embedded/stm32C0_Nucleus/qpc-tetris-water-system/libraries/OLED_SSD1306/include/ssd1306_fonts.h \
  M:/embedded/stm32C0_Nucleus/qpc-tetris-water-system/libraries/OLED_SSD1306/include/ssd1306.h \
- ../Core/Inc/plant_sensor.h ../Core/Inc/sensor.h ../Core/Inc/rfbutton.h \
  ../Core/Inc/tetris_board.h ../Core/Inc/tetromino.h \
+ ../Core/Inc/plant_sensor.h ../Core/Inc/sensor.h ../Core/Inc/rfbutton.h \
  ../Core/Inc/NRF_chip.h \
  M:/embedded/stm32C0_Nucleus/qpc-tetris-water-system/libraries/NRF24/includes/NRF24.h \
  M:/embedded/stm32C0_Nucleus/qpc-tetris-water-system/libraries/NRF24/includes/NRF24_reg_addresses.h \
@@ -99,11 +99,11 @@ M:/embedded/stm32C0_Nucleus/qpc-tetris-water-system/libraries/OLED_SSD1306/inclu
 M:/embedded/stm32C0_Nucleus/qpc-tetris-water-system/libraries/OLED_SSD1306/include/ssd1306_conf.h:
 M:/embedded/stm32C0_Nucleus/qpc-tetris-water-system/libraries/OLED_SSD1306/include/ssd1306_fonts.h:
 M:/embedded/stm32C0_Nucleus/qpc-tetris-water-system/libraries/OLED_SSD1306/include/ssd1306.h:
+../Core/Inc/tetris_board.h:
+../Core/Inc/tetromino.h:
 ../Core/Inc/plant_sensor.h:
 ../Core/Inc/sensor.h:
 ../Core/Inc/rfbutton.h:
-../Core/Inc/tetris_board.h:
-../Core/Inc/tetromino.h:
 ../Core/Inc/NRF_chip.h:
 M:/embedded/stm32C0_Nucleus/qpc-tetris-water-system/libraries/NRF24/includes/NRF24.h:
 M:/embedded/stm32C0_Nucleus/qpc-tetris-water-system/libraries/NRF24/includes/NRF24_reg_addresses.h:

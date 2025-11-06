@@ -1,9 +1,3 @@
-/*
- * NRF_chip.c
- *
- *  Created on: Nov 2, 2025
- *      Author: NeerW
- */
 
 #include "NRF_chip.h"
 #include "main_app.h"
@@ -111,7 +105,6 @@ void listen(void)
 	  //HAL_Delay(5);
 	  BSP_delayMs(5);
 	  data = nrf24_uint8_t_to_type(dataR, sizeof(dataR));
-	  printf("wait\n");
 }
 
 
@@ -130,7 +123,7 @@ void NRF24_TestCommunication(void)
     HAL_SPI_Receive(&hspi1, &reg_val, 1, 100);
     csn_high(); // Deselect NRF
 
-    printf("NRF CONFIG register: 0x%02X\n", reg_val);
+
 
     // Optional: read STATUS register too
     cmd = 0x07; // STATUS register address
@@ -140,7 +133,6 @@ void NRF24_TestCommunication(void)
     HAL_SPI_Receive(&hspi1, &reg_val, 1, 100);
     csn_high();
 
-    printf("NRF STATUS register: 0x%02X\n", reg_val);
 }
 
 

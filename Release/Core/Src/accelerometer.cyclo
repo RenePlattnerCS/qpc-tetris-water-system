@@ -1,2 +1,5 @@
 ../Core/Src/accelerometer.c:10:6:init_accelerometer	1
-../Core/Src/accelerometer.c:51:6:init_accelerometer2	1
+../Core/Src/accelerometer.c:51:6:accelerometer_init_polling	1
+../Core/Src/accelerometer.c:69:6:read_accelerometer	1
+../Core/Src/accelerometer.c:82:10:read_accelerometer_tilt	1
+../Core/Src/accelerometer.c:103:5:compute_tiltX	4

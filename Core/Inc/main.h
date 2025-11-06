@@ -30,21 +30,18 @@ extern "C" {
 #include "stm32c0xx_hal.h"
 #include "stm32c0xx_ll_adc.h"
 #include "stm32c0xx_ll_tim.h"
-#include "stm32c0xx_ll_usart.h"
-#include "stm32c0xx_ll_rcc.h"
 #include "stm32c0xx_ll_system.h"
 #include "stm32c0xx_ll_gpio.h"
 #include "stm32c0xx_ll_exti.h"
 #include "stm32c0xx_ll_bus.h"
 #include "stm32c0xx_ll_cortex.h"
+#include "stm32c0xx_ll_rcc.h"
 #include "stm32c0xx_ll_utils.h"
 #include "stm32c0xx_ll_pwr.h"
 #include "stm32c0xx_ll_dma.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-void debug_log(const char *fmt, ...);
-void flush_debug_log(void);
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/

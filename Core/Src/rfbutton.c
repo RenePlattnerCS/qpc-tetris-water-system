@@ -80,13 +80,6 @@ QState RFButton_initial(RFButton * const me, void const * const par) {
 QState RFButton_wait(RFButton * const me, QEvt const * const e) {
     QState status_;
     switch (e->sig) {
-        //${AOs::RFButton::SM::wait}
-        case Q_ENTRY_SIG: {
-            printf("wait\n");
-
-            status_ = Q_HANDLED();
-            break;
-        }
         //${AOs::RFButton::SM::wait::NRF_IRQ}
         case NRF_IRQ_SIG: {
             RFButton_receive_rf();

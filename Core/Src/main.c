@@ -34,7 +34,18 @@
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
+#include <stdio.h>
 
+// Redirect fputc used by printf
+int fputc(int ch, FILE *f) {
+    (void)f;
+    return ch;   // or return 0; if you want *no output*
+}
+
+// Redirect __io_putchar used by HAL
+int __io_putchar(int ch) {
+    return ch;   // or return 0;
+}
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
@@ -78,7 +89,6 @@ static void MX_ADC1_Init(void);
 static void MX_SPI1_Init(void);
 static void MX_TIM17_Init(void);
 static void MX_TIM3_Init(void);
-static void MX_USART2_UART_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -138,7 +148,6 @@ int main(void)
   MX_SPI1_Init();
   MX_TIM17_Init();
   MX_TIM3_Init();
-  MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
   QF_init();       // initialize the framework and the underlying RT kernel
   BSP_init();      // initialize the BSP
@@ -522,76 +531,6 @@ static void MX_TIM17_Init(void)
 }
 
 /**
-  * @brief USART2 Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_USART2_UART_Init(void)
-{
-
-  /* USER CODE BEGIN USART2_Init 0 */
-
-  /* USER CODE END USART2_Init 0 */
-
-  LL_USART_InitTypeDef USART_InitStruct = {0};
-
-  LL_GPIO_InitTypeDef GPIO_InitStruct = {0};
-
-  /* Peripheral clock enable */
-  LL_APB1_GRP1_EnableClock(LL_APB1_GRP1_PERIPH_USART2);
-
-  LL_IOP_GRP1_EnableClock(LL_IOP_GRP1_PERIPH_GPIOA);
-  /**USART2 GPIO Configuration
-  PA2   ------> USART2_TX
-  PA3   ------> USART2_RX
-  */
-  GPIO_InitStruct.Pin = VCP_USART2_TX_Pin;
-  GPIO_InitStruct.Mode = LL_GPIO_MODE_ALTERNATE;
-  GPIO_InitStruct.Speed = LL_GPIO_SPEED_FREQ_LOW;
-  GPIO_InitStruct.OutputType = LL_GPIO_OUTPUT_PUSHPULL;
-  GPIO_InitStruct.Pull = LL_GPIO_PULL_NO;
-  GPIO_InitStruct.Alternate = LL_GPIO_AF_1;
-  LL_GPIO_Init(VCP_USART2_TX_GPIO_Port, &GPIO_InitStruct);
-
-  GPIO_InitStruct.Pin = VCP_USART2_RX_Pin;
-  GPIO_InitStruct.Mode = LL_GPIO_MODE_ALTERNATE;
-  GPIO_InitStruct.Speed = LL_GPIO_SPEED_FREQ_LOW;
-  GPIO_InitStruct.OutputType = LL_GPIO_OUTPUT_PUSHPULL;
-  GPIO_InitStruct.Pull = LL_GPIO_PULL_NO;
-  GPIO_InitStruct.Alternate = LL_GPIO_AF_1;
-  LL_GPIO_Init(VCP_USART2_RX_GPIO_Port, &GPIO_InitStruct);
-
-  /* USER CODE BEGIN USART2_Init 1 */
-
-  /* USER CODE END USART2_Init 1 */
-  USART_InitStruct.PrescalerValue = LL_USART_PRESCALER_DIV1;
-  USART_InitStruct.BaudRate = 115200;
-  USART_InitStruct.DataWidth = LL_USART_DATAWIDTH_8B;
-  USART_InitStruct.StopBits = LL_USART_STOPBITS_1;
-  USART_InitStruct.Parity = LL_USART_PARITY_NONE;
-  USART_InitStruct.TransferDirection = LL_USART_DIRECTION_TX_RX;
-  USART_InitStruct.HardwareFlowControl = LL_USART_HWCONTROL_NONE;
-  USART_InitStruct.OverSampling = LL_USART_OVERSAMPLING_16;
-  LL_USART_Init(USART2, &USART_InitStruct);
-  LL_USART_ConfigAsyncMode(USART2);
-
-  /* USER CODE BEGIN WKUPType USART2 */
-
-  /* USER CODE END WKUPType USART2 */
-
-  LL_USART_Enable(USART2);
-
-  /* Polling USART2 initialisation */
-  while((!(LL_USART_IsActiveFlag_TEACK(USART2))) || (!(LL_USART_IsActiveFlag_REACK(USART2))))
-  {
-  }
-  /* USER CODE BEGIN USART2_Init 2 */
-
-  /* USER CODE END USART2_Init 2 */
-
-}
-
-/**
   * @brief GPIO Initialization Function
   * @param None
   * @retval None
@@ -663,6 +602,24 @@ static void MX_GPIO_Init(void)
   LL_GPIO_Init(TEMP_GPIO_Port, &GPIO_InitStruct);
 
   /**/
+  GPIO_InitStruct.Pin = VCP_USART2_TX_Pin;
+  GPIO_InitStruct.Mode = LL_GPIO_MODE_ALTERNATE;
+  GPIO_InitStruct.Speed = LL_GPIO_SPEED_FREQ_LOW;
+  GPIO_InitStruct.OutputType = LL_GPIO_OUTPUT_PUSHPULL;
+  GPIO_InitStruct.Pull = LL_GPIO_PULL_NO;
+  GPIO_InitStruct.Alternate = LL_GPIO_AF_1;
+  LL_GPIO_Init(VCP_USART2_TX_GPIO_Port, &GPIO_InitStruct);
+
+  /**/
+  GPIO_InitStruct.Pin = VCP_USART2_RX_Pin;
+  GPIO_InitStruct.Mode = LL_GPIO_MODE_ALTERNATE;
+  GPIO_InitStruct.Speed = LL_GPIO_SPEED_FREQ_LOW;
+  GPIO_InitStruct.OutputType = LL_GPIO_OUTPUT_PUSHPULL;
+  GPIO_InitStruct.Pull = LL_GPIO_PULL_NO;
+  GPIO_InitStruct.Alternate = LL_GPIO_AF_1;
+  LL_GPIO_Init(VCP_USART2_RX_GPIO_Port, &GPIO_InitStruct);
+
+  /**/
   GPIO_InitStruct.Pin = Water_Pump_Pin;
   GPIO_InitStruct.Mode = LL_GPIO_MODE_OUTPUT;
   GPIO_InitStruct.Speed = LL_GPIO_SPEED_FREQ_LOW;
@@ -696,29 +653,9 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
-void debug_log(const char *fmt, ...) {
-    va_list args;
-    char tmp[64];
-    va_start(args, fmt);
-    int len = vsnprintf(tmp, sizeof(tmp), fmt, args);
-    va_end(args);
 
-    for (int i = 0; i < len; ++i) {
-        uint16_t next = (printf_head + 1) % PRINTF_BUFFER_SIZE;
-        if (next == printf_tail) break;  // buffer full
-        printf_buffer[printf_head] = tmp[i];
-        printf_head = next;
-    }
-}
 
-// In main loop or idle task:
-void flush_debug_log(void) {
-    while (printf_tail != printf_head) {
-        LL_USART_TransmitData8(USART2, printf_buffer[printf_tail]);
-        while (!LL_USART_IsActiveFlag_TXE(USART2));
-        printf_tail = (printf_tail + 1) % PRINTF_BUFFER_SIZE;
-    }
-}
+
 /* USER CODE END 4 */
 
 /**

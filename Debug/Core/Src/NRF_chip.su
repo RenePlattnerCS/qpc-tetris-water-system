@@ -1,6 +1,6 @@
-../Core/Src/NRF_chip.c:21:6:init_nrf	24	static
-../Core/Src/NRF_chip.c:81:9:check_data	8	static
-../Core/Src/NRF_chip.c:90:6:receive	32	static
-../Core/Src/NRF_chip.c:104:6:listen	8	static
-../Core/Src/NRF_chip.c:122:6:NRF24_TestCommunication	24	static
-../Core/Src/NRF_chip.c:148:6:verify_rx_mode	16	static
+../Core/Src/NRF_chip.c:15:6:init_nrf	24	static
+../Core/Src/NRF_chip.c:75:9:check_data	8	static
+../Core/Src/NRF_chip.c:84:6:receive	32	static
+../Core/Src/NRF_chip.c:98:6:listen	8	static
+../Core/Src/NRF_chip.c:115:6:NRF24_TestCommunication	24	static
+../Core/Src/NRF_chip.c:140:6:verify_rx_mode	16	static

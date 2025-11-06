@@ -98,7 +98,6 @@ QState Sensor_waiting(Sensor * const me, QEvt const * const e) {
     switch (e->sig) {
         //${AOs::Sensor::SM::waiting}
         case Q_ENTRY_SIG: {
-            printf("1 waiting waiting \n");
             QTimeEvt_disarm(&me->resetEvt);
 
             status_ = Q_HANDLED();
@@ -136,7 +135,7 @@ QState Sensor_wait_response(Sensor * const me, QEvt const * const e) {
         //${AOs::Sensor::SM::wait_response::DHT11_RESET}
         case DHT11_RESET_SIG: {
             QTimeEvt_disarm(&me->resetEvt);
-            printf("Reset DHT11");
+
             status_ = Q_TRAN(&Sensor_waiting);
             break;
         }
@@ -186,8 +185,7 @@ QState Sensor_wait_response(Sensor * const me, QEvt const * const e) {
 
 
                             } else {
-                                printf("Checksum error! Expected: %u, Got: %u\n",
-                                       checksum, me->bits[4]);
+                                //checksum error!!
                             }
 
                             // Reset or go to waiting state
@@ -218,7 +216,6 @@ QState Sensor_start_dht(Sensor * const me, QEvt const * const e) {
     switch (e->sig) {
         //${AOs::Sensor::SM::start_dht}
         case Q_ENTRY_SIG: {
-            //printf("2 start DHT arm 30ms \n");
             for(int i=0;i<5;i++) me->bits[i]=0;
             me->bit_index = 0;
             me->byte_index = 0;

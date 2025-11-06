@@ -1,2 +1,2 @@
 ../Core/Src/tetris_input_handler.c:5:9:compute_move_delay	4
-../Core/Src/tetris_input_handler.c:14:6:process_tilt_move	6
+../Core/Src/tetris_input_handler.c:14:6:process_tilt_move	4

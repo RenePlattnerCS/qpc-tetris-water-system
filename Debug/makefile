@@ -66,7 +66,7 @@ main-build: qpc_tetris.elf secondary-outputs
 
 # Tool invocations
 qpc_tetris.elf qpc_tetris.map: $(OBJS) $(USER_OBJS) M:\embedded\stm32C0_Nucleus\qpc-tetris-water-system\STM32C031C6TX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-gcc -o "qpc_tetris.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m0plus -T"M:\embedded\stm32C0_Nucleus\qpc-tetris-water-system\STM32C031C6TX_FLASH.ld" --specs=nosys.specs -Wl,-Map="qpc_tetris.map" -Wl,--gc-sections -static --specs=nano.specs -mfloat-abi=soft -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+	arm-none-eabi-gcc -o "qpc_tetris.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m0plus -T"M:\embedded\stm32C0_Nucleus\qpc-tetris-water-system\STM32C031C6TX_FLASH.ld" --specs=nosys.specs -Wl,-Map="qpc_tetris.map" -Wl,--gc-sections -static -Wl,-Map=qpc_tetris.map --specs=nano.specs -mfloat-abi=soft -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 

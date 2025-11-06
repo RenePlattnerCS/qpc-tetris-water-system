@@ -13,6 +13,8 @@ uint8_t compute_move_delay(int16_t tilt) {
 
 void process_tilt_move(Board *board, Tetromino *t, int16_t tilt) {
 
+	if (!board || !t) return;
+
     int dir = (tilt > 0) - (tilt < 0); // right=1, left=-1, no tilt=0
     if (dir == 0) {
         t->moveCounter = 0;

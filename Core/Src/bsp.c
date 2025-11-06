@@ -216,21 +216,18 @@ void EXTI4_15_IRQHandler(void)
 
 void HAL_GPIO_EXTI_Rising_Callback(uint16_t GPIO_Pin)
 {
-		printf("rising edge \n");
 		 if (GPIO_Pin == GPIO_PIN_6) {
 		        uint8_t src;
 		        //HAL_I2C_Mem_Read(&hi2c1, ADXL_ADDR, ADXL_INT_SOURCE, 1, &src, 1, HAL_MAX_DELAY);
 		        HAL_I2C_Mem_Read(&hi2c1, ADXL_ADDR, 0x30, 1, &src, 1, HAL_MAX_DELAY);
 
 		        if (src & 0x10) { // Bit 4 = Activity interrupt
-		            printf(" Shake detected!\n");
 
 		        }
 				if(src & 0x40) // SINGLE_TAP bit
 				{
 					// Tap detected
 					// Example: toggle an LED
-					printf("tap!\n");
 					static QEvt const dht11CompleteEvt = QEVT_INITIALIZER(START_TETRIS_SIG);
 					QACTIVE_POST(AO_Main_App, &dht11CompleteEvt, 0U);
 				}
@@ -315,7 +312,6 @@ void BSP_init(void) {
 
 	// Start input capture with DMA
 	//HAL_TIM_IC_Start_DMA(&htim3, TIM_CHANNEL_1, (uint32_t *)dht11_dma_buffer, DHT11_MAX_EDGES);
-	//printf("test \n");
 
 }
 //............................................................................

@@ -1,3 +1,3 @@
 ../Core/Src/rfbutton.c:53:6:RFButton_receive_rf	4
-../Core/Src/rfbutton.c:80:8:RFButton_wait	3
+../Core/Src/rfbutton.c:80:8:RFButton_wait	2
 ../Core/Src/rfbutton.c:74:8:RFButton_initial	1

@@ -31,13 +31,12 @@ Core/Src/stm32c0xx_hal_msp.o: ../Core/Src/stm32c0xx_hal_msp.c \
  ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_spi_ex.h \
  ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_adc.h \
  ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_tim.h \
- ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_usart.h \
- ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_rcc.h \
  ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_system.h \
  ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_gpio.h \
  ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_exti.h \
  ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_bus.h \
  ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_cortex.h \
+ ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_rcc.h \
  ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_utils.h \
  ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_pwr.h \
  ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_dma.h \
@@ -75,13 +74,12 @@ Core/Src/stm32c0xx_hal_msp.o: ../Core/Src/stm32c0xx_hal_msp.c \
 ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_spi_ex.h:
 ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_adc.h:
 ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_tim.h:
-../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_usart.h:
-../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_rcc.h:
 ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_system.h:
 ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_gpio.h:
 ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_exti.h:
 ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_bus.h:
 ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_cortex.h:
+../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_rcc.h:
 ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_utils.h:
 ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_pwr.h:
 ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_dma.h:

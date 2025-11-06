@@ -160,7 +160,6 @@ QTimeEvt_disarm(&amp;me-&gt;longPressEvt);</exit>
 
 
 SensorEvent const *sensorEvt = (SensorEvent const *)e;
-printf(&quot;DONE SENSOR \n&quot;);
 
 me-&gt;currentTemp = sensorEvt-&gt;temperature;
 
@@ -198,7 +197,6 @@ switch(me-&gt;currentState)
      <!--${AOs::MainApp::SM::display::POLL_SENSOR}-->
      <tran trig="POLL_SENSOR">
       <action>static QEvt const ADC_Start_Evt = {START_SENSOR_SIG, 0U, 0U};
-printf(&quot;POLL SENSOR \n&quot;);
 QACTIVE_POST(AO_Sensor,&amp;ADC_Start_Evt, me);
 
 </action>
@@ -210,7 +208,7 @@ QACTIVE_POST(AO_Sensor,&amp;ADC_Start_Evt, me);
      <tran trig="BUTTON_PRESS">
       <action>QTimeEvt_disarm(&amp;me-&gt;longPressEvt);
 QTimeEvt_armX(&amp;me-&gt;longPressEvt, LONG_PRESS_TIME_MS / 10, 0U);
-printf(&quot;pressed btn!\n&quot;);</action>
+</action>
       <tran_glyph conn="106,57,1,-1,-22">
        <action box="-19,-2,18,2"/>
       </tran_glyph>
@@ -224,7 +222,6 @@ printf(&quot;pressed btn!\n&quot;);</action>
      <!--${AOs::MainApp::SM::display::BUTTON_RELEASE}-->
      <tran trig="BUTTON_RELEASE">
       <action brief="short press">QTimeEvt_disarm(&amp;me-&gt;longPressEvt);
-printf(&quot;released btn!\n&quot;);
 if(me-&gt;currentState == TEMPERATURE)
 {
     me-&gt;currentState = DRYNESS;
@@ -253,7 +250,7 @@ QTimeEvt_disarm(&amp;me-&gt;longPressEvt);</action>
 QTimeEvt_armX(&amp;me-&gt;tempPollEvt, 
               200U,    // Fire after 10 seconds
               2000U);   // Then repeat every 10 seconds
-printf(&quot;enter display stats: arm polling&quot;);</entry>
+</entry>
       <!--${AOs::MainApp::SM::display::display_stats::PLANT_DRY}-->
       <tran trig="PLANT_DRY" target="../../8">
        <tran_glyph conn="54,50,1,0,23,29">
@@ -267,10 +264,10 @@ printf(&quot;enter display stats: arm polling&quot;);</entry>
      <!--${AOs::MainApp::SM::display::dry_alert}-->
      <state name="dry_alert">
       <entry>QTimeEvt_armX(&amp;me-&gt;dryTimerEvt, DRY_TIMEOUT , 0U);
-printf(&quot;entered DRY!\n&quot;);</entry>
+</entry>
       <exit>QTimeEvt_disarm(&amp;me-&gt;dryTimerEvt);
 QTimeEvt_disarm(&amp;me-&gt;tempPollEvt);
-printf(&quot;exited DRY!\n&quot;);</exit>
+</exit>
       <!--${AOs::MainApp::SM::display::dry_alert::WATER_PLANT}-->
       <tran trig="WATER_PLANT" target="../../../2">
        <action>QTimeEvt_disarm(&amp;me-&gt;dryTimerEvt);
@@ -293,8 +290,7 @@ QTimeEvt_armX(&amp;me-&gt;dryTimerEvt, 300U , 0U);
     </state>
     <!--${AOs::MainApp::SM::pump}-->
     <state name="pump">
-     <entry brief="ON">printf(&quot;enter pump\n&quot;);
-QTimeEvt_disarm(&amp;me-&gt;longPressEvt);
+     <entry brief="ON">QTimeEvt_disarm(&amp;me-&gt;longPressEvt);
 HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_SET);
 
 QTimeEvt_disarm(&amp;me-&gt;dryTimerEvt);
@@ -307,7 +303,6 @@ QTimeEvt_disarm(&amp;me-&gt;dryTimerEvt);
 </exit>
      <!--${AOs::MainApp::SM::pump::BUTTON_RELEASE}-->
      <tran trig="BUTTON_RELEASE" target="../../1/7">
-      <action>printf(&quot;released the btm inside pump \n&quot;);</action>
       <tran_glyph conn="38,115,0,2,-57,-1,-2">
        <action box="-17,-4,15,3"/>
       </tran_glyph>
@@ -354,8 +349,7 @@ display_tetris_logo();
      </state>
      <!--${AOs::MainApp::SM::tetris::game}-->
      <state name="game">
-      <entry>printf(&quot;entered tetris game\n&quot;);
-
+      <entry>
 QTimeEvt_armX(&amp;me-&gt;dryTimerEvt, MainApp_delta_time / 10U , MainApp_delta_time / 10U);
 
 
@@ -368,9 +362,8 @@ accelerometer_init_polling();
 </entry>
       <!--${AOs::MainApp::SM::tetris::game::WATER_PLANT}-->
       <tran trig="WATER_PLANT">
-       <action>/*
-int16_t tilt = read_accelerometer_tilt();
-process_tilt_move(&amp;me-&gt;board_inst, me-&gt;active_tetromino, tilt);
+       <action>int16_t tilt = read_accelerometer_tilt();
+process_tilt_move(&amp;me-&gt;board_inst, &amp;me-&gt;active_tetromino, tilt);
 
 
 if(! (move_down(&amp;me-&gt;board_inst, &amp;me-&gt;active_tetromino)) )
@@ -379,11 +372,9 @@ if(! (move_down(&amp;me-&gt;board_inst, &amp;me-&gt;active_tetromino)) )
 }
 
 
-
-
 //
 draw_board(&amp;me-&gt;board_inst, &amp;me-&gt;active_tetromino);
-*/</action>
+</action>
        <tran_glyph conn="276,42,1,-1,-19">
         <action box="0,-2,10,2"/>
        </tran_glyph>
@@ -402,7 +393,6 @@ draw_board(&amp;me-&gt;board_inst, &amp;me-&gt;active_tetromino);
      <!--${AOs::MainApp::SM::tetris::init_board}-->
      <state name="init_board">
       <entry>Board_init(&amp;me-&gt;board_inst);
-printf(&quot;board initialized\n&quot;);
 </entry>
       <!--${AOs::MainApp::SM::tetris::init_board::initial}-->
       <initial target="../1">
@@ -489,7 +479,6 @@ if (!me-&gt;board_inst.rotate_90) {
 static QEvt const e = {DRAW_OUTLINE_SIG, 0U, 0U};
 QACTIVE_POST(AO_Main_App, &amp;e, me);
 
-printf(&quot;line left: \n&quot;);
 </entry>
        <!--${AOs::MainApp::SM::tetris::init_board::left_border::DRAW_OUTLINE}-->
        <tran trig="DRAW_OUTLINE">
@@ -534,7 +523,6 @@ if (!me-&gt;board_inst.rotate_90) {
 static QEvt const e = {DRAW_OUTLINE_SIG, 0U, 0U};
 QACTIVE_POST(AO_Main_App, &amp;e, me);
 
-printf(&quot;line btn: \n&quot;);
 </entry>
        <!--${AOs::MainApp::SM::tetris::init_board::btm_border::DRAW_OUTLINE}-->
        <tran trig="DRAW_OUTLINE">
@@ -578,7 +566,6 @@ static QEvt const e = {DRAW_OUTLINE_SIG, 0U, 0U};
 QACTIVE_POST(AO_Main_App, &amp;e, me);
 
 
-printf(&quot;line right: \n&quot;);
 </entry>
        <!--${AOs::MainApp::SM::tetris::init_board::right_border::DRAW_OUTLINE}-->
        <tran trig="DRAW_OUTLINE">
@@ -591,7 +578,6 @@ printf(&quot;line right: \n&quot;);
        </tran>
        <!--${AOs::MainApp::SM::tetris::init_board::right_border::DRAW_OUTLINE_DONE}-->
        <tran trig="DRAW_OUTLINE_DONE" target="../../../2">
-        <action>printf(&quot;done drawing line\n&quot;);</action>
         <tran_glyph conn="183,109,2,2,2,74,-23">
          <action box="1,3,10,2"/>
         </tran_glyph>
@@ -672,8 +658,7 @@ return adc_value;</code>
     </initial>
     <!--${AOs::Sensor::SM::waiting}-->
     <state name="waiting">
-     <entry>printf(&quot;1 waiting waiting \n&quot;);
-QTimeEvt_disarm(&amp;me-&gt;resetEvt);
+     <entry>QTimeEvt_disarm(&amp;me-&gt;resetEvt);
 </entry>
      <!--${AOs::Sensor::SM::waiting::START_SENSOR}-->
      <tran trig="START_SENSOR" target="../../3">
@@ -697,7 +682,7 @@ memset(me-&gt;bits, 0, sizeof(me-&gt;bits));
      <!--${AOs::Sensor::SM::wait_response::DHT11_RESET}-->
      <tran trig="DHT11_RESET" target="../../1">
       <action>QTimeEvt_disarm(&amp;me-&gt;resetEvt);
-printf(&quot;Reset DHT11&quot;);</action>
+</action>
       <tran_glyph conn="100,93,0,2,-31">
        <action box="0,-2,10,2"/>
       </tran_glyph>
@@ -748,8 +733,7 @@ for(uint8_t i = 0; i &lt; TIMESTAMP_SIZE; i++)
 
 
                 } else {
-                    printf(&quot;Checksum error! Expected: %u, Got: %u\n&quot;,
-                           checksum, me-&gt;bits[4]);
+                    //checksum error!!
                 }
 
                 // Reset or go to waiting state
@@ -773,8 +757,7 @@ for(uint8_t i = 0; i &lt; TIMESTAMP_SIZE; i++)
     </state>
     <!--${AOs::Sensor::SM::start_dht}-->
     <state name="start_dht">
-     <entry>//printf(&quot;2 start DHT arm 30ms \n&quot;);
-for(int i=0;i&lt;5;i++) me-&gt;bits[i]=0;
+     <entry>for(int i=0;i&lt;5;i++) me-&gt;bits[i]=0;
 me-&gt;bit_index = 0;
 me-&gt;byte_index = 0;
 
@@ -835,8 +818,6 @@ Delay_us(30);  // 20–40 µs wait</action>
     </initial>
     <!--${AOs::RFButton::SM::wait}-->
     <state name="wait">
-     <entry>printf(&quot;wait\n&quot;);
-</entry>
      <!--${AOs::RFButton::SM::wait::NRF_IRQ}-->
      <tran trig="NRF_IRQ">
       <action brief="receive">RFButton_receive_rf();
@@ -845,9 +826,7 @@ Delay_us(30);  // 20–40 µs wait</action>
        <action box="1,-3,10,2"/>
       </tran_glyph>
      </tran>
-     <state_glyph node="26,19,32,17">
-      <entry box="0,3,6,2"/>
-     </state_glyph>
+     <state_glyph node="26,19,32,17"/>
     </state>
     <state_diagram size="153,121"/>
    </statechart>

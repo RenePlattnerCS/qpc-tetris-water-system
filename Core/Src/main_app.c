@@ -139,7 +139,6 @@ QState MainApp_display(MainApp * const me, QEvt const * const e) {
 
 
             SensorEvent const *sensorEvt = (SensorEvent const *)e;
-            printf("DONE SENSOR \n");
 
             me->currentTemp = sensorEvt->temperature;
 
@@ -176,7 +175,6 @@ QState MainApp_display(MainApp * const me, QEvt const * const e) {
         //${AOs::MainApp::SM::display::POLL_SENSOR}
         case POLL_SENSOR_SIG: {
             static QEvt const ADC_Start_Evt = {START_SENSOR_SIG, 0U, 0U};
-            printf("POLL SENSOR \n");
             QACTIVE_POST(AO_Sensor,&ADC_Start_Evt, me);
 
 
@@ -187,7 +185,7 @@ QState MainApp_display(MainApp * const me, QEvt const * const e) {
         case BUTTON_PRESS_SIG: {
             QTimeEvt_disarm(&me->longPressEvt);
             QTimeEvt_armX(&me->longPressEvt, LONG_PRESS_TIME_MS / 10, 0U);
-            printf("pressed btn!\n");
+
             status_ = Q_HANDLED();
             break;
         }
@@ -199,7 +197,6 @@ QState MainApp_display(MainApp * const me, QEvt const * const e) {
         //${AOs::MainApp::SM::display::BUTTON_RELEASE}
         case BUTTON_RELEASE_SIG: {
             QTimeEvt_disarm(&me->longPressEvt);
-            printf("released btn!\n");
             if(me->currentState == TEMPERATURE)
             {
                 me->currentState = DRYNESS;
@@ -238,7 +235,7 @@ QState MainApp_display_stats(MainApp * const me, QEvt const * const e) {
             QTimeEvt_armX(&me->tempPollEvt,
                           200U,    // Fire after 10 seconds
                           2000U);   // Then repeat every 10 seconds
-            printf("enter display stats: arm polling");
+
             status_ = Q_HANDLED();
             break;
         }
@@ -262,7 +259,7 @@ QState MainApp_dry_alert(MainApp * const me, QEvt const * const e) {
         //${AOs::MainApp::SM::display::dry_alert}
         case Q_ENTRY_SIG: {
             QTimeEvt_armX(&me->dryTimerEvt, DRY_TIMEOUT , 0U);
-            printf("entered DRY!\n");
+
             status_ = Q_HANDLED();
             break;
         }
@@ -270,7 +267,7 @@ QState MainApp_dry_alert(MainApp * const me, QEvt const * const e) {
         case Q_EXIT_SIG: {
             QTimeEvt_disarm(&me->dryTimerEvt);
             QTimeEvt_disarm(&me->tempPollEvt);
-            printf("exited DRY!\n");
+
             status_ = Q_HANDLED();
             break;
         }
@@ -297,7 +294,6 @@ QState MainApp_pump(MainApp * const me, QEvt const * const e) {
     switch (e->sig) {
         //${AOs::MainApp::SM::pump}
         case Q_ENTRY_SIG: {
-            printf("enter pump\n");
             QTimeEvt_disarm(&me->longPressEvt);
             HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_SET);
 
@@ -319,7 +315,6 @@ QState MainApp_pump(MainApp * const me, QEvt const * const e) {
         }
         //${AOs::MainApp::SM::pump::BUTTON_RELEASE}
         case BUTTON_RELEASE_SIG: {
-            printf("released the btm inside pump \n");
             status_ = Q_TRAN(&MainApp_display_stats);
             break;
         }
@@ -394,7 +389,6 @@ QState MainApp_game(MainApp * const me, QEvt const * const e) {
     switch (e->sig) {
         //${AOs::MainApp::SM::tetris::game}
         case Q_ENTRY_SIG: {
-            printf("entered tetris game\n");
 
             QTimeEvt_armX(&me->dryTimerEvt, MainApp_delta_time / 10U , MainApp_delta_time / 10U);
 
@@ -411,9 +405,8 @@ QState MainApp_game(MainApp * const me, QEvt const * const e) {
         }
         //${AOs::MainApp::SM::tetris::game::WATER_PLANT}
         case WATER_PLANT_SIG: {
-            /*
             int16_t tilt = read_accelerometer_tilt();
-            process_tilt_move(&me->board_inst, me->active_tetromino, tilt);
+            process_tilt_move(&me->board_inst, &me->active_tetromino, tilt);
 
 
             if(! (move_down(&me->board_inst, &me->active_tetromino)) )
@@ -422,11 +415,9 @@ QState MainApp_game(MainApp * const me, QEvt const * const e) {
             }
 
 
-
-
             //
             draw_board(&me->board_inst, &me->active_tetromino);
-            */
+
             status_ = Q_HANDLED();
             break;
         }
@@ -451,7 +442,6 @@ QState MainApp_init_board(MainApp * const me, QEvt const * const e) {
         //${AOs::MainApp::SM::tetris::init_board}
         case Q_ENTRY_SIG: {
             Board_init(&me->board_inst);
-            printf("board initialized\n");
 
             status_ = Q_HANDLED();
             break;
@@ -561,7 +551,6 @@ QState MainApp_left_border(MainApp * const me, QEvt const * const e) {
             static QEvt const e = {DRAW_OUTLINE_SIG, 0U, 0U};
             QACTIVE_POST(AO_Main_App, &e, me);
 
-            printf("line left: \n");
 
             status_ = Q_HANDLED();
             break;
@@ -615,7 +604,6 @@ QState MainApp_btm_border(MainApp * const me, QEvt const * const e) {
             static QEvt const e = {DRAW_OUTLINE_SIG, 0U, 0U};
             QACTIVE_POST(AO_Main_App, &e, me);
 
-            printf("line btn: \n");
 
             status_ = Q_HANDLED();
             break;
@@ -668,7 +656,6 @@ QState MainApp_right_border(MainApp * const me, QEvt const * const e) {
             QACTIVE_POST(AO_Main_App, &e, me);
 
 
-            printf("line right: \n");
 
             status_ = Q_HANDLED();
             break;
@@ -683,7 +670,6 @@ QState MainApp_right_border(MainApp * const me, QEvt const * const e) {
         }
         //${AOs::MainApp::SM::tetris::init_board::right_border::DRAW_OUTLINE_DONE}
         case DRAW_OUTLINE_DONE_SIG: {
-            printf("done drawing line\n");
             status_ = Q_TRAN(&MainApp_game);
             break;
         }
