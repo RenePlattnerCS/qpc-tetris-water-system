@@ -24,7 +24,7 @@ void Board_ctor(Board *me, uint8_t *grid,
 	me->rotate_90 = rotate_90;
     memset(me->grid, 0, width * height);
 
-    me->tickCounter = 0;
+
 
 }
 
@@ -76,12 +76,12 @@ static void clear_screen(Board *me)
 
 bool move_down(Board *me, Tetromino *active)
 {
-	me->tickCounter++;
-	if(me->tickCounter >= active->speed)
+	active->tickCounter++;
+	if(active->tickCounter >= active->speed)
 	{
 		if(!collision_on_move(me,active, 0, -1)) {
 			active->y -= 1;
-			me->tickCounter = 0;
+			active->tickCounter = 0;
 			return true;   // moved
 		}
 		else

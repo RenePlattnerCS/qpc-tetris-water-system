@@ -7,49 +7,8 @@
 extern I2C_HandleTypeDef hi2c1;
 static int compute_tiltX(int32_t rawX, int32_t rawZ);
 
-void init_accelerometer_tap(void) //tap detection
-{
-	//clear the interrupt
-	uint8_t int_source;
-	HAL_I2C_Mem_Read(&hi2c1, ADXL_ADDR, 0x30, 1, &int_source, 1, HAL_MAX_DELAY);
 
-    uint8_t data;
-
-    // Full resolution ±2g
-    data = 0x08;
-    HAL_I2C_Mem_Write(&hi2c1, ADXL_ADDR, 0x31, 1, &data, 1, HAL_MAX_DELAY);
-
-    // Tap threshold (adjust)
-    data = 0x20; // 0.5g
-    HAL_I2C_Mem_Write(&hi2c1, ADXL_ADDR, REG_THRESH_SHAKE, 1, &data, 1, HAL_MAX_DELAY);
-
-    // Tap duration
-    data = 0x10; // ~10ms
-    HAL_I2C_Mem_Write(&hi2c1, ADXL_ADDR, 0x21, 1, &data, 1, HAL_MAX_DELAY);
-
-    // Enable tap on XYZ
-    data = 0x07;
-    HAL_I2C_Mem_Write(&hi2c1, ADXL_ADDR, 0x2A, 1, &data, 1, HAL_MAX_DELAY);
-
-    // Route single-tap interrupt to INT1
-    data = 0x00;
-    HAL_I2C_Mem_Write(&hi2c1, ADXL_ADDR, 0x2F, 1, &data, 1, HAL_MAX_DELAY);
-
-    // Enable single tap interrupt
-    data = 0x40;
-    HAL_I2C_Mem_Write(&hi2c1, ADXL_ADDR, 0x2E, 1, &data, 1, HAL_MAX_DELAY);
-
-    // Measurement mode
-    data = 0x08;
-    HAL_I2C_Mem_Write(&hi2c1, ADXL_ADDR, 0x2D, 1, &data, 1, HAL_MAX_DELAY);
-
-    // NOW clear the interrupt
-
-	HAL_I2C_Mem_Read(&hi2c1, ADXL_ADDR, 0x30, 1, &int_source, 1, HAL_MAX_DELAY);
-}
-
-
-void init_accelerometer(void) //shake detection
+void init_accelerometer(void) //tap detection
 {
 	//clear the interrupt
 		uint8_t int_source;
@@ -62,11 +21,11 @@ void init_accelerometer(void) //shake detection
 	    HAL_I2C_Mem_Write(&hi2c1, ADXL_ADDR, 0x31, 1, &data, 1, HAL_MAX_DELAY);
 
 	    //Tap threshold (adjust)
-	    data = 0x20; // 0.5g
+	    data = 0xc8;
 	    HAL_I2C_Mem_Write(&hi2c1, ADXL_ADDR, REG_THRESH_SHAKE , 1, &data, 1, HAL_MAX_DELAY);
 
 	     //Tap duration
-	    data = 0x10; // ~10ms
+	    data = 0x90;
 	    HAL_I2C_Mem_Write(&hi2c1, ADXL_ADDR, 0x21, 1, &data, 1, HAL_MAX_DELAY);
 
 	    // Enable tap on XYZ

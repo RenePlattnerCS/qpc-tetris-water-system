@@ -159,8 +159,8 @@ me-&gt;active_tetromino.y = me-&gt;board_inst.height - 5 - top;
 bool col = collision_on_spawn(&amp;me-&gt;board_inst, &amp;me-&gt;active_tetromino);
 if(col)
 {
-    //QEvt *e = Q_NEW(QEvt, GAMEOVER_TETRIS_SIG);
-    //QACTIVE_POST(AO_Main_App, e, me);
+    QEvt *e = Q_NEW(QEvt, GAMEOVER_TETRIS_SIG);
+    QACTIVE_POST(AO_Main_App, e, me);
 }</code>
    </operation>
    <!--${AOs::MainApp::tetris_init}-->
@@ -380,7 +380,7 @@ QTimeEvt_armX(&amp;me-&gt;dryTimerEvt, MainApp_delta_time / 10U , MainApp_delta_
 Tetromino_ctor(&amp;me-&gt;active_tetromino, TETRO_L);
 int top = tetro_top(&amp;me-&gt;active_tetromino);
 me-&gt;active_tetromino.x = (me-&gt;board_inst.width / 2) - 2;
-me-&gt;active_tetromino.y = me-&gt;board_inst.height - 5 - top;
+me-&gt;active_tetromino.y = me-&gt;board_inst.height - 2 - top;
 
 draw_board(&amp;me-&gt;board_inst, &amp;me-&gt;active_tetromino, MainApp_score);
 

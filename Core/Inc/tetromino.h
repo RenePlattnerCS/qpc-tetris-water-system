@@ -24,6 +24,7 @@ typedef struct {
     uint8_t current_rotation;
     uint8_t moveCounter;
     uint8_t fallCounter;
+    uint8_t tickCounter;
 } Tetromino;
 
 

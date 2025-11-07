@@ -12,6 +12,7 @@ void Tetromino_ctor(Tetromino *me, TetrominoType type)
     me->current_rotation = 0;
     me->speed = FPS;
     me->moveCounter = 0;
+    me->tickCounter = 0;
 
 }
 

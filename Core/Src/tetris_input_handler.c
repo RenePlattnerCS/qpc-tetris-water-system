@@ -13,9 +13,10 @@ uint8_t compute_move_delay(int16_t tilt) {
 
 uint8_t compute_fall_delay(int16_t ytilt) {
     ytilt = abs(ytilt);
-
-    if (ytilt < 25)  return 30;   // no extra gravity
-    if (ytilt < 50) return 17;    // tilt a bit → falls faster
+    if (ytilt < 25)  return 0;
+    if (ytilt < 40)  return 75;   // no extra gravity
+    if (ytilt < 55)  return 50;   // no extra gravity
+    if (ytilt < 70) return 25;    // tilt a bit → falls faster
     if (ytilt < 100) return 8;    // tilt more → much faster
     return 1;                   // strong tilt → "soft drop"
 }
@@ -46,18 +47,23 @@ bool process_tilt_move(Board *board, Tetromino *t, int16_t xtilt, int16_t ytilt)
     // --- Vertical movement (fall speed depends on y tilt) ---
     //
     uint8_t fallDelay = compute_fall_delay(ytilt);
-    t->fallCounter++;
-    if (t->fallCounter >= fallDelay) {
-        t->fallCounter = 0;
+    if(fallDelay != 0)
+    {
+    	t->fallCounter++;
+    	t->tickCounter = 0;
+		if (t->fallCounter >= fallDelay) {
+			t->fallCounter = 0;
 
-        // Try to fall
-        if (!collision_on_move(board, t, 0, -1)) {   // -1 = fall down in your coord system
-            t->y--; // move down
-        } else {
-            // Collision: lock and spawn next piece
-            return true;
-        }
+			// Try to fall
+			if (!collision_on_move(board, t, 0, -1)) {   // -1 = fall down in your coord system
+				t->y--; // move down
+			} else {
+				// Collision: lock and spawn next piece
+				return true;
+			}
+		}
     }
+
 
     return false;
 }

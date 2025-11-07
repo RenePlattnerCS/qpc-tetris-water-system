@@ -12,7 +12,7 @@
 ../Core/Src/main_app.c:578:8:MainApp_left_border	5
 ../Core/Src/main_app.c:631:8:MainApp_btm_border	5
 ../Core/Src/main_app.c:684:8:MainApp_right_border	5
-../Core/Src/main_app.c:110:6:MainApp_spawn_tetromino	2
+../Core/Src/main_app.c:110:6:MainApp_spawn_tetromino	3
 ../Core/Src/main_app.c:399:8:MainApp_game	12
 ../Core/Src/main_app.c:138:6:MainApp_tetris_init	1
 ../Core/Src/main_app.c:492:8:MainApp_init_board	3

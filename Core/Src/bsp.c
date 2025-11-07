@@ -308,6 +308,7 @@ void BSP_init(void) {
 	ssd1306_Init();
 	LL_SPI_Enable(SPI1);
 	init_nrf();
+	init_accelerometer(); //tap/shake detection
 	//init_accelerometer();
 	//turn on DHT11
 	HAL_GPIO_WritePin(DHT11_RESET_PORT, DHT11_RESET_PIN, GPIO_PIN_SET);

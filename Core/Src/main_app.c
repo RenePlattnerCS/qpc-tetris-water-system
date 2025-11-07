@@ -129,8 +129,8 @@ void MainApp_spawn_tetromino(MainApp * const me) {
     bool col = collision_on_spawn(&me->board_inst, &me->active_tetromino);
     if(col)
     {
-        //QEvt *e = Q_NEW(QEvt, GAMEOVER_TETRIS_SIG);
-        //QACTIVE_POST(AO_Main_App, e, me);
+        QEvt *e = Q_NEW(QEvt, GAMEOVER_TETRIS_SIG);
+        QACTIVE_POST(AO_Main_App, e, me);
     }
 }
 
@@ -407,7 +407,7 @@ QState MainApp_game(MainApp * const me, QEvt const * const e) {
             Tetromino_ctor(&me->active_tetromino, TETRO_L);
             int top = tetro_top(&me->active_tetromino);
             me->active_tetromino.x = (me->board_inst.width / 2) - 2;
-            me->active_tetromino.y = me->board_inst.height - 5 - top;
+            me->active_tetromino.y = me->board_inst.height - 2 - top;
 
             draw_board(&me->board_inst, &me->active_tetromino, MainApp_score);
 
