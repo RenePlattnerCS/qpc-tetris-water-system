@@ -170,10 +170,5 @@ typedef struct {
     uint16_t temperature;
 } SensorEvent;
 
-/*
-typedef struct {
-    QEvt super;
-    uint32_t pulse_length_timestamps[TIMESTAMP_SIZE];
-} DHT11Evt;
-*/
+
 #endif

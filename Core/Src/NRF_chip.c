@@ -4,7 +4,6 @@
 #include "bsp.h"
 
 extern SPI_HandleTypeDef hspi1;
-void NRF24_TestCommunication(void);
 void verify_rx_mode(void);
 
 
@@ -95,6 +94,7 @@ void receive(uint8_t *data, uint8_t size)
 
 }
 
+/*
 void listen(void)
 {
 	 nrf24_listen();
@@ -107,11 +107,11 @@ void listen(void)
 	  data = nrf24_uint8_t_to_type(dataR, sizeof(dataR));
 }
 
+*/
 
 
 
-
-
+/*
 void NRF24_TestCommunication(void)
 {
     uint8_t reg_addr = 0x00; // CONFIG register
@@ -134,7 +134,7 @@ void NRF24_TestCommunication(void)
     csn_high();
 
 }
-
+*/
 
 
 void verify_rx_mode(void)
