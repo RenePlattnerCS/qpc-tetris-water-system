@@ -99,6 +99,7 @@ void MainApp_init_line_state(
     int x1,
     int y1);
 void MainApp_spawn_tetromino(MainApp * const me);
+void MainApp_tetris_init(void);
 
 // protected:
 QState MainApp_initial(MainApp * const me, void const * const par);

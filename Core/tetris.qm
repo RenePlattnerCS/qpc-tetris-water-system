@@ -161,6 +161,11 @@ if(col)
     QACTIVE_POST(AO_Main_App, e, me);
 }</code>
    </operation>
+   <!--${AOs::MainApp::tetris_init}-->
+   <operation name="tetris_init" type="void" visibility="0x02" properties="0x01">
+    <code>memset(gridArray, 0, sizeof(gridArray));
+ssd1306_Fill(Black);</code>
+   </operation>
    <!--${AOs::MainApp::SM}-->
    <statechart properties="0x00">
     <!--${AOs::MainApp::SM::initial}-->
@@ -276,9 +281,12 @@ QTimeEvt_disarm(&amp;me-&gt;longPressEvt);</action>
      <!--${AOs::MainApp::SM::display::display_stats}-->
      <state name="display_stats">
       <entry brief="display and poll timer">display_temp(me-&gt;currentTemp);
+QTimeEvt_disarm(&amp;me-&gt;tempPollEvt);
 QTimeEvt_armX(&amp;me-&gt;tempPollEvt, 
               200U,    // Fire after 10 seconds
               2000U);   // Then repeat every 10 seconds
+
+init_accelerometer(); //tap/shake detection
 </entry>
       <!--${AOs::MainApp::SM::display::display_stats::PLANT_DRY}-->
       <tran trig="PLANT_DRY" target="../../8">
@@ -358,9 +366,6 @@ HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_RESET);</action>
      </initial>
      <!--${AOs::MainApp::SM::tetris::WATER_PLANT}-->
      <tran trig="WATER_PLANT" target="../../1">
-      <action>QTimeEvt_armX(&amp;me-&gt;tempPollEvt, 
-              200U,    // Fire after 10 seconds
-              2000U);   // Then repeat every 10 seconds</action>
       <tran_glyph conn="129,26,3,1,-23">
        <action box="-17,-2,10,2"/>
       </tran_glyph>
@@ -442,8 +447,8 @@ draw_board(&amp;me-&gt;board_inst, &amp;me-&gt;active_tetromino, MainApp_score);
      </state>
      <!--${AOs::MainApp::SM::tetris::init_board}-->
      <state name="init_board">
-      <entry>Board_init(&amp;me-&gt;board_inst);
-</entry>
+      <entry>MainApp_tetris_init();
+MainApp_score = 0;</entry>
       <!--${AOs::MainApp::SM::tetris::init_board::initial}-->
       <initial target="../1">
        <action>int w, h, x0, y0;

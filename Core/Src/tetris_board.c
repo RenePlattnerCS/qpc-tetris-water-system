@@ -28,11 +28,6 @@ void Board_ctor(Board *me, uint8_t *grid,
 
 }
 
-void Board_init(Board *me)
-{
-	ssd1306_Fill(Black);
-}
-
 
 static void Board_draw_outline(const Board *me)
 {

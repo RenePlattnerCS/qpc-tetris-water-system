@@ -25,7 +25,7 @@ void Board_ctor(Board *me, uint8_t *grid, uint8_t width, uint8_t height, uint8_t
 void Board_placeTetromino(Board *me, const Tetromino *t);
 void draw_board(Board *me, Tetromino *active, uint8_t score);
 void clear_board();
-void Board_init(Board *me);
+//void Board_init(Board *me);
 bool collision_on_move(Board *me, const Tetromino *t, int dx, int dy);
 bool collision_on_spawn(Board *me, Tetromino *t);
 bool move_down(Board *me, Tetromino *active);

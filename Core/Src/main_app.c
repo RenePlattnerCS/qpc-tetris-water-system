@@ -132,6 +132,12 @@ void MainApp_spawn_tetromino(MainApp * const me) {
     }
 }
 
+//${AOs::MainApp::tetris_init} ...............................................
+void MainApp_tetris_init(void) {
+    memset(gridArray, 0, sizeof(gridArray));
+    ssd1306_Fill(Black);
+}
+
 //${AOs::MainApp::SM} ........................................................
 QState MainApp_initial(MainApp * const me, void const * const par) {
     //${AOs::MainApp::SM::initial}
@@ -262,9 +268,12 @@ QState MainApp_display_stats(MainApp * const me, QEvt const * const e) {
         //${AOs::MainApp::SM::display::display_stats}
         case Q_ENTRY_SIG: {
             display_temp(me->currentTemp);
+            QTimeEvt_disarm(&me->tempPollEvt);
             QTimeEvt_armX(&me->tempPollEvt,
                           200U,    // Fire after 10 seconds
                           2000U);   // Then repeat every 10 seconds
+
+            init_accelerometer(); //tap/shake detection
 
             status_ = Q_HANDLED();
             break;
@@ -295,7 +304,7 @@ QState MainApp_dry_alert(MainApp * const me, QEvt const * const e) {
         }
         //${AOs::MainApp::SM::display::dry_alert}
         case Q_EXIT_SIG: {
-            QTimeEvt_disarm(&me->dryTimerEvt);
+            //QTimeEvt_disarm(&me->dryTimerEvt);
             QTimeEvt_disarm(&me->tempPollEvt);
 
             status_ = Q_HANDLED();
@@ -373,9 +382,6 @@ QState MainApp_tetris(MainApp * const me, QEvt const * const e) {
         }
         //${AOs::MainApp::SM::tetris::WATER_PLANT}
         case WATER_PLANT_SIG: {
-            QTimeEvt_armX(&me->tempPollEvt,
-                          200U,    // Fire after 10 seconds
-                          2000U);   // Then repeat every 10 seconds
             status_ = Q_TRAN(&MainApp_display);
             break;
         }
@@ -475,8 +481,8 @@ QState MainApp_init_board(MainApp * const me, QEvt const * const e) {
     switch (e->sig) {
         //${AOs::MainApp::SM::tetris::init_board}
         case Q_ENTRY_SIG: {
-            Board_init(&me->board_inst);
-
+            MainApp_tetris_init();
+            MainApp_score = 0;
             status_ = Q_HANDLED();
             break;
         }
