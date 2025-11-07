@@ -41,6 +41,7 @@
 #include "temp_sensor.h"
 #include "stm32c0xx_ll_tim.h"
 #include "stm32c0xx_ll_adc.h"
+#include "stm32c0xx_ll_spi.h"
 #include "accelerometer.h"
 // add other drivers if necessary...
 extern MainApp MainApp_inst;
@@ -305,6 +306,7 @@ void BSP_init(void) {
 	LL_ADC_Enable(ADC1);
 
 	ssd1306_Init();
+	LL_SPI_Enable(SPI1);
 	init_nrf();
 	init_accelerometer();
 

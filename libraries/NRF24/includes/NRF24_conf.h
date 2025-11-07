@@ -6,16 +6,32 @@
 #ifndef _NRF_24_CONF_H_
 #define _NRF_24_CONF_H_
 
-#define hspiX hspi1
-#define spi_w_timeout 1000
-#define spi_r_timeout 1000
-#define spi_rw_timeout 1000
+#include "stm32c0xx_ll_gpio.h"
+
+//#define hspiX hspi1
+#define SPIX SPI1
+
+//#define spi_w_timeout 1000
+//#define spi_r_timeout 1000
+//#define spi_rw_timeout 1000
 
 #define csn_gpio_port GPIOB
 #define csn_gpio_pin GPIO_PIN_1
 
 #define ce_gpio_port GPIOB
 #define ce_gpio_pin GPIO_PIN_0
+
+
+// Update GPIO pins to LL format:
+#define csn_gpio_port GPIOB
+#define csn_gpio_pin LL_GPIO_PIN_1
+
+#define ce_gpio_port GPIOB
+#define ce_gpio_pin LL_GPIO_PIN_0
+
+
+
+
 
 #endif
 

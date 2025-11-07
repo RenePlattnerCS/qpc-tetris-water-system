@@ -3,7 +3,8 @@
 #include "main_app.h"
 #include "bsp.h"
 
-extern SPI_HandleTypeDef hspi1;
+#define SPIX SPI1
+//extern SPI_HandleTypeDef hspi1;
 void verify_rx_mode(void);
 
 
@@ -86,8 +87,11 @@ void receive(uint8_t *data, uint8_t size)
 	uint8_t cmd = R_RX_PAYLOAD;
 
 	csn_low();
-	HAL_SPI_Transmit(&hspi1, &cmd, 1, spi_w_timeout);
-	HAL_SPI_Receive(&hspi1, data, size, spi_r_timeout);
+	//HAL_SPI_Transmit(&hspi1, &cmd, 1, spi_w_timeout);
+	LL_SPI_Transmit(SPIX, &cmd, 1);
+
+	//HAL_SPI_Receive(&hspi1, data, size, spi_r_timeout);
+	LL_SPI_Receive(SPIX, data, size);
 	csn_high();
 
 	nrf24_clear_rx_dr();

@@ -1,70 +1,269 @@
 /*
- * 25-JUL-2024
- * STM32 HAL NRF24 LIBRARY
+ * NRF24 LL SPI Wrapper
+ * Replace HAL SPI calls with LL equivalents
  */
 
-#include <stdio.h>
-#include "stm32c0xx_hal.h"
+#include "stm32c0xx_ll_spi.h"
+#include "stm32c0xx_ll_gpio.h"
 #include "NRF24_conf.h"
-#include "NRF24_reg_addresses.h"
 #include "NRF24.h"
+#include "NRF24_reg_addresses.h"
+// ============================================================================
+// LOW-LEVEL SPI FUNCTIONS (Replace HAL)
+// ============================================================================
 
-extern SPI_HandleTypeDef hspiX;
+// Simple SPI transmit using LL
+static void LL_SPI_Transmit(SPI_TypeDef *SPIx, uint8_t *data, uint16_t size) {
+    for (uint16_t i = 0; i < size; i++) {
+        // Wait until TX buffer is empty
+        while (!LL_SPI_IsActiveFlag_TXE(SPIx));
 
+        // Send data
+        LL_SPI_TransmitData8(SPIx, data[i]);
 
-void csn_high(void){
-	HAL_GPIO_WritePin(csn_gpio_port, csn_gpio_pin, 1);
+        // Wait until RX buffer has data (clear it)
+        while (!LL_SPI_IsActiveFlag_RXNE(SPIx));
+        (void)LL_SPI_ReceiveData8(SPIx);  // Dummy read
+    }
+
+    // Wait until SPI is not busy
+    while (LL_SPI_IsActiveFlag_BSY(SPIx));
 }
 
-void csn_low(void){
-	HAL_GPIO_WritePin(csn_gpio_port, csn_gpio_pin, 0);
+// Simple SPI receive using LL
+static void LL_SPI_Receive(SPI_TypeDef *SPIx, uint8_t *data, uint16_t size) {
+    for (uint16_t i = 0; i < size; i++) {
+        // Wait until TX buffer is empty
+        while (!LL_SPI_IsActiveFlag_TXE(SPIx));
+
+        // Send dummy byte to generate clock
+        LL_SPI_TransmitData8(SPIx, 0xFF);
+
+        // Wait until RX buffer has data
+        while (!LL_SPI_IsActiveFlag_RXNE(SPIx));
+
+        // Read received data
+        data[i] = LL_SPI_ReceiveData8(SPIx);
+    }
+
+    // Wait until SPI is not busy
+    while (LL_SPI_IsActiveFlag_BSY(SPIx));
 }
 
-void ce_high(void){
-	HAL_GPIO_WritePin(ce_gpio_port, ce_gpio_pin, 1);
+// Simple SPI transmit-receive using LL
+static void LL_SPI_TransmitReceive(SPI_TypeDef *SPIx, uint8_t *tx_data, uint8_t *rx_data, uint16_t size) {
+    for (uint16_t i = 0; i < size; i++) {
+        // Wait until TX buffer is empty
+        while (!LL_SPI_IsActiveFlag_TXE(SPIx));
+
+        // Send data
+        LL_SPI_TransmitData8(SPIx, tx_data[i]);
+
+        // Wait until RX buffer has data
+        while (!LL_SPI_IsActiveFlag_RXNE(SPIx));
+
+        // Read received data
+        rx_data[i] = LL_SPI_ReceiveData8(SPIx);
+    }
+
+    // Wait until SPI is not busy
+    while (LL_SPI_IsActiveFlag_BSY(SPIx));
 }
 
-void ce_low(void){
-	HAL_GPIO_WritePin(ce_gpio_port, ce_gpio_pin, 0);
+// ============================================================================
+// GPIO FUNCTIONS (Already LL compatible, just update if needed)
+// ============================================================================
+
+void csn_high(void) {
+    LL_GPIO_SetOutputPin(csn_gpio_port, csn_gpio_pin);
 }
 
-void nrf24_w_reg(uint8_t reg, uint8_t *data, uint8_t size){
-
-	uint8_t cmd = W_REGISTER | reg;
-
-	csn_low();
-
-	HAL_SPI_Transmit(&hspiX, &cmd, 1, spi_w_timeout);
-	HAL_SPI_Transmit(&hspiX, data, size, spi_w_timeout);
-
-	csn_high();
+void csn_low(void) {
+    LL_GPIO_ResetOutputPin(csn_gpio_port, csn_gpio_pin);
 }
 
-uint8_t nrf24_r_reg(uint8_t reg, uint8_t size){
-	uint8_t cmd = R_REGISTER | reg;
-	uint8_t data = 0;
-
-	csn_low();
-
-	HAL_SPI_Transmit(&hspiX, &cmd, 1, spi_w_timeout);
-	HAL_SPI_Receive(&hspiX, &data, size, spi_r_timeout);
-
-	csn_high();
-
-	return data;
+void ce_high(void) {
+    LL_GPIO_SetOutputPin(ce_gpio_port, ce_gpio_pin);
 }
 
-void nrf24_w_spec_cmd(uint8_t cmd){
-	HAL_SPI_Transmit(&hspiX, &cmd, 1, spi_w_timeout);
+void ce_low(void) {
+    LL_GPIO_ResetOutputPin(ce_gpio_port, ce_gpio_pin);
 }
 
-void nrf24_w_spec_reg(uint8_t *data, uint8_t size){
-	HAL_SPI_Transmit(&hspiX, data, size, spi_w_timeout);
+// ============================================================================
+// MODIFIED NRF24 FUNCTIONS (Using LL SPI)
+// ============================================================================
+
+void nrf24_w_reg(uint8_t reg, uint8_t *data, uint8_t size) {
+    uint8_t cmd = W_REGISTER | reg;
+
+    csn_low();
+    LL_SPI_Transmit(SPIX, &cmd, 1);
+    LL_SPI_Transmit(SPIX, data, size);
+    csn_high();
+}
+void SPI_WriteByte(SPI_TypeDef *SPIx, uint8_t byte)
+{
+    // Wait until TX buffer empty
+    while(!LL_SPI_IsActiveFlag_TXE(SPIx));
+    LL_SPI_TransmitData8(SPIx, byte);
+
+    // Wait until RX buffer full (dummy read)
+    while(!LL_SPI_IsActiveFlag_RXNE(SPIx));
+    (void)LL_SPI_ReceiveData8(SPIx); // discard received byte
 }
 
-void nrf24_r_spec_reg(uint8_t *data, uint8_t size){
-	HAL_SPI_Receive(&hspiX, data, size, spi_r_timeout);
+uint8_t SPI_ReadByte(SPI_TypeDef *SPIx)
+{
+    // Send dummy byte to generate clock
+    while(!LL_SPI_IsActiveFlag_TXE(SPIx));
+    LL_SPI_TransmitData8(SPIx, 0xFF);
+
+    // Wait until RX buffer full
+    while(!LL_SPI_IsActiveFlag_RXNE(SPIx));
+    return LL_SPI_ReceiveData8(SPIx);
 }
+
+
+
+uint8_t nrf24_r_reg(uint8_t reg, uint8_t size)
+{
+    uint8_t cmd = R_REGISTER | reg;
+    uint8_t data = 0;
+
+    csn_low();
+    SPI_WriteByte(SPIX, cmd);  // send register address
+
+    if (size == 1) {
+        data = SPI_ReadByte(SPIX);
+    } else {
+        for (uint8_t i = 0; i < size; i++) {
+            data = SPI_ReadByte(SPIX); // or fill buffer
+        }
+    }
+
+    csn_high();
+    return data;
+}
+
+
+void nrf24_w_spec_cmd(uint8_t cmd) {
+    LL_SPI_Transmit(SPIX, &cmd, 1);
+}
+
+void nrf24_w_spec_reg(uint8_t *data, uint8_t size) {
+    LL_SPI_Transmit(SPIX, data, size);
+}
+
+void nrf24_r_spec_reg(uint8_t *data, uint8_t size) {
+    LL_SPI_Receive(SPIX, data, size);
+}
+
+uint8_t nrf24_r_status(void) {
+    uint8_t data = 0;
+    uint8_t cmd = NOP_CMD;
+
+    csn_low();
+    LL_SPI_TransmitReceive(SPIX, &cmd, &data, 1);
+    csn_high();
+
+    return data;
+}
+
+uint8_t nrf24_transmit(uint8_t *data, uint8_t size) {
+    ce_low();
+
+    uint8_t cmd = W_TX_PAYLOAD;
+
+    csn_low();
+    LL_SPI_Transmit(SPIX, &cmd, 1);
+    LL_SPI_Transmit(SPIX, data, size);
+    csn_high();
+
+    ce_high();
+    // Simple delay (replace HAL_Delay with your delay function)
+    for (volatile uint32_t i = 0; i < 8000; i++);  // ~1ms at typical clock
+    ce_low();
+
+    if (nrf24_r_status() & (1 << MAX_RT)) {
+        nrf24_clear_max_rt();
+        nrf24_flush_tx();
+        return 1;
+    }
+
+    return 0;
+}
+
+void nrf24_transmit_no_ack(uint8_t *data, uint8_t size) {
+    ce_low();
+
+    uint8_t cmd = W_TX_PAYLOAD_NOACK;
+
+    csn_low();
+    LL_SPI_Transmit(SPIX, &cmd, 1);
+    LL_SPI_Transmit(SPIX, data, size);
+    csn_high();
+
+    ce_high();
+    for (volatile uint32_t i = 0; i < 8000; i++);  // ~1ms delay
+    ce_low();
+}
+
+void nrf24_transmit_rx_ack_pld(uint8_t pipe, uint8_t *data, uint8_t size) {
+    if (pipe > 5) {
+        pipe = 5;
+    }
+
+    uint8_t cmd = (W_ACK_PAYLOAD | pipe);
+
+    csn_low();
+    LL_SPI_Transmit(SPIX, &cmd, 1);
+    LL_SPI_Transmit(SPIX, data, size);
+    csn_high();
+}
+
+void nrf24_receive(uint8_t *data, uint8_t size) {
+    uint8_t cmd = R_RX_PAYLOAD;
+
+    csn_low();
+    LL_SPI_Transmit(SPIX, &cmd, 1);
+    LL_SPI_Receive(SPIX, data, size);
+    csn_high();
+
+    nrf24_clear_rx_dr();
+}
+
+// ============================================================================
+// CONFIGURATION (Add to NRF24_conf.h)
+// ============================================================================
+
+/*
+In your NRF24_conf.h, replace:
+
+#define hspiX hspi1
+#define spi_w_timeout 100
+#define spi_r_timeout 100
+#define spi_rw_timeout 100
+
+With:
+
+#define SPIX SPI1  // Or SPI2, depending on your hardware
+
+// GPIO definitions (LL style)
+#define csn_gpio_port GPIOA
+#define csn_gpio_pin LL_GPIO_PIN_4
+
+#define ce_gpio_port GPIOA
+#define ce_gpio_pin LL_GPIO_PIN_3
+*/
+
+
+
+
+
+
+
+
 
 void nrf24_pwr_up(void){
 	uint8_t data = 0;
@@ -232,16 +431,7 @@ void nrf24_flush_rx(void){
 	csn_high();
 }
 
-uint8_t nrf24_r_status(void){
-	uint8_t data = 0;
-	uint8_t cmd = NOP_CMD;
 
-	csn_low();
-	HAL_SPI_TransmitReceive(&hspiX, &cmd, &data, 1, spi_rw_timeout);
-	csn_high();
-
-	return data;
-}
 
 void nrf24_clear_rx_dr(void){
 	uint8_t data = 0;
@@ -448,60 +638,7 @@ size_t nrf24_uint8_t_to_type(uint8_t* in, uint16_t size){
 }
 
 
-uint8_t nrf24_transmit(uint8_t *data, uint8_t size){
 
-	ce_low();
-
-	uint8_t cmd = W_TX_PAYLOAD;
-
-	csn_low();
-	HAL_SPI_Transmit(&hspiX, &cmd, 1, spi_w_timeout);
-	HAL_SPI_Transmit(&hspiX, data, size, spi_w_timeout);
-	csn_high();
-
-	ce_high();
-	HAL_Delay(1);
-	ce_low();
-
-	if(nrf24_r_status() & (1 << MAX_RT)){
-		nrf24_clear_max_rt();
-		nrf24_flush_tx();
-		return 1;
-	}
-
-	return 0;
-}
-
-void nrf24_transmit_no_ack(uint8_t *data, uint8_t size){
-
-	ce_low();
-
-	uint8_t cmd = W_TX_PAYLOAD_NOACK;
-
-	csn_low();
-	HAL_SPI_Transmit(&hspiX, &cmd, 1, spi_w_timeout);
-	HAL_SPI_Transmit(&hspiX, data, size, spi_w_timeout);
-	csn_high();
-
-	ce_high();
-	HAL_Delay(1);
-	ce_low();
-}
-
-void nrf24_transmit_rx_ack_pld(uint8_t pipe, uint8_t *data, uint8_t size){
-
-	if(pipe > 5){
-		pipe = 5;
-	}
-
-	uint8_t cmd = (W_ACK_PAYLOAD | pipe);
-
-	csn_low();
-	HAL_SPI_Transmit(&hspiX, &cmd, 1, spi_w_timeout);
-	HAL_SPI_Transmit(&hspiX, data, size, spi_w_timeout);
-	csn_high();
-
-}
 
 uint8_t nrf24_carrier_detect(void){
 	return nrf24_r_reg(RPD, 1);
@@ -518,16 +655,7 @@ uint8_t nrf24_data_available(void){
 	return 0;
 }
 
-void nrf24_receive(uint8_t *data, uint8_t size){
-	uint8_t cmd = R_RX_PAYLOAD;
 
-	csn_low();
-	HAL_SPI_Transmit(&hspiX, &cmd, 1, spi_w_timeout);
-	HAL_SPI_Receive(&hspiX, data, size, spi_r_timeout);
-	csn_high();
-
-	nrf24_clear_rx_dr();
-}
 
 void nrf24_defaults(void){
 	ce_low();
@@ -572,4 +700,8 @@ void nrf24_init(void){
 	nrf24_clear_tx_ds();
 	nrf24_clear_max_rt();
 }
+
+
+
+
 

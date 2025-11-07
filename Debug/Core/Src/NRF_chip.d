@@ -2,19 +2,7 @@ Core/Src/NRF_chip.o: ../Core/Src/NRF_chip.c ../Core/Inc/NRF_chip.h \
  M:/embedded/stm32C0_Nucleus/qpc-tetris-water-system/libraries/NRF24/includes/NRF24.h \
  M:/embedded/stm32C0_Nucleus/qpc-tetris-water-system/libraries/NRF24/includes/NRF24_reg_addresses.h \
  M:/embedded/stm32C0_Nucleus/qpc-tetris-water-system/libraries/NRF24/includes/NRF24_conf.h \
- ../Core/Inc/main_app.h \
- ../Middlewares/Third_Party/QuantumLeaps_RTEF_qpc/include/qpc.h \
- ../Middlewares/Third_Party/QuantumLeaps_RTEF_qpc/ports/arm-cm/qk/gnu/qp_port.h \
- ../Middlewares/Third_Party/QuantumLeaps_RTEF_qpc/ports/arm-cm/config/qp_config.h \
- ../Middlewares/Third_Party/QuantumLeaps_RTEF_qpc/include/qequeue.h \
- ../Middlewares/Third_Party/QuantumLeaps_RTEF_qpc/include/qmpool.h \
- ../Middlewares/Third_Party/QuantumLeaps_RTEF_qpc/include/qp.h \
- ../Middlewares/Third_Party/QuantumLeaps_RTEF_qpc/include/qk.h \
- ../Middlewares/Third_Party/QuantumLeaps_RTEF_qpc/include/qsafe.h \
- ../Middlewares/Third_Party/QuantumLeaps_RTEF_qpc/include/qs_dummy.h \
- ../Core/Inc/temp_sensor.h \
- ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal.h \
- ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_system.h \
+ ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_gpio.h \
  ../Drivers/CMSIS/Device/ST/STM32C0xx/Include/stm32c0xx.h \
  ../Drivers/CMSIS/Device/ST/STM32C0xx/Include/stm32c031xx.h \
  ../Drivers/CMSIS/Include/core_cm0plus.h \
@@ -23,6 +11,8 @@ Core/Src/NRF_chip.o: ../Core/Src/NRF_chip.c ../Core/Inc/NRF_chip.h \
  ../Drivers/CMSIS/Include/cmsis_gcc.h \
  ../Drivers/CMSIS/Include/mpu_armv7.h \
  ../Drivers/CMSIS/Device/ST/STM32C0xx/Include/system_stm32c0xx.h \
+ ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal.h \
+ ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_system.h \
  ../Core/Inc/stm32c0xx_hal_conf.h \
  ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_rcc.h \
  ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_def.h \
@@ -41,9 +31,17 @@ Core/Src/NRF_chip.o: ../Core/Src/NRF_chip.c ../Core/Inc/NRF_chip.h \
  ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_i2c_ex.h \
  ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_pwr.h \
  ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_pwr_ex.h \
- ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_spi.h \
- ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_spi_ex.h \
- ../Core/Inc/display.h \
+ ../Core/Inc/main_app.h \
+ ../Middlewares/Third_Party/QuantumLeaps_RTEF_qpc/include/qpc.h \
+ ../Middlewares/Third_Party/QuantumLeaps_RTEF_qpc/ports/arm-cm/qk/gnu/qp_port.h \
+ ../Middlewares/Third_Party/QuantumLeaps_RTEF_qpc/ports/arm-cm/config/qp_config.h \
+ ../Middlewares/Third_Party/QuantumLeaps_RTEF_qpc/include/qequeue.h \
+ ../Middlewares/Third_Party/QuantumLeaps_RTEF_qpc/include/qmpool.h \
+ ../Middlewares/Third_Party/QuantumLeaps_RTEF_qpc/include/qp.h \
+ ../Middlewares/Third_Party/QuantumLeaps_RTEF_qpc/include/qk.h \
+ ../Middlewares/Third_Party/QuantumLeaps_RTEF_qpc/include/qsafe.h \
+ ../Middlewares/Third_Party/QuantumLeaps_RTEF_qpc/include/qs_dummy.h \
+ ../Core/Inc/temp_sensor.h ../Core/Inc/display.h \
  M:/embedded/stm32C0_Nucleus/qpc-tetris-water-system/libraries/OLED_SSD1306/include/ssd1306.h \
  M:/embedded/stm32C0_Nucleus/qpc-tetris-water-system/libraries/OLED_SSD1306/include/ssd1306_conf.h \
  M:/embedded/stm32C0_Nucleus/qpc-tetris-water-system/libraries/OLED_SSD1306/include/ssd1306_conf.h \
@@ -56,19 +54,7 @@ Core/Src/NRF_chip.o: ../Core/Src/NRF_chip.c ../Core/Inc/NRF_chip.h \
 M:/embedded/stm32C0_Nucleus/qpc-tetris-water-system/libraries/NRF24/includes/NRF24.h:
 M:/embedded/stm32C0_Nucleus/qpc-tetris-water-system/libraries/NRF24/includes/NRF24_reg_addresses.h:
 M:/embedded/stm32C0_Nucleus/qpc-tetris-water-system/libraries/NRF24/includes/NRF24_conf.h:
-../Core/Inc/main_app.h:
-../Middlewares/Third_Party/QuantumLeaps_RTEF_qpc/include/qpc.h:
-../Middlewares/Third_Party/QuantumLeaps_RTEF_qpc/ports/arm-cm/qk/gnu/qp_port.h:
-../Middlewares/Third_Party/QuantumLeaps_RTEF_qpc/ports/arm-cm/config/qp_config.h:
-../Middlewares/Third_Party/QuantumLeaps_RTEF_qpc/include/qequeue.h:
-../Middlewares/Third_Party/QuantumLeaps_RTEF_qpc/include/qmpool.h:
-../Middlewares/Third_Party/QuantumLeaps_RTEF_qpc/include/qp.h:
-../Middlewares/Third_Party/QuantumLeaps_RTEF_qpc/include/qk.h:
-../Middlewares/Third_Party/QuantumLeaps_RTEF_qpc/include/qsafe.h:
-../Middlewares/Third_Party/QuantumLeaps_RTEF_qpc/include/qs_dummy.h:
-../Core/Inc/temp_sensor.h:
-../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal.h:
-../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_system.h:
+../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_gpio.h:
 ../Drivers/CMSIS/Device/ST/STM32C0xx/Include/stm32c0xx.h:
 ../Drivers/CMSIS/Device/ST/STM32C0xx/Include/stm32c031xx.h:
 ../Drivers/CMSIS/Include/core_cm0plus.h:
@@ -77,6 +63,8 @@ M:/embedded/stm32C0_Nucleus/qpc-tetris-water-system/libraries/NRF24/includes/NRF
 ../Drivers/CMSIS/Include/cmsis_gcc.h:
 ../Drivers/CMSIS/Include/mpu_armv7.h:
 ../Drivers/CMSIS/Device/ST/STM32C0xx/Include/system_stm32c0xx.h:
+../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal.h:
+../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_system.h:
 ../Core/Inc/stm32c0xx_hal_conf.h:
 ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_rcc.h:
 ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_def.h:
@@ -95,8 +83,17 @@ M:/embedded/stm32C0_Nucleus/qpc-tetris-water-system/libraries/NRF24/includes/NRF
 ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_i2c_ex.h:
 ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_pwr.h:
 ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_pwr_ex.h:
-../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_spi.h:
-../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_spi_ex.h:
+../Core/Inc/main_app.h:
+../Middlewares/Third_Party/QuantumLeaps_RTEF_qpc/include/qpc.h:
+../Middlewares/Third_Party/QuantumLeaps_RTEF_qpc/ports/arm-cm/qk/gnu/qp_port.h:
+../Middlewares/Third_Party/QuantumLeaps_RTEF_qpc/ports/arm-cm/config/qp_config.h:
+../Middlewares/Third_Party/QuantumLeaps_RTEF_qpc/include/qequeue.h:
+../Middlewares/Third_Party/QuantumLeaps_RTEF_qpc/include/qmpool.h:
+../Middlewares/Third_Party/QuantumLeaps_RTEF_qpc/include/qp.h:
+../Middlewares/Third_Party/QuantumLeaps_RTEF_qpc/include/qk.h:
+../Middlewares/Third_Party/QuantumLeaps_RTEF_qpc/include/qsafe.h:
+../Middlewares/Third_Party/QuantumLeaps_RTEF_qpc/include/qs_dummy.h:
+../Core/Inc/temp_sensor.h:
 ../Core/Inc/display.h:
 M:/embedded/stm32C0_Nucleus/qpc-tetris-water-system/libraries/OLED_SSD1306/include/ssd1306.h:
 M:/embedded/stm32C0_Nucleus/qpc-tetris-water-system/libraries/OLED_SSD1306/include/ssd1306_conf.h:
