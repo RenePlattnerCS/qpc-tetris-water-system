@@ -111,7 +111,7 @@ void assert_failed(char const * const module, int_t const id) {
 
 // ISRs used in the application ============================================
 
-static volatile uint32_t sysTickCounter = 0;
+static volatile uint16_t sysTickCounter = 0;
 
 void SysTick_Handler(void); // prototype
 void SysTick_Handler(void) {
@@ -312,7 +312,7 @@ void BSP_init(void) {
 
 	// Start input capture with DMA
 	//HAL_TIM_IC_Start_DMA(&htim3, TIM_CHANNEL_1, (uint32_t *)dht11_dma_buffer, DHT11_MAX_EDGES);
-
+	adc_seed();
 }
 //............................................................................
 void BSP_start(void)
@@ -329,15 +329,38 @@ void BSP_start(void)
 //............................................................................
 
 //............................................................................
+static uint16_t rndSeed = 12345;
 void BSP_randomSeed(uint32_t seed) {
-    l_rndSeed = seed;
+	rndSeed = seed;
+}
+
+void adc_seed(void) {
+    uint32_t seed = 0;
+
+    // Start ADC conversion
+    LL_ADC_REG_StartConversion(ADC1);
+
+    // Wait for conversion to complete (check EOC flag)
+    while (!LL_ADC_IsActiveFlag_EOC(ADC1)) {
+        // Timeout protection (optional)
+    }
+
+    // Read the value
+    seed = LL_ADC_REG_ReadConversionData12(ADC1);
+
+    // Clear the EOC flag
+    LL_ADC_ClearFlag_EOC(ADC1);
+
+    rndSeed = seed;
 }
 //............................................................................
-uint32_t BSP_random(void) { // a very cheap pseudo-random-number generator
-	//TODO
 
-    return 0;
+
+uint32_t BSP_random(uint16_t modulo) {
+	rndSeed = rndSeed * 25173 + 13849;
+	return (rndSeed >> 8) % modulo;
 }
+
 //............................................................................
 void BSP_ledOn(void) {
     GPIOA->BSRR = (1U << LD4_PIN);  // turn LED on

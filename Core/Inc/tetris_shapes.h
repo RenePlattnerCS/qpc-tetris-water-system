@@ -4,7 +4,6 @@
 #define INC_TETRIS_SHAPES_H_
 
 #include <string.h>
-#include "tetromino.h""
 
 static const uint8_t shapes[7][4][4] = {
     // I

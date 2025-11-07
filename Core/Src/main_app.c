@@ -43,6 +43,8 @@
 #include "NRF_chip.h"
 #include "main.h";
 #include "tetris_input_handler.h"
+#include "tetris_shapes.h"
+#include "bsp.h"
 
 //DMA buffer
 static __attribute__((section(".bss"))) __attribute__((aligned(4))) volatile uint32_t Sensor_dht11_dma_buffer[DHT11_MAX_EDGES];
@@ -99,6 +101,15 @@ void MainApp_init_line_state(
     ls->err = (ls->dx > ls->dy ? ls->dx : -ls->dy) / 2;
     ls->done = false;
 
+
+}
+
+//${AOs::MainApp::spawn_tetromino} ...........................................
+void MainApp_spawn_tetromino(MainApp * const me) {
+    me->active_tetromino.type = BSP_random(7);
+    memcpy(me->active_tetromino.grid4x4, shapes[me->active_tetromino.type ], sizeof(me->active_tetromino.grid4x4));
+    me->active_tetromino.x = 4;
+    me->active_tetromino.y = 19;
 
 }
 
@@ -412,6 +423,7 @@ QState MainApp_game(MainApp * const me, QEvt const * const e) {
             if(! (move_down(&me->board_inst, &me->active_tetromino)) )
             {
                 Board_placeTetromino( &me->board_inst, &me->active_tetromino);
+                MainApp_spawn_tetromino(me);
             }
 
 

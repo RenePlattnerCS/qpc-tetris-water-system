@@ -64,7 +64,8 @@ Core/Src/main_app.o: ../Core/Src/main_app.c ../Core/Inc/main_app.h \
  ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_pwr.h \
  ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_dma.h \
  ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_dmamux.h \
- ../Core/Inc/tetris_input_handler.h
+ ../Core/Inc/tetris_input_handler.h ../Core/Inc/tetris_shapes.h \
+ ../Core/Inc/bsp.h
 ../Core/Inc/main_app.h:
 ../Middlewares/Third_Party/QuantumLeaps_RTEF_qpc/include/qpc.h:
 ../Middlewares/Third_Party/QuantumLeaps_RTEF_qpc/ports/arm-cm/qk/gnu/qp_port.h:
@@ -136,3 +137,5 @@ M:/embedded/stm32C0_Nucleus/qpc-tetris-water-system/libraries/NRF24/includes/NRF
 ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_dma.h:
 ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_dmamux.h:
 ../Core/Inc/tetris_input_handler.h:
+../Core/Inc/tetris_shapes.h:
+../Core/Inc/bsp.h:

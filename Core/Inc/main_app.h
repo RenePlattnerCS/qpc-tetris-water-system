@@ -96,6 +96,7 @@ void MainApp_init_line_state(
     int y0,
     int x1,
     int y1);
+void MainApp_spawn_tetromino(MainApp * const me);
 
 // protected:
 QState MainApp_initial(MainApp * const me, void const * const par);

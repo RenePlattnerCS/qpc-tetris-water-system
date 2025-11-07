@@ -132,6 +132,14 @@ ls-&gt;done = false;
 
 </code>
    </operation>
+   <!--${AOs::MainApp::spawn_tetromino}-->
+   <operation name="spawn_tetromino" type="void" visibility="0x02" properties="0x00">
+    <code>me-&gt;active_tetromino.type = BSP_random(7);
+memcpy(me-&gt;active_tetromino.grid4x4, shapes[me-&gt;active_tetromino.type ], sizeof(me-&gt;active_tetromino.grid4x4));
+me-&gt;active_tetromino.x = 4;
+me-&gt;active_tetromino.y = 19;
+</code>
+   </operation>
    <!--${AOs::MainApp::SM}-->
    <statechart properties="0x00">
     <!--${AOs::MainApp::SM::initial}-->
@@ -369,6 +377,7 @@ process_tilt_move(&amp;me-&gt;board_inst, &amp;me-&gt;active_tetromino, tilt);
 if(! (move_down(&amp;me-&gt;board_inst, &amp;me-&gt;active_tetromino)) )
 {
     Board_placeTetromino( &amp;me-&gt;board_inst, &amp;me-&gt;active_tetromino);
+    MainApp_spawn_tetromino(me);
 }
 
 
@@ -934,6 +943,8 @@ $declare${AOs::RFButton}
 #include &quot;NRF_chip.h&quot;
 #include &quot;main.h&quot;;
 #include &quot;tetris_input_handler.h&quot;
+#include &quot;tetris_shapes.h&quot;
+#include &quot;bsp.h&quot;
 
 //DMA buffer
 static __attribute__((section(&quot;.bss&quot;))) __attribute__((aligned(4))) volatile uint32_t Sensor_dht11_dma_buffer[DHT11_MAX_EDGES];

@@ -107,7 +107,7 @@ bool collision_on_move(Board *me, const Tetromino *t, int dx, int dy)
 					boardY = t->y + row + dy;
 
 	                // Bounds check (if outside → collision)
-	                if(boardX < 0 || boardX >= me->width ||
+	                if(boardX < 0 || boardX >= me->width  ||
 	                   boardY < 0 || boardY >= me->height)
 	                {
 	                    return true; // COLLISION
