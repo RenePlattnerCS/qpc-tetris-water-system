@@ -88,6 +88,8 @@ extern MainApp MainApp_inst;
 
 extern uint32_t  MainApp_delta_time;
 
+extern uint8_t MainApp_score;
+
 // private:
 uint8_t MainApp_calc_dryness_percent(uint16_t dryness);
 void MainApp_init_line_state(
@@ -105,13 +107,13 @@ QState MainApp_display_stats(MainApp * const me, QEvt const * const e);
 QState MainApp_dry_alert(MainApp * const me, QEvt const * const e);
 QState MainApp_pump(MainApp * const me, QEvt const * const e);
 QState MainApp_tetris(MainApp * const me, QEvt const * const e);
-QState MainApp_start_screen(MainApp * const me, QEvt const * const e);
 QState MainApp_game(MainApp * const me, QEvt const * const e);
 QState MainApp_init_board(MainApp * const me, QEvt const * const e);
 QState MainApp_top_border(MainApp * const me, QEvt const * const e);
 QState MainApp_left_border(MainApp * const me, QEvt const * const e);
 QState MainApp_btm_border(MainApp * const me, QEvt const * const e);
 QState MainApp_right_border(MainApp * const me, QEvt const * const e);
+QState MainApp_gameover_screen(MainApp * const me, QEvt const * const e);
 //$enddecl${AOs::MainApp} ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 //$declare${Shared} vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
@@ -151,6 +153,7 @@ enum MenuGameSignals {
     PLANT_DRY_SIG,
     WATER_PLANT_SIG,
     START_TETRIS_SIG,
+    GAMEOVER_TETRIS_SIG,
     DRAW_OUTLINE_SIG,
     DRAW_OUTLINE_DONE_SIG,
     MAX_SIG

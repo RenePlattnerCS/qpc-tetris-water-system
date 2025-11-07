@@ -9,6 +9,9 @@ static void clear_screen(Board *me);
 static void clear_line(Board * me, int line_to_clear);
 static bool is_line_full(Board * me, int row);
 
+static uint8_t dummyValue = 0;
+
+
 void Board_ctor(Board *me, uint8_t *grid,
                 uint8_t width, uint8_t height, uint8_t pos_x , uint8_t pos_y, bool rotate_90, uint8_t blockSize)
 {
@@ -23,14 +26,13 @@ void Board_ctor(Board *me, uint8_t *grid,
 
     me->tickCounter = 0;
 
-
-
 }
 
 void Board_init(Board *me)
 {
 	ssd1306_Fill(Black);
 }
+
 
 static void Board_draw_outline(const Board *me)
 {
@@ -145,14 +147,28 @@ bool collision_on_move(Board *me, const Tetromino *t, int dx, int dy)
 }
 
 
-void lock_tetromino(Board *me, Tetromino *active)
+bool collision_on_spawn(Board *me, Tetromino *t)
 {
+    for(int row = 0; row < 4; row++) {
+        for(int col = 0; col < 4; col++) {
 
+            if(t->grid4x4[row][col]) {
+
+                int x = t->x + col;
+                int y = t->y + row;
+
+                // if ANY part is already filled -> GAME OVER
+                if (me->grid[y * me->width + x] != 0) {
+                		dummyValue = 1;
+                	    return true; // out of bounds = collision
+                }
+            }
+        }
+    }
+    return false;
 }
 
-
-
-void draw_board(Board *me, Tetromino *active)
+void draw_board(Board *me, Tetromino *active, uint8_t score)
 {
 
 	clear_screen(me);
@@ -200,6 +216,8 @@ void draw_board(Board *me, Tetromino *active)
 			}
 		}
 	}
+
+	display_score(score);
 	ssd1306_UpdateScreen();
 }
 
@@ -229,13 +247,15 @@ static void clear_line(Board *me, int line_to_clear) {
 }
 
 // Check all lines and clear completed ones
- void check_and_clear_lines(Board * me) {
+ uint8_t check_and_clear_lines(Board * me) {
+	 uint8_t lines_cleared = 0;
 	 for (int row = 0; row < me->height; row++) {
 	     if (is_line_full(me, row)) {
 	         clear_line(me, row);
-	         //lines_cleared++;
+	         lines_cleared++;
 	         row--;
 	     }
 	 }
+	 return lines_cleared;
 }
 

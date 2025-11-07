@@ -87,6 +87,10 @@ me-&gt;dma_index = 0;
    </attribute>
    <!--${AOs::MainApp::active_tetromino}-->
    <attribute name="active_tetromino" type="Tetromino" visibility="0x02" properties="0x00"/>
+   <!--${AOs::MainApp::score}-->
+   <attribute name="score" type="uint8_t" visibility="0x02" properties="0x01">
+    <code>= 0;</code>
+   </attribute>
    <!--${AOs::MainApp::calc_dryness_percent}-->
    <operation name="calc_dryness_percent" type="uint8_t" visibility="0x02" properties="0x01">
     <!--${AOs::MainApp::calc_dryness_per~::dryness}-->
@@ -134,12 +138,17 @@ ls-&gt;done = false;
    </operation>
    <!--${AOs::MainApp::spawn_tetromino}-->
    <operation name="spawn_tetromino" type="void" visibility="0x02" properties="0x00">
-    <code>//me-&gt;active_tetromino.type = BSP_random(7);
-me-&gt;active_tetromino.type = 0;
+    <code>me-&gt;active_tetromino.type = BSP_random(7);
 memcpy(me-&gt;active_tetromino.grid4x4, shapes[me-&gt;active_tetromino.type ], sizeof(me-&gt;active_tetromino.grid4x4));
-me-&gt;active_tetromino.x = 4;
-me-&gt;active_tetromino.y = 19;
-</code>
+me-&gt;active_tetromino.x = (me-&gt;board_inst.width / 2) - 2;
+me-&gt;active_tetromino.y = me-&gt;board_inst.height - 2;
+
+bool col = collision_on_spawn(&amp;me-&gt;board_inst, &amp;me-&gt;active_tetromino);
+if(col)
+{
+    QEvt *e = Q_NEW(QEvt, GAMEOVER_TETRIS_SIG);
+    QACTIVE_POST(AO_Main_App, e, me);
+}</code>
    </operation>
    <!--${AOs::MainApp::SM}-->
    <statechart properties="0x00">
@@ -332,68 +341,55 @@ HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_RESET);</action>
     <!--${AOs::MainApp::SM::tetris}-->
     <state name="tetris">
      <!--${AOs::MainApp::SM::tetris::initial}-->
-     <initial target="../1">
-      <initial_glyph conn="144,31,5,0,2,7">
+     <initial target="../2">
+      <initial_glyph conn="173,35,5,0,10,3">
        <action box="0,-2,10,2"/>
       </initial_glyph>
      </initial>
-     <!--${AOs::MainApp::SM::tetris::start_screen}-->
-     <state name="start_screen">
-      <entry>QTimeEvt_armX(&amp;me-&gt;dryTimerEvt, 400U , 0U);
-display_tetris_logo();
-</entry>
-      <exit>QTimeEvt_disarm(&amp;me-&gt;dryTimerEvt);
-</exit>
-      <!--${AOs::MainApp::SM::tetris::start_screen::WATER_PLANT}-->
-      <tran trig="WATER_PLANT" target="../../3">
-       <action brief="clear">clear_board();</action>
-       <tran_glyph conn="158,44,5,3,14">
-        <action box="0,-2,10,2"/>
-       </tran_glyph>
-      </tran>
-      <state_glyph node="137,38,21,14">
-       <entry box="0,3,6,2"/>
-       <exit box="0,5,6,2"/>
-      </state_glyph>
-     </state>
      <!--${AOs::MainApp::SM::tetris::game}-->
      <state name="game">
-      <entry>
-QTimeEvt_armX(&amp;me-&gt;dryTimerEvt, MainApp_delta_time / 10U , MainApp_delta_time / 10U);
+      <entry>QTimeEvt_armX(&amp;me-&gt;dryTimerEvt, MainApp_delta_time / 10U , MainApp_delta_time / 10U);
 
 
 Tetromino_ctor(&amp;me-&gt;active_tetromino, TETRO_L);
-me-&gt;active_tetromino.y = 19;
-draw_board(&amp;me-&gt;board_inst, &amp;me-&gt;active_tetromino);
+me-&gt;active_tetromino.x = (me-&gt;board_inst.width / 2) - 2;
+me-&gt;active_tetromino.y = me-&gt;board_inst.height - 2;
+
+draw_board(&amp;me-&gt;board_inst, &amp;me-&gt;active_tetromino, MainApp_score);
+
 
 
 accelerometer_init_polling();
 </entry>
       <!--${AOs::MainApp::SM::tetris::game::WATER_PLANT}-->
       <tran trig="WATER_PLANT">
-       <action>int16_t tilt = read_accelerometer_tilt();
+       <action brief="TICK">int16_t tilt = read_accelerometer_tilt();
 process_tilt_move(&amp;me-&gt;board_inst, &amp;me-&gt;active_tetromino, tilt);
 
 
 if(! (move_down(&amp;me-&gt;board_inst, &amp;me-&gt;active_tetromino)) )
 {
     Board_placeTetromino( &amp;me-&gt;board_inst, &amp;me-&gt;active_tetromino);
-    check_and_clear_lines(&amp;me-&gt;board_inst);
+    MainApp_score += check_and_clear_lines(&amp;me-&gt;board_inst);
     MainApp_spawn_tetromino(me);
 }
 
-
-//
-draw_board(&amp;me-&gt;board_inst, &amp;me-&gt;active_tetromino);
+draw_board(&amp;me-&gt;board_inst, &amp;me-&gt;active_tetromino, MainApp_score);
 </action>
        <tran_glyph conn="276,42,1,-1,-19">
-        <action box="0,-2,10,2"/>
+        <action box="0,-2,20,2"/>
        </tran_glyph>
       </tran>
       <!--${AOs::MainApp::SM::tetris::game::BUTTON_RELEASE}-->
       <tran trig="BUTTON_RELEASE">
        <action>rotate_tetromino_collision_check(&amp;me-&gt;board_inst,&amp;me-&gt;active_tetromino);</action>
        <tran_glyph conn="276,48,1,-1,-19">
+        <action box="0,-2,10,2"/>
+       </tran_glyph>
+      </tran>
+      <!--${AOs::MainApp::SM::tetris::game::GAMEOVER_TETRIS}-->
+      <tran trig="GAMEOVER_TETRIS" target="../../3">
+       <tran_glyph conn="255,28,0,1,-3,-94">
         <action box="0,-2,10,2"/>
        </tran_glyph>
       </tran>
@@ -441,7 +437,6 @@ else
         me-&gt;line_x0 + me-&gt;line_h , me-&gt;line_y0,
         me-&gt;line_x0 + me-&gt;line_h , me-&gt;line_y0 + me-&gt;line_w );
 }
-printf(&quot;init struct \n&quot;);
 
 static QEvt const e = {DRAW_OUTLINE_SIG, 0U, 0U};
 QACTIVE_POST(AO_Main_App, &amp;e, me);
@@ -472,7 +467,6 @@ QACTIVE_POST(AO_Main_App, &amp;e, me);
 //MainApp_init_line_state(&amp;me-&gt;line_state_inst,
  //                                   me-&gt;line_x0 + me-&gt;line_w - 1, me-&gt;line_y0,
 //                                    me-&gt;line_x0 + me-&gt;line_w - 1, me-&gt;line_y0 + me-&gt;line_h - 1);
-printf(&quot;init struct \n&quot;);
 if (!me-&gt;board_inst.rotate_90) {
     // original right vertical line
     MainApp_init_line_state(
@@ -588,7 +582,7 @@ QACTIVE_POST(AO_Main_App, &amp;e, me);
         </tran_glyph>
        </tran>
        <!--${AOs::MainApp::SM::tetris::init_board::right_border::DRAW_OUTLINE_DONE}-->
-       <tran trig="DRAW_OUTLINE_DONE" target="../../../2">
+       <tran trig="DRAW_OUTLINE_DONE" target="../../../1">
         <tran_glyph conn="183,109,2,2,2,74,-23">
          <action box="1,3,10,2"/>
         </tran_glyph>
@@ -599,6 +593,23 @@ QACTIVE_POST(AO_Main_App, &amp;e, me);
       </state>
       <state_glyph node="172,38,22,82">
        <entry box="0,3,6,2"/>
+      </state_glyph>
+     </state>
+     <!--${AOs::MainApp::SM::tetris::gameover_screen}-->
+     <state name="gameover_screen">
+      <entry>display_tetris_gameover();
+QTimeEvt_disarm(&amp;me-&gt;dryTimerEvt);
+QTimeEvt_armX(&amp;me-&gt;dryTimerEvt, 400U , 0U);</entry>
+      <exit>QTimeEvt_disarm(&amp;me-&gt;dryTimerEvt);</exit>
+      <!--${AOs::MainApp::SM::tetris::gameover_screen::WATER_PLANT}-->
+      <tran trig="WATER_PLANT" target="../../../1">
+       <tran_glyph conn="134,26,3,1,-28">
+        <action box="-17,-2,10,2"/>
+       </tran_glyph>
+      </tran>
+      <state_glyph node="134,20,27,14">
+       <entry box="0,3,6,2"/>
+       <exit box="0,5,6,2"/>
       </state_glyph>
      </state>
      <state_glyph node="129,12,171,125"/>
@@ -885,6 +896,7 @@ enum MenuGameSignals {
     PLANT_DRY_SIG,
     WATER_PLANT_SIG,
     START_TETRIS_SIG,
+    GAMEOVER_TETRIS_SIG,
     DRAW_OUTLINE_SIG,
     DRAW_OUTLINE_DONE_SIG,
     MAX_SIG  

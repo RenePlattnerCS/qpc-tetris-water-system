@@ -62,6 +62,8 @@ static uint8_t gridArray[200];
 MainApp MainApp_inst;
 uint32_t  MainApp_delta_time = (MS_PER_SEC / FPS);
 
+uint8_t MainApp_score = 0;
+
 
 //${AOs::MainApp::calc_dryness_percent} ......................................
 uint8_t MainApp_calc_dryness_percent(uint16_t dryness) {
@@ -106,12 +108,17 @@ void MainApp_init_line_state(
 
 //${AOs::MainApp::spawn_tetromino} ...........................................
 void MainApp_spawn_tetromino(MainApp * const me) {
-    //me->active_tetromino.type = BSP_random(7);
-    me->active_tetromino.type = 0;
+    me->active_tetromino.type = BSP_random(7);
     memcpy(me->active_tetromino.grid4x4, shapes[me->active_tetromino.type ], sizeof(me->active_tetromino.grid4x4));
-    me->active_tetromino.x = 4;
-    me->active_tetromino.y = 19;
+    me->active_tetromino.x = (me->board_inst.width / 2) - 2;
+    me->active_tetromino.y = me->board_inst.height - 2;
 
+    bool col = collision_on_spawn(&me->board_inst, &me->active_tetromino);
+    if(col)
+    {
+        QEvt *e = Q_NEW(QEvt, GAMEOVER_TETRIS_SIG);
+        QACTIVE_POST(AO_Main_App, e, me);
+    }
 }
 
 //${AOs::MainApp::SM} ........................................................
@@ -351,44 +358,11 @@ QState MainApp_tetris(MainApp * const me, QEvt const * const e) {
     switch (e->sig) {
         //${AOs::MainApp::SM::tetris::initial}
         case Q_INIT_SIG: {
-            status_ = Q_TRAN(&MainApp_start_screen);
-            break;
-        }
-        default: {
-            status_ = Q_SUPER(&QHsm_top);
-            break;
-        }
-    }
-    return status_;
-}
-
-//${AOs::MainApp::SM::tetris::start_screen} ..................................
-QState MainApp_start_screen(MainApp * const me, QEvt const * const e) {
-    QState status_;
-    switch (e->sig) {
-        //${AOs::MainApp::SM::tetris::start_screen}
-        case Q_ENTRY_SIG: {
-            QTimeEvt_armX(&me->dryTimerEvt, 400U , 0U);
-            display_tetris_logo();
-
-            status_ = Q_HANDLED();
-            break;
-        }
-        //${AOs::MainApp::SM::tetris::start_screen}
-        case Q_EXIT_SIG: {
-            QTimeEvt_disarm(&me->dryTimerEvt);
-
-            status_ = Q_HANDLED();
-            break;
-        }
-        //${AOs::MainApp::SM::tetris::start_screen::WATER_PLANT}
-        case WATER_PLANT_SIG: {
-            clear_board();
             status_ = Q_TRAN(&MainApp_init_board);
             break;
         }
         default: {
-            status_ = Q_SUPER(&MainApp_tetris);
+            status_ = Q_SUPER(&QHsm_top);
             break;
         }
     }
@@ -401,13 +375,15 @@ QState MainApp_game(MainApp * const me, QEvt const * const e) {
     switch (e->sig) {
         //${AOs::MainApp::SM::tetris::game}
         case Q_ENTRY_SIG: {
-
             QTimeEvt_armX(&me->dryTimerEvt, MainApp_delta_time / 10U , MainApp_delta_time / 10U);
 
 
             Tetromino_ctor(&me->active_tetromino, TETRO_L);
-            me->active_tetromino.y = 19;
-            draw_board(&me->board_inst, &me->active_tetromino);
+            me->active_tetromino.x = (me->board_inst.width / 2) - 2;
+            me->active_tetromino.y = me->board_inst.height - 2;
+
+            draw_board(&me->board_inst, &me->active_tetromino, MainApp_score);
+
 
 
             accelerometer_init_polling();
@@ -424,13 +400,11 @@ QState MainApp_game(MainApp * const me, QEvt const * const e) {
             if(! (move_down(&me->board_inst, &me->active_tetromino)) )
             {
                 Board_placeTetromino( &me->board_inst, &me->active_tetromino);
-                check_and_clear_lines(&me->board_inst);
+                MainApp_score += check_and_clear_lines(&me->board_inst);
                 MainApp_spawn_tetromino(me);
             }
 
-
-            //
-            draw_board(&me->board_inst, &me->active_tetromino);
+            draw_board(&me->board_inst, &me->active_tetromino, MainApp_score);
 
             status_ = Q_HANDLED();
             break;
@@ -439,6 +413,11 @@ QState MainApp_game(MainApp * const me, QEvt const * const e) {
         case BUTTON_RELEASE_SIG: {
             rotate_tetromino_collision_check(&me->board_inst,&me->active_tetromino);
             status_ = Q_HANDLED();
+            break;
+        }
+        //${AOs::MainApp::SM::tetris::game::GAMEOVER_TETRIS}
+        case GAMEOVER_TETRIS_SIG: {
+            status_ = Q_TRAN(&MainApp_gameover_screen);
             break;
         }
         default: {
@@ -507,7 +486,6 @@ QState MainApp_top_border(MainApp * const me, QEvt const * const e) {
                     me->line_x0 + me->line_h , me->line_y0,
                     me->line_x0 + me->line_h , me->line_y0 + me->line_w );
             }
-            printf("init struct \n");
 
             static QEvt const e = {DRAW_OUTLINE_SIG, 0U, 0U};
             QACTIVE_POST(AO_Main_App, &e, me);
@@ -547,7 +525,6 @@ QState MainApp_left_border(MainApp * const me, QEvt const * const e) {
             //MainApp_init_line_state(&me->line_state_inst,
              //                                   me->line_x0 + me->line_w - 1, me->line_y0,
             //                                    me->line_x0 + me->line_w - 1, me->line_y0 + me->line_h - 1);
-            printf("init struct \n");
             if (!me->board_inst.rotate_90) {
                 // original right vertical line
                 MainApp_init_line_state(
@@ -689,6 +666,37 @@ QState MainApp_right_border(MainApp * const me, QEvt const * const e) {
         }
         default: {
             status_ = Q_SUPER(&MainApp_init_board);
+            break;
+        }
+    }
+    return status_;
+}
+
+//${AOs::MainApp::SM::tetris::gameover_screen} ...............................
+QState MainApp_gameover_screen(MainApp * const me, QEvt const * const e) {
+    QState status_;
+    switch (e->sig) {
+        //${AOs::MainApp::SM::tetris::gameover_screen}
+        case Q_ENTRY_SIG: {
+            display_tetris_gameover();
+            QTimeEvt_disarm(&me->dryTimerEvt);
+            QTimeEvt_armX(&me->dryTimerEvt, 400U , 0U);
+            status_ = Q_HANDLED();
+            break;
+        }
+        //${AOs::MainApp::SM::tetris::gameover_screen}
+        case Q_EXIT_SIG: {
+            QTimeEvt_disarm(&me->dryTimerEvt);
+            status_ = Q_HANDLED();
+            break;
+        }
+        //${AOs::MainApp::SM::tetris::gameover_screen::WATER_PLANT}
+        case WATER_PLANT_SIG: {
+            status_ = Q_TRAN(&MainApp_display);
+            break;
+        }
+        default: {
+            status_ = Q_SUPER(&MainApp_tetris);
             break;
         }
     }

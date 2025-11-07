@@ -10,7 +10,7 @@ void Tetromino_ctor(Tetromino *me, TetrominoType type)
     me->x = 0;
     me->y = 0;
     me->current_rotation = 0;
-    me->speed = FPS / 2;
+    me->speed = FPS / 4;
     me->moveCounter = 0;
 
 }
