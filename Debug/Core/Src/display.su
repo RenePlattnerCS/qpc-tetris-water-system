@@ -1,4 +1,4 @@
-../Core/Src/display.c:115:13:display_text	16	static
+../Core/Src/display.c:115:13:display_text.constprop	16	static
 ../Core/Src/display.c:11:6:display_temp	24	static
 ../Core/Src/display.c:20:6:display_score	24	static
 ../Core/Src/display.c:26:6:display_win	8	static

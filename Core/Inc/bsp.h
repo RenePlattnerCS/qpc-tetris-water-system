@@ -41,11 +41,11 @@ void BSP_displayPaused(uint8_t paused);
 void BSP_displayPhilStat(uint8_t n, char const *stat);
 void BSP_terminate(int16_t result);
 void BSP_get_timestamps(uint32_t *dest);
-
+void BSP_RTC_init(void);
 void BSP_randomSeed(uint32_t seed); // random seed
 uint32_t BSP_random(uint16_t modulo);        // pseudo-random generator
 void adc_seed(void);
-
+void RTC_SetNextAlarm(uint32_t seconds_from_now);
 void BSP_ledOn(void);
 void BSP_ledOff(void);
 

@@ -87,6 +87,7 @@ static void MX_ADC1_Init(void);
 static void MX_SPI1_Init(void);
 static void MX_TIM17_Init(void);
 static void MX_TIM3_Init(void);
+static void MX_RTC_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -146,6 +147,7 @@ int main(void)
   MX_SPI1_Init();
   MX_TIM17_Init();
   MX_TIM3_Init();
+  MX_RTC_Init();
   /* USER CODE BEGIN 2 */
   QF_init();       // initialize the framework and the underlying RT kernel
   BSP_init();      // initialize the BSP
@@ -216,8 +218,9 @@ void SystemClock_Config(void)
   /** Initializes the RCC Oscillators according to the specified parameters
   * in the RCC_OscInitTypeDef structure.
   */
-  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_LSI|RCC_OSCILLATORTYPE_HSE;
   RCC_OscInitStruct.HSEState = RCC_HSE_ON;
+  RCC_OscInitStruct.LSIState = RCC_LSI_ON;
   if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
   {
     Error_Handler();
@@ -395,6 +398,81 @@ static void MX_I2C1_Init(void)
   /* USER CODE BEGIN I2C1_Init 2 */
 
   /* USER CODE END I2C1_Init 2 */
+
+}
+
+/**
+  * @brief RTC Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_RTC_Init(void)
+{
+
+  /* USER CODE BEGIN RTC_Init 0 */
+
+  /* USER CODE END RTC_Init 0 */
+
+  LL_RTC_InitTypeDef RTC_InitStruct = {0};
+  LL_RTC_TimeTypeDef RTC_TimeStruct = {0};
+  LL_RTC_DateTypeDef RTC_DateStruct = {0};
+  LL_RTC_AlarmTypeDef RTC_AlarmStruct = {0};
+
+  RCC_PeriphCLKInitTypeDef PeriphClkInit = {0};
+
+  /** Initializes the peripherals clocks
+  */
+  PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_RTC;
+  PeriphClkInit.RTCClockSelection = RCC_RTCCLKSOURCE_LSI;
+  if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+  /* Peripheral clock enable */
+  LL_RCC_EnableRTC();
+  LL_APB1_GRP1_EnableClock(LL_APB1_GRP1_PERIPH_RTC);
+
+  /* RTC interrupt Init */
+  NVIC_SetPriority(RTC_IRQn, 0);
+
+  /* USER CODE BEGIN RTC_Init 1 */
+
+  /* USER CODE END RTC_Init 1 */
+  RTC_InitStruct.HourFormat = LL_RTC_HOURFORMAT_24HOUR;
+  RTC_InitStruct.AsynchPrescaler = 127;
+  RTC_InitStruct.SynchPrescaler = 255;
+  LL_RTC_Init(RTC, &RTC_InitStruct);
+  RTC_TimeStruct.Hours = 0x0;
+  RTC_TimeStruct.Minutes = 0x0;
+  RTC_TimeStruct.Seconds = 0x0;
+
+  LL_RTC_TIME_Init(RTC, LL_RTC_FORMAT_BCD, &RTC_TimeStruct);
+  RTC_DateStruct.WeekDay = LL_RTC_WEEKDAY_MONDAY;
+  RTC_DateStruct.Month = LL_RTC_MONTH_JANUARY;
+  RTC_DateStruct.Day = 0x1;
+  RTC_DateStruct.Year = 0x0;
+
+  LL_RTC_DATE_Init(RTC, LL_RTC_FORMAT_BCD, &RTC_DateStruct);
+
+  /** Enable the Alarm A
+  */
+  RTC_AlarmStruct.AlarmTime.Hours = 0x0;
+  RTC_AlarmStruct.AlarmTime.Minutes = 0x0;
+  RTC_AlarmStruct.AlarmTime.Seconds = 0x0;
+  RTC_AlarmStruct.AlarmMask = LL_RTC_ALMA_MASK_NONE;
+  RTC_AlarmStruct.AlarmDateWeekDaySel = LL_RTC_ALMA_DATEWEEKDAYSEL_DATE;
+  RTC_AlarmStruct.AlarmDateWeekDay = 0x1;
+  LL_RTC_ALMA_Init(RTC, LL_RTC_FORMAT_BCD, &RTC_AlarmStruct);
+  LL_RTC_EnableIT_ALRA(RTC);
+  LL_RTC_DisableAlarmPullUp(RTC);
+
+  /** Enable Calibration
+  */
+  LL_RTC_CAL_SetOutputFreq(RTC, LL_RTC_CALIB_OUTPUT_512HZ);
+  /* USER CODE BEGIN RTC_Init 2 */
+
+  /* USER CODE END RTC_Init 2 */
 
 }
 

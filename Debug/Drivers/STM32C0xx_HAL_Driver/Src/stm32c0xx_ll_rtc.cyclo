@@ -1,0 +1,12 @@
+../Drivers/STM32C0xx_HAL_Driver/Src/stm32c0xx_ll_rtc.c:221:6:LL_RTC_StructInit	1
+../Drivers/STM32C0xx_HAL_Driver/Src/stm32c0xx_ll_rtc.c:323:6:LL_RTC_TIME_StructInit	1
+../Drivers/STM32C0xx_HAL_Driver/Src/stm32c0xx_ll_rtc.c:413:6:LL_RTC_DATE_StructInit	1
+../Drivers/STM32C0xx_HAL_Driver/Src/stm32c0xx_ll_rtc.c:436:13:LL_RTC_ALMA_Init	7
+../Drivers/STM32C0xx_HAL_Driver/Src/stm32c0xx_ll_rtc.c:546:6:LL_RTC_ALMA_StructInit	1
+../Drivers/STM32C0xx_HAL_Driver/Src/stm32c0xx_ll_rtc.c:571:13:LL_RTC_EnterInitMode	6
+../Drivers/STM32C0xx_HAL_Driver/Src/stm32c0xx_ll_rtc.c:182:13:LL_RTC_Init	2
+../Drivers/STM32C0xx_HAL_Driver/Src/stm32c0xx_ll_rtc.c:615:13:LL_RTC_ExitInitMode	1
+../Drivers/STM32C0xx_HAL_Driver/Src/stm32c0xx_ll_rtc.c:642:13:LL_RTC_WaitForSynchro	10
+../Drivers/STM32C0xx_HAL_Driver/Src/stm32c0xx_ll_rtc.c:136:13:LL_RTC_DeInit	2
+../Drivers/STM32C0xx_HAL_Driver/Src/stm32c0xx_ll_rtc.c:241:13:LL_RTC_TIME_Init	7
+../Drivers/STM32C0xx_HAL_Driver/Src/stm32c0xx_ll_rtc.c:344:13:LL_RTC_DATE_Init	6

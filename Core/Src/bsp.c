@@ -42,16 +42,13 @@
 #include "stm32c0xx_ll_tim.h"
 #include "stm32c0xx_ll_adc.h"
 #include "stm32c0xx_ll_spi.h"
+#include "stm32c0xx_ll_rtc.h"
+#include "stm32c0xx_ll_exti.h"
+#include "stm32c0xx_ll_pwr.h"
 #include "accelerometer.h"
 // add other drivers if necessary...
 extern MainApp MainApp_inst;
-//extern TIM_HandleTypeDef  htim14;
-//extern TIM_HandleTypeDef  htim3;
-//extern TIM_HandleTypeDef  htim17;
-//extern ADC_HandleTypeDef hadc1;
-//extern uint32_t dht11_dma_buffer;
-//extern QActive AO_RFButton;
-//extern DMA_HandleTypeDef hdma_tim3_ch1;
+static void RTC_ReadTime(uint8_t *hours, uint8_t *minutes, uint8_t *seconds);
 
 Q_DEFINE_THIS_FILE  // define the name of this file for assertions
 
@@ -64,6 +61,9 @@ Q_DEFINE_THIS_FILE  // define the name of this file for assertions
 
 // Local-scope objects -----------------------------------------------------
 static uint32_t l_rndSeed;
+
+
+
 
 #ifdef Q_SPY
 
@@ -238,6 +238,24 @@ void HAL_GPIO_EXTI_Rising_Callback(uint16_t GPIO_Pin)
 
 		    }
 }
+
+
+void RTC_IRQHandler(void)
+{
+    /* Alarm A event occurred? */
+    if (LL_RTC_IsActiveFlag_ALRA(RTC))
+    {
+        /* Clear the Alarm A flag */
+        LL_RTC_ClearFlag_ALRA(RTC);
+
+        /* Also clear EXTI line 17 flag */
+        LL_EXTI_ClearRisingFlag_0_31(LL_EXTI_LINE_19);
+
+        RTC_setWakeIntervalSeconds(5);
+    }
+}
+
+
 //............................................................................
 
 
@@ -309,6 +327,7 @@ void BSP_init(void) {
 	LL_SPI_Enable(SPI1);
 	init_nrf();
 	init_accelerometer(); //tap/shake detection
+	BSP_RTC_init();
 	//init_accelerometer();
 	//turn on DHT11
 	HAL_GPIO_WritePin(DHT11_RESET_PORT, DHT11_RESET_PIN, GPIO_PIN_SET);
@@ -317,7 +336,90 @@ void BSP_init(void) {
 	// Start input capture with DMA
 	//HAL_TIM_IC_Start_DMA(&htim3, TIM_CHANNEL_1, (uint32_t *)dht11_dma_buffer, DHT11_MAX_EDGES);
 	adc_seed();
+
+
+	//stop mode:
+	RCC->APBENR1 |= RCC_APBENR1_PWREN;
+	PWR->CR1 &= ~PWR_CR1_LPMS;
+	PWR->SCR |= PWR_SCR_CWUF; //clear wake up flag
+
+
 }
+
+void BSP_RTC_init(void)
+{
+
+	/* Enable RTC interrupt in NVIC */
+	NVIC_SetPriority(RTC_IRQn, 3);
+	NVIC_EnableIRQ(RTC_IRQn);
+
+	/* Clear any pending RTC Alarm flags */
+	LL_RTC_ClearFlag_ALRA(RTC);
+	LL_RTC_DisableWriteProtection(RTC);
+
+	/* Enable Alarm A interrupt */
+	LL_RTC_EnableIT_ALRA(RTC);
+
+	/* Set first alarm wake in 20 seconds */
+	RTC_setWakeIntervalSeconds(10);
+
+	LL_RTC_EnableWriteProtection(RTC);
+}
+
+void RTC_setWakeIntervalSeconds(uint32_t seconds)
+{
+    uint8_t hour, min, sec;
+
+    RTC_ReadTime(&hour, &min, &sec);
+
+    /* Add seconds */
+    sec += seconds;
+    if (sec >= 60) {
+        min += sec / 60;
+        sec %= 60;
+    }
+    if (min >= 60) {
+        hour += min / 60;
+        min %= 60;
+    }
+    hour %= 24;
+
+    /* Convert back to BCD */
+    uint32_t tr =
+	((hour / 10) << RTC_TR_HT_Pos) | ((hour % 10) << RTC_TR_HU_Pos) |
+	((min  / 10) << RTC_TR_MNT_Pos) | ((min  % 10) << RTC_TR_MNU_Pos) |
+	((sec  / 10) << RTC_TR_ST_Pos)  | ((sec  % 10) << RTC_TR_SU_Pos);
+
+    /* Program Alarm A */
+    LL_RTC_DisableWriteProtection(RTC);
+
+    LL_RTC_ALMA_Disable(RTC);
+    LL_RTC_WriteReg(RTC, ALRMAR, tr | RTC_ALRMAR_MSK4); // Ignore date
+    LL_RTC_ClearFlag_ALRA(RTC);
+    LL_RTC_ALMA_Enable(RTC);
+
+    LL_RTC_EnableWriteProtection(RTC);
+}
+
+
+
+static void RTC_ReadTime(uint8_t *hours, uint8_t *minutes, uint8_t *seconds)
+{
+    uint32_t tr = LL_RTC_TIME_Get(RTC); // This returns the raw TR register
+
+    uint8_t h1 = (tr >> RTC_TR_HT_Pos) & 0x3;     // tens of hours
+    uint8_t h0 = (tr >> RTC_TR_HU_Pos) & 0xF;     // units of hours
+    uint8_t m1 = (tr >> RTC_TR_MNT_Pos) & 0x7;    // tens of minutes
+    uint8_t m0 = (tr >> RTC_TR_MNU_Pos) & 0xF;    // units of minutes
+    uint8_t s1 = (tr >> RTC_TR_ST_Pos) & 0x7;     // tens of seconds
+    uint8_t s0 = (tr >> RTC_TR_SU_Pos) & 0xF;     // units of seconds
+
+    *hours   = h1 * 10 + h0;
+    *minutes = m1 * 10 + m0;
+    *seconds = s1 * 10 + s0;
+}
+
+
 //............................................................................
 void BSP_start(void)
 {
@@ -409,11 +511,24 @@ void QF_onCleanup(void) {
 
 //............................................................................
 void QK_onIdle(void) {
-    // toggle an LED on and then off (not enough LEDs, see NOTE2)
-    //QF_INT_DISABLE();
-    //GPIOA->BSRR = (1U << LD4_PIN);         // turn LED[n] on
-    //GPIOA->BSRR = (1U << (LD4_PIN + 16U)); // turn LED[n] off
-    //QF_INT_ENABLE();
+	// 1. Enable PWR peripheral
+	RCC->APBENR1 |= RCC_APBENR1_PWREN;
+
+	// 2. Clear previous wakeup flags
+	PWR->SCR |= PWR_SCR_CWUF;
+
+	// 3. Set STOP mode (main regulator)
+	PWR->CR1 &= ~PWR_CR1_LPMS;   // LPMS = 0 => STOP mode, main regulator
+
+	// 4. Allow deep sleep
+	SCB->SCR |= SCB_SCR_SLEEPDEEP_Msk;
+
+	// 5. Enter STOP mode, wait for interrupt
+	__WFI();
+
+    SystemClock_Config();
+
+
 
 #ifdef Q_SPY
     QS_rxParse();  // parse all the received bytes

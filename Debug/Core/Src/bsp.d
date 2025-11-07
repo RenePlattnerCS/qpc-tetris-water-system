@@ -55,6 +55,9 @@ Core/Src/bsp.o: ../Core/Src/bsp.c \
  ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_tim.h \
  ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_adc.h \
  ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_spi.h \
+ ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_rtc.h \
+ ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_exti.h \
+ ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_pwr.h \
  ../Core/Inc/accelerometer.h
 ../Middlewares/Third_Party/QuantumLeaps_RTEF_qpc/include/qpc.h:
 ../Middlewares/Third_Party/QuantumLeaps_RTEF_qpc/ports/arm-cm/qk/gnu/qp_port.h:
@@ -117,4 +120,7 @@ M:/embedded/stm32C0_Nucleus/qpc-tetris-water-system/libraries/NRF24/includes/NRF
 ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_tim.h:
 ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_adc.h:
 ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_spi.h:
+../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_rtc.h:
+../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_exti.h:
+../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_pwr.h:
 ../Core/Inc/accelerometer.h:

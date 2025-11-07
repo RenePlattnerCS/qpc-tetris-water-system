@@ -1,6 +1,6 @@
-Core/Src/stm32c0xx_hal_msp.o: ../Core/Src/stm32c0xx_hal_msp.c \
- ../Core/Inc/main.h ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal.h \
- ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_system.h \
+Drivers/STM32C0xx_HAL_Driver/Src/stm32c0xx_ll_rtc.o: \
+ ../Drivers/STM32C0xx_HAL_Driver/Src/stm32c0xx_ll_rtc.c \
+ ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_rtc.h \
  ../Drivers/CMSIS/Device/ST/STM32C0xx/Include/stm32c0xx.h \
  ../Drivers/CMSIS/Device/ST/STM32C0xx/Include/stm32c031xx.h \
  ../Drivers/CMSIS/Include/core_cm0plus.h \
@@ -9,6 +9,8 @@ Core/Src/stm32c0xx_hal_msp.o: ../Core/Src/stm32c0xx_hal_msp.c \
  ../Drivers/CMSIS/Include/cmsis_gcc.h \
  ../Drivers/CMSIS/Include/mpu_armv7.h \
  ../Drivers/CMSIS/Device/ST/STM32C0xx/Include/system_stm32c0xx.h \
+ ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal.h \
+ ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_system.h \
  ../Core/Inc/stm32c0xx_hal_conf.h \
  ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_rcc.h \
  ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_def.h \
@@ -27,23 +29,8 @@ Core/Src/stm32c0xx_hal_msp.o: ../Core/Src/stm32c0xx_hal_msp.c \
  ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_i2c_ex.h \
  ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_pwr.h \
  ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_pwr_ex.h \
- ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_adc.h \
- ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_rtc.h \
- ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_spi.h \
- ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_tim.h \
- ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_system.h \
- ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_gpio.h \
- ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_exti.h \
- ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_bus.h \
- ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_cortex.h \
- ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_rcc.h \
- ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_utils.h \
- ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_pwr.h \
- ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_dma.h \
- ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_dmamux.h
-../Core/Inc/main.h:
-../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal.h:
-../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_system.h:
+ ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_cortex.h
+../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_rtc.h:
 ../Drivers/CMSIS/Device/ST/STM32C0xx/Include/stm32c0xx.h:
 ../Drivers/CMSIS/Device/ST/STM32C0xx/Include/stm32c031xx.h:
 ../Drivers/CMSIS/Include/core_cm0plus.h:
@@ -52,6 +39,8 @@ Core/Src/stm32c0xx_hal_msp.o: ../Core/Src/stm32c0xx_hal_msp.c \
 ../Drivers/CMSIS/Include/cmsis_gcc.h:
 ../Drivers/CMSIS/Include/mpu_armv7.h:
 ../Drivers/CMSIS/Device/ST/STM32C0xx/Include/system_stm32c0xx.h:
+../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal.h:
+../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_system.h:
 ../Core/Inc/stm32c0xx_hal_conf.h:
 ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_rcc.h:
 ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_def.h:
@@ -70,17 +59,4 @@ Core/Src/stm32c0xx_hal_msp.o: ../Core/Src/stm32c0xx_hal_msp.c \
 ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_i2c_ex.h:
 ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_pwr.h:
 ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_pwr_ex.h:
-../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_adc.h:
-../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_rtc.h:
-../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_spi.h:
-../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_tim.h:
-../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_system.h:
-../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_gpio.h:
-../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_exti.h:
-../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_bus.h:
 ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_cortex.h:
-../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_rcc.h:
-../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_utils.h:
-../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_pwr.h:
-../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_dma.h:
-../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_dmamux.h:

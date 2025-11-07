@@ -13,7 +13,7 @@ void display_temp(uint16_t temp)
 	ssd1306_Fill(Black);
 	char buffer[16];
 	sprintf(buffer, "%u", temp);
-	display_text(buffer, 36, 1 );
+	display_text(buffer, 36, 4 );
 	display_text("C", 66,4 );
 }
 

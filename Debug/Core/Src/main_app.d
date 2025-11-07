@@ -52,6 +52,7 @@ Core/Src/main_app.o: ../Core/Src/main_app.c ../Core/Inc/main_app.h \
  ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_gpio.h \
  ../Core/Inc/main.h \
  ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_adc.h \
+ ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_rtc.h \
  ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_spi.h \
  ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_tim.h \
  ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_system.h \
@@ -123,6 +124,7 @@ M:/embedded/stm32C0_Nucleus/qpc-tetris-water-system/libraries/NRF24/includes/NRF
 ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_gpio.h:
 ../Core/Inc/main.h:
 ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_adc.h:
+../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_rtc.h:
 ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_spi.h:
 ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_tim.h:
 ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_system.h:
