@@ -114,6 +114,7 @@ QState MainApp_left_border(MainApp * const me, QEvt const * const e);
 QState MainApp_btm_border(MainApp * const me, QEvt const * const e);
 QState MainApp_right_border(MainApp * const me, QEvt const * const e);
 QState MainApp_gameover_screen(MainApp * const me, QEvt const * const e);
+QState MainApp_win_sceen(MainApp * const me, QEvt const * const e);
 //$enddecl${AOs::MainApp} ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 //$declare${Shared} vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
@@ -154,6 +155,7 @@ enum MenuGameSignals {
     WATER_PLANT_SIG,
     START_TETRIS_SIG,
     GAMEOVER_TETRIS_SIG,
+    WON_TETRIS_SIG,
     DRAW_OUTLINE_SIG,
     DRAW_OUTLINE_DONE_SIG,
     MAX_SIG
