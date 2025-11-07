@@ -136,7 +136,7 @@ QState Sensor_wait_response(Sensor * const me, QEvt const * const e) {
         case DHT11_RESET_SIG: {
             QTimeEvt_disarm(&me->resetEvt);
 
-            status_ = Q_TRAN(&Sensor_waiting);
+            status_ = Q_TRAN(&Sensor_turn_off);
             break;
         }
         //${AOs::Sensor::SM::wait_response::DHT11_TIMER_IC}
@@ -226,7 +226,7 @@ QState Sensor_start_dht(Sensor * const me, QEvt const * const e) {
             // Pull DHT11 LOW ≥18ms
             DHT11_SetPinOutput();
             HAL_GPIO_WritePin(DHT11_PORT, DHT11_PIN, GPIO_PIN_RESET);
-            QTimeEvt_armX(&me->dht11StartEvt, 2U, 0U); // 27ms
+            QTimeEvt_armX(&me->dht11StartEvt, 2U, 0U); // 20ms
             status_ = Q_HANDLED();
             break;
         }
@@ -236,6 +236,69 @@ QState Sensor_start_dht(Sensor * const me, QEvt const * const e) {
             DHT11_SetPinInput();
             Delay_us(30);  // 20–40 µs wait
             status_ = Q_TRAN(&Sensor_wait_response);
+            break;
+        }
+        default: {
+            status_ = Q_SUPER(&QHsm_top);
+            break;
+        }
+    }
+    return status_;
+}
+
+//${AOs::Sensor::SM::turn_off} ...............................................
+QState Sensor_turn_off(Sensor * const me, QEvt const * const e) {
+    QState status_;
+    switch (e->sig) {
+        //${AOs::Sensor::SM::turn_off}
+        case Q_ENTRY_SIG: {
+            QTimeEvt_disarm(&me->resetEvt);
+            QTimeEvt_armX(&me->resetEvt, DHT11_RESET_TIME, 0U);
+            HAL_GPIO_WritePin(DHT11_RESET_PORT, DHT11_RESET_PIN, GPIO_PIN_RESET);
+            status_ = Q_HANDLED();
+            break;
+        }
+        //${AOs::Sensor::SM::turn_off}
+        case Q_EXIT_SIG: {
+            QTimeEvt_disarm(&me->resetEvt);
+            status_ = Q_HANDLED();
+            break;
+        }
+        //${AOs::Sensor::SM::turn_off::DHT11_RESET}
+        case DHT11_RESET_SIG: {
+            status_ = Q_TRAN(&Sensor_turn_on);
+            break;
+        }
+        default: {
+            status_ = Q_SUPER(&QHsm_top);
+            break;
+        }
+    }
+    return status_;
+}
+
+//${AOs::Sensor::SM::turn_on} ................................................
+QState Sensor_turn_on(Sensor * const me, QEvt const * const e) {
+    QState status_;
+    switch (e->sig) {
+        //${AOs::Sensor::SM::turn_on}
+        case Q_ENTRY_SIG: {
+            QTimeEvt_disarm(&me->resetEvt);
+            QTimeEvt_armX(&me->resetEvt, DHT11_RESET_TIME, 0U);
+            HAL_GPIO_WritePin(DHT11_RESET_PORT, DHT11_RESET_PIN, GPIO_PIN_SET);
+            status_ = Q_HANDLED();
+            break;
+        }
+        //${AOs::Sensor::SM::turn_on}
+        case Q_EXIT_SIG: {
+            QTimeEvt_disarm(&me->resetEvt);
+
+            status_ = Q_HANDLED();
+            break;
+        }
+        //${AOs::Sensor::SM::turn_on::DHT11_RESET}
+        case DHT11_RESET_SIG: {
+            status_ = Q_TRAN(&Sensor_waiting);
             break;
         }
         default: {

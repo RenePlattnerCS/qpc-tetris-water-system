@@ -294,13 +294,13 @@ QTimeEvt_armX(&amp;me-&gt;tempPollEvt,
      <state name="dry_alert">
       <entry>QTimeEvt_armX(&amp;me-&gt;dryTimerEvt, DRY_TIMEOUT , 0U);
 </entry>
-      <exit>QTimeEvt_disarm(&amp;me-&gt;dryTimerEvt);
+      <exit>//QTimeEvt_disarm(&amp;me-&gt;dryTimerEvt);
 QTimeEvt_disarm(&amp;me-&gt;tempPollEvt);
 </exit>
       <!--${AOs::MainApp::SM::display::dry_alert::WATER_PLANT}-->
       <tran trig="WATER_PLANT" target="../../../2">
        <action>QTimeEvt_disarm(&amp;me-&gt;dryTimerEvt);
-QTimeEvt_armX(&amp;me-&gt;dryTimerEvt, 300U , 0U);
+//QTimeEvt_armX(&amp;me-&gt;dryTimerEvt, 300U , 0U);
 
 </action>
        <tran_glyph conn="77,90,2,1,35,-19">
@@ -326,8 +326,7 @@ QTimeEvt_disarm(&amp;me-&gt;dryTimerEvt);
 QTimeEvt_armX(&amp;me-&gt;dryTimerEvt, 300U , 0U);
 
 QTimeEvt_disarm(&amp;me-&gt;tempPollEvt);</entry>
-     <exit brief="OFF">printf(&quot;exit pump\n&quot;);
-HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_RESET);
+     <exit brief="OFF">HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_RESET);
 QTimeEvt_disarm(&amp;me-&gt;dryTimerEvt);
 </exit>
      <!--${AOs::MainApp::SM::pump::BUTTON_RELEASE}-->
@@ -751,10 +750,10 @@ me-&gt;pulse_count = 0;
 memset(me-&gt;bits, 0, sizeof(me-&gt;bits));
 </entry>
      <!--${AOs::Sensor::SM::wait_response::DHT11_RESET}-->
-     <tran trig="DHT11_RESET" target="../../1">
+     <tran trig="DHT11_RESET" target="../../4">
       <action>QTimeEvt_disarm(&amp;me-&gt;resetEvt);
 </action>
-      <tran_glyph conn="100,93,0,2,-31">
+      <tran_glyph conn="100,93,0,2,-6">
        <action box="0,-2,10,2"/>
       </tran_glyph>
      </tran>
@@ -838,7 +837,7 @@ QTimeEvt_armX(&amp;me-&gt;resetEvt, DHT11_RESET_TIME, 0U);
 // Pull DHT11 LOW ≥18ms
 DHT11_SetPinOutput();
 HAL_GPIO_WritePin(DHT11_PORT, DHT11_PIN, GPIO_PIN_RESET);
-QTimeEvt_armX(&amp;me-&gt;dht11StartEvt, 2U, 0U); // 27ms</entry>
+QTimeEvt_armX(&amp;me-&gt;dht11StartEvt, 2U, 0U); // 20ms</entry>
      <!--${AOs::Sensor::SM::start_dht::DHT11_START}-->
      <tran trig="DHT11_START" target="../../2">
       <action>//printf(&quot;3 transition to input \n&quot;);
@@ -850,6 +849,41 @@ Delay_us(30);  // 20–40 µs wait</action>
      </tran>
      <state_glyph node="71,75,11,8">
       <entry box="0,3,6,2"/>
+     </state_glyph>
+    </state>
+    <!--${AOs::Sensor::SM::turn_off}-->
+    <state name="turn_off">
+     <entry>QTimeEvt_disarm(&amp;me-&gt;resetEvt);
+QTimeEvt_armX(&amp;me-&gt;resetEvt, DHT11_RESET_TIME, 0U);
+HAL_GPIO_WritePin(DHT11_RESET_PORT, DHT11_RESET_PIN, GPIO_PIN_RESET);</entry>
+     <exit>QTimeEvt_disarm(&amp;me-&gt;resetEvt);</exit>
+     <!--${AOs::Sensor::SM::turn_off::DHT11_RESET}-->
+     <tran trig="DHT11_RESET" target="../../5">
+      <tran_glyph conn="100,80,0,2,-5">
+       <action box="0,-2,10,2"/>
+      </tran_glyph>
+     </tran>
+     <state_glyph node="95,80,10,7">
+      <entry box="0,3,6,2"/>
+      <exit box="0,5,6,2"/>
+     </state_glyph>
+    </state>
+    <!--${AOs::Sensor::SM::turn_on}-->
+    <state name="turn_on">
+     <entry>QTimeEvt_disarm(&amp;me-&gt;resetEvt);
+QTimeEvt_armX(&amp;me-&gt;resetEvt, DHT11_RESET_TIME, 0U);
+HAL_GPIO_WritePin(DHT11_RESET_PORT, DHT11_RESET_PIN, GPIO_PIN_SET);</entry>
+     <exit>QTimeEvt_disarm(&amp;me-&gt;resetEvt);
+</exit>
+     <!--${AOs::Sensor::SM::turn_on::DHT11_RESET}-->
+     <tran trig="DHT11_RESET" target="../../1">
+      <tran_glyph conn="100,68,0,2,-6">
+       <action box="0,-2,10,2"/>
+      </tran_glyph>
+     </tran>
+     <state_glyph node="95,68,10,7">
+      <entry box="0,3,6,2"/>
+      <exit box="0,5,6,2"/>
      </state_glyph>
     </state>
     <state_diagram size="196,261"/>

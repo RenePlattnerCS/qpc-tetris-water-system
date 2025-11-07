@@ -79,8 +79,8 @@ void Error_Handler(void);
 #define RF_BTN_Pin LL_GPIO_PIN_0
 #define RF_BTN_GPIO_Port GPIOA
 #define RF_BTN_EXTI_IRQn EXTI0_1_IRQn
-#define TEMP_Pin LL_GPIO_PIN_1
-#define TEMP_GPIO_Port GPIOA
+#define DHT11_RESET_Pin LL_GPIO_PIN_1
+#define DHT11_RESET_GPIO_Port GPIOA
 #define VCP_USART2_TX_Pin LL_GPIO_PIN_2
 #define VCP_USART2_TX_GPIO_Port GPIOA
 #define VCP_USART2_RX_Pin LL_GPIO_PIN_3

@@ -594,7 +594,7 @@ static void MX_GPIO_Init(void)
   LL_IOP_GRP1_EnableClock(LL_IOP_GRP1_PERIPH_GPIOB);
 
   /**/
-  LL_GPIO_ResetOutputPin(TEMP_GPIO_Port, TEMP_Pin);
+  LL_GPIO_ResetOutputPin(DHT11_RESET_GPIO_Port, DHT11_RESET_Pin);
 
   /**/
   LL_GPIO_ResetOutputPin(Water_Pump_GPIO_Port, Water_Pump_Pin);
@@ -638,12 +638,12 @@ static void MX_GPIO_Init(void)
   LL_EXTI_SetEXTISource(LL_EXTI_CONFIG_PORTB, LL_EXTI_CONFIG_LINE6);
 
   /**/
-  GPIO_InitStruct.Pin = TEMP_Pin;
+  GPIO_InitStruct.Pin = DHT11_RESET_Pin;
   GPIO_InitStruct.Mode = LL_GPIO_MODE_OUTPUT;
   GPIO_InitStruct.Speed = LL_GPIO_SPEED_FREQ_LOW;
   GPIO_InitStruct.OutputType = LL_GPIO_OUTPUT_PUSHPULL;
   GPIO_InitStruct.Pull = LL_GPIO_PULL_NO;
-  LL_GPIO_Init(TEMP_GPIO_Port, &GPIO_InitStruct);
+  LL_GPIO_Init(DHT11_RESET_GPIO_Port, &GPIO_InitStruct);
 
   /**/
   GPIO_InitStruct.Pin = VCP_USART2_TX_Pin;

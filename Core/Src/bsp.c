@@ -309,7 +309,8 @@ void BSP_init(void) {
 	LL_SPI_Enable(SPI1);
 	init_nrf();
 	init_accelerometer();
-
+	//turn on DHT11
+	HAL_GPIO_WritePin(DHT11_RESET_PORT, DHT11_RESET_PIN, GPIO_PIN_SET);
 	//__HAL_LINKDMA(&htim3, hdma[TIM_DMA_ID_CC1], hdma_tim3_ch1);
 
 	// Start input capture with DMA

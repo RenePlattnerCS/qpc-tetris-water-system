@@ -304,7 +304,7 @@ QState MainApp_dry_alert(MainApp * const me, QEvt const * const e) {
         //${AOs::MainApp::SM::display::dry_alert::WATER_PLANT}
         case WATER_PLANT_SIG: {
             QTimeEvt_disarm(&me->dryTimerEvt);
-            QTimeEvt_armX(&me->dryTimerEvt, 300U , 0U);
+            //QTimeEvt_armX(&me->dryTimerEvt, 300U , 0U);
 
 
             status_ = Q_TRAN(&MainApp_pump);
@@ -336,7 +336,6 @@ QState MainApp_pump(MainApp * const me, QEvt const * const e) {
         }
         //${AOs::MainApp::SM::pump}
         case Q_EXIT_SIG: {
-            printf("exit pump\n");
             HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_RESET);
             QTimeEvt_disarm(&me->dryTimerEvt);
 
