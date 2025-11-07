@@ -6,5 +6,5 @@
 ../Core/Src/tetris_board.c:80:6:move_down	3
 ../Core/Src/tetris_board.c:100:6:rotate_tetromino_collision_check	2
 ../Core/Src/tetris_board.c:148:6:lock_tetromino	1
-../Core/Src/tetris_board.c:155:6:draw_board	13
+../Core/Src/tetris_board.c:155:6:draw_board	14
 ../Core/Src/tetris_board.c:232:7:check_and_clear_lines	7

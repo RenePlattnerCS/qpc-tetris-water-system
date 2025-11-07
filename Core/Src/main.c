@@ -95,7 +95,7 @@ static void MX_TIM3_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-static QEvt const *menuGameQueueSto[15]; // Storage for event queue
+static QEvt const *menuGameQueueSto[30]; // Storage for event queue
 extern MainApp MainApp_inst; // Storage for the AO instance
 
 static QEvt const *sensorQueueSto[16]; // Storage for event queue

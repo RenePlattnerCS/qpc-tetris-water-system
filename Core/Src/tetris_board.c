@@ -187,8 +187,8 @@ void draw_board(Board *me, Tetromino *active)
 				int x = active->x + col;
 				int y = active->y + row;
 
-				if(x >= 0 && x < me->width &&
-				   x >= 0 && y < me->height)
+				if (x >= 0 && x < me->width &&
+				    y >= 0 && y < me->height)
 				{
 					if(me->rotate_90)
 					{
