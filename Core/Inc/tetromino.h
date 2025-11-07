@@ -23,11 +23,13 @@ typedef struct {
     uint16_t speed;     // how many ticks between drops
     uint8_t current_rotation;
     uint8_t moveCounter;
+    uint8_t fallCounter;
 } Tetromino;
 
 
 void Tetromino_ctor(Tetromino *t, TetrominoType type);
 void Tetromino_rotate(Tetromino *me);
+int tetro_top(Tetromino *me);
 
 #endif
 

@@ -121,14 +121,16 @@ void MainApp_spawn_tetromino(MainApp * const me) {
     me->active_tetromino.type = rand;
 
     memcpy(me->active_tetromino.grid4x4, shapes[me->active_tetromino.type ], sizeof(me->active_tetromino.grid4x4));
+    int top = tetro_top(&me->active_tetromino);
     me->active_tetromino.x = (me->board_inst.width / 2) - 2;
-    me->active_tetromino.y = me->board_inst.height - 2;
+    me->active_tetromino.y = me->board_inst.height - 5 - top;
+
 
     bool col = collision_on_spawn(&me->board_inst, &me->active_tetromino);
     if(col)
     {
-        QEvt *e = Q_NEW(QEvt, GAMEOVER_TETRIS_SIG);
-        QACTIVE_POST(AO_Main_App, e, me);
+        //QEvt *e = Q_NEW(QEvt, GAMEOVER_TETRIS_SIG);
+        //QACTIVE_POST(AO_Main_App, e, me);
     }
 }
 
@@ -399,12 +401,13 @@ QState MainApp_game(MainApp * const me, QEvt const * const e) {
     switch (e->sig) {
         //${AOs::MainApp::SM::tetris::game}
         case Q_ENTRY_SIG: {
+            QTimeEvt_disarm(&me->dryTimerEvt);
             QTimeEvt_armX(&me->dryTimerEvt, MainApp_delta_time / 10U , MainApp_delta_time / 10U);
 
-
             Tetromino_ctor(&me->active_tetromino, TETRO_L);
+            int top = tetro_top(&me->active_tetromino);
             me->active_tetromino.x = (me->board_inst.width / 2) - 2;
-            me->active_tetromino.y = me->board_inst.height - 2;
+            me->active_tetromino.y = me->board_inst.height - 5 - top;
 
             draw_board(&me->board_inst, &me->active_tetromino, MainApp_score);
 
@@ -417,11 +420,16 @@ QState MainApp_game(MainApp * const me, QEvt const * const e) {
         }
         //${AOs::MainApp::SM::tetris::game::WATER_PLANT}
         case WATER_PLANT_SIG: {
-            int16_t tilt = read_accelerometer_tilt();
-            process_tilt_move(&me->board_inst, &me->active_tetromino, tilt);
+            bool col = false;
 
 
-            if(! (move_down(&me->board_inst, &me->active_tetromino)) )
+
+            int xtilt = 0;
+            int ytilt = 0;
+            read_accelerometer_tilt(&xtilt, &ytilt);
+            col = process_tilt_move(&me->board_inst, &me->active_tetromino, xtilt, ytilt);
+
+            if( col ||  !(move_down(&me->board_inst, &me->active_tetromino)) )
             {
                 Board_placeTetromino( &me->board_inst, &me->active_tetromino);
                 uint8_t old_score = MainApp_score;
@@ -441,6 +449,11 @@ QState MainApp_game(MainApp * const me, QEvt const * const e) {
                 }
                 MainApp_spawn_tetromino(me);
             }
+
+
+
+
+
 
             draw_board(&me->board_inst, &me->active_tetromino, MainApp_score);
 

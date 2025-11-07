@@ -222,12 +222,37 @@ void nrf24_transmit_rx_ack_pld(uint8_t pipe, uint8_t *data, uint8_t size) {
     csn_high();
 }
 
+
+/*
 void nrf24_receive(uint8_t *data, uint8_t size) {
     uint8_t cmd = R_RX_PAYLOAD;
 
     csn_low();
     LL_SPI_Transmit(SPIX, &cmd, 1);
     LL_SPI_Receive(SPIX, data, size);
+    csn_high();
+
+    nrf24_clear_rx_dr();
+}
+*/
+
+void nrf24_receive(uint8_t *data, uint8_t size) {
+    uint8_t cmd = R_RX_PAYLOAD;
+
+    csn_low();
+
+    // Send command byte
+    LL_SPI_TransmitData8(SPIX, cmd);
+    while (!LL_SPI_IsActiveFlag_RXNE(SPIX));
+    (void)LL_SPI_ReceiveData8(SPIX); // discard returned STATUS byte
+
+    // Read payload bytes
+    for (uint8_t i = 0; i < size; i++) {
+        LL_SPI_TransmitData8(SPIX, 0xFF); // dummy clock
+        while (!LL_SPI_IsActiveFlag_RXNE(SPIX));
+        data[i] = LL_SPI_ReceiveData8(SPIX);
+    }
+
     csn_high();
 
     nrf24_clear_rx_dr();

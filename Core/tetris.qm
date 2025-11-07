@@ -151,14 +151,16 @@ if(rand &gt; 7 )
 me-&gt;active_tetromino.type = rand;
 
 memcpy(me-&gt;active_tetromino.grid4x4, shapes[me-&gt;active_tetromino.type ], sizeof(me-&gt;active_tetromino.grid4x4));
+int top = tetro_top(&amp;me-&gt;active_tetromino);
 me-&gt;active_tetromino.x = (me-&gt;board_inst.width / 2) - 2;
-me-&gt;active_tetromino.y = me-&gt;board_inst.height - 2;
+me-&gt;active_tetromino.y = me-&gt;board_inst.height - 5 - top;
+
 
 bool col = collision_on_spawn(&amp;me-&gt;board_inst, &amp;me-&gt;active_tetromino);
 if(col)
 {
-    QEvt *e = Q_NEW(QEvt, GAMEOVER_TETRIS_SIG);
-    QACTIVE_POST(AO_Main_App, e, me);
+    //QEvt *e = Q_NEW(QEvt, GAMEOVER_TETRIS_SIG);
+    //QACTIVE_POST(AO_Main_App, e, me);
 }</code>
    </operation>
    <!--${AOs::MainApp::tetris_init}-->
@@ -372,12 +374,13 @@ HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_RESET);</action>
      </tran>
      <!--${AOs::MainApp::SM::tetris::game}-->
      <state name="game">
-      <entry>QTimeEvt_armX(&amp;me-&gt;dryTimerEvt, MainApp_delta_time / 10U , MainApp_delta_time / 10U);
-
+      <entry>QTimeEvt_disarm(&amp;me-&gt;dryTimerEvt);
+QTimeEvt_armX(&amp;me-&gt;dryTimerEvt, MainApp_delta_time / 10U , MainApp_delta_time / 10U);
 
 Tetromino_ctor(&amp;me-&gt;active_tetromino, TETRO_L);
+int top = tetro_top(&amp;me-&gt;active_tetromino);
 me-&gt;active_tetromino.x = (me-&gt;board_inst.width / 2) - 2;
-me-&gt;active_tetromino.y = me-&gt;board_inst.height - 2;
+me-&gt;active_tetromino.y = me-&gt;board_inst.height - 5 - top;
 
 draw_board(&amp;me-&gt;board_inst, &amp;me-&gt;active_tetromino, MainApp_score);
 
@@ -387,11 +390,16 @@ accelerometer_init_polling();
 </entry>
       <!--${AOs::MainApp::SM::tetris::game::WATER_PLANT}-->
       <tran trig="WATER_PLANT">
-       <action brief="TICK">int16_t tilt = read_accelerometer_tilt();
-process_tilt_move(&amp;me-&gt;board_inst, &amp;me-&gt;active_tetromino, tilt);
+       <action brief="TICK">bool col = false;
 
 
-if(! (move_down(&amp;me-&gt;board_inst, &amp;me-&gt;active_tetromino)) )
+
+int xtilt = 0;
+int ytilt = 0;
+read_accelerometer_tilt(&amp;xtilt, &amp;ytilt);
+col = process_tilt_move(&amp;me-&gt;board_inst, &amp;me-&gt;active_tetromino, xtilt, ytilt);
+
+if( col ||  !(move_down(&amp;me-&gt;board_inst, &amp;me-&gt;active_tetromino)) )
 {
     Board_placeTetromino( &amp;me-&gt;board_inst, &amp;me-&gt;active_tetromino);
     uint8_t old_score = MainApp_score;
@@ -411,6 +419,11 @@ if(! (move_down(&amp;me-&gt;board_inst, &amp;me-&gt;active_tetromino)) )
     }
     MainApp_spawn_tetromino(me);
 }
+
+
+
+
+
 
 draw_board(&amp;me-&gt;board_inst, &amp;me-&gt;active_tetromino, MainApp_score);
 

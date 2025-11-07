@@ -1,5 +1,5 @@
 
-#include "tetromino.h""
+#include "tetromino.h"
 #include "tetris_shapes.h"
 #include "tetris_board.h"
 #include "app_config.h"
@@ -36,4 +36,15 @@ void Tetromino_rotate(Tetromino *me)
     }
 
     me->current_rotation = (me->current_rotation +1) %4;
+}
+
+int tetro_top(Tetromino *t) {
+    for(int r = 3; r >= 0; r--) {
+        for(int c = 0; c < 4; c++) {
+            if (t->grid4x4[r][c]) {
+                return r;
+            }
+        }
+    }
+    return 0;
 }

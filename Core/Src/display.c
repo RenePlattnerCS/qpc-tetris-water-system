@@ -21,7 +21,7 @@ void display_score(uint16_t score)
 {
 	char buffer[16];
 	sprintf(buffer, "%u", score);
-	display_text(buffer, 100, 4 );
+	//display_text(buffer, 100, 4 );
 }
 void display_win(void)
 {

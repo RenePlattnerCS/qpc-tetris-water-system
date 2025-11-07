@@ -3,7 +3,7 @@
 #include "tetris_board.h"
 
 uint8_t compute_move_delay(int16_t tilt) {
-    tilt = abs(tilt);
+	tilt = abs(tilt);
 
     if (tilt < 3)  return 255;  // no movement (very flat)
     if (tilt < 10) return 12;   // slow
@@ -11,25 +11,53 @@ uint8_t compute_move_delay(int16_t tilt) {
     return 3;                   // fast
 }
 
-void process_tilt_move(Board *board, Tetromino *t, int16_t tilt) {
+uint8_t compute_fall_delay(int16_t ytilt) {
+    ytilt = abs(ytilt);
 
-	if (!board || !t) return;
+    if (ytilt < 25)  return 30;   // no extra gravity
+    if (ytilt < 50) return 17;    // tilt a bit → falls faster
+    if (ytilt < 100) return 8;    // tilt more → much faster
+    return 1;                   // strong tilt → "soft drop"
+}
 
-    int dir = (tilt > 0) - (tilt < 0); // right=1, left=-1, no tilt=0
-    if (dir == 0) {
+bool process_tilt_move(Board *board, Tetromino *t, int16_t xtilt, int16_t ytilt) {
+    ytilt *= -1; // because your axis is reversed
+    if (!board || !t) return false;
+
+    //
+    // --- Horizontal movement ---
+    //
+    int dir = (xtilt > 0) - (xtilt < 0); // +1 right, -1 left, 0 none
+    if (dir != 0) {
+        uint8_t delay = compute_move_delay(xtilt);
+        t->moveCounter++;
+        if (t->moveCounter >= delay) {
+            t->moveCounter = 0;
+            if (!collision_on_move(board, t, dir, 0)) {
+                t->x += dir;
+            }
+        }
+    } else {
+        // reset counter so movement is smooth when tilt starts again
         t->moveCounter = 0;
-        return;
     }
 
-    uint8_t delay = compute_move_delay(tilt);
+    //
+    // --- Vertical movement (fall speed depends on y tilt) ---
+    //
+    uint8_t fallDelay = compute_fall_delay(ytilt);
+    t->fallCounter++;
+    if (t->fallCounter >= fallDelay) {
+        t->fallCounter = 0;
 
-    t->moveCounter++;
-    if (t->moveCounter >= delay) {
-        t->moveCounter = 0;
-
-        // Try move
-        if (!collision_on_move(board, t, dir, 0)) {
-            t->x += dir;
+        // Try to fall
+        if (!collision_on_move(board, t, 0, -1)) {   // -1 = fall down in your coord system
+            t->y--; // move down
+        } else {
+            // Collision: lock and spawn next piece
+            return true;
         }
     }
+
+    return false;
 }

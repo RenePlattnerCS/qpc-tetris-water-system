@@ -22,14 +22,17 @@
 #define ADXL_ACT_INACT_CTL		0x27
 #define ADXL_DATA_START_ADDR 	0x32
 #define ADXL_INT_ENABLE			0x2E
-#define ADXL_INT_MAP				0x2F
-#define ADXL_INT_SOURCE 			0x30
+#define ADXL_INT_MAP			0x2F
+#define ADXL_INT_SOURCE 		0x30
 #define TAP_DUR					0x21
 #define INT_TAP_ENABLE			0x40
+
+#define REG_THRESH_SHAKE		 0x1D
+
 
 void init_accelerometer(void);
 void accelerometer_init_polling(void);
 void read_accelerometer(int16_t *x, int16_t *y, int16_t *z);
-uint16_t read_accelerometer_tilt();
+void read_accelerometer_tilt(int * xtilt, int * ytilt);
 
 #endif /* INC_ACCELEROMETER_H_ */
