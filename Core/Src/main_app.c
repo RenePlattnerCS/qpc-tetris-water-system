@@ -435,7 +435,7 @@ QState MainApp_game(MainApp * const me, QEvt const * const e) {
         }
         //${AOs::MainApp::SM::tetris::game::BUTTON_RELEASE}
         case BUTTON_RELEASE_SIG: {
-            Tetromino_rotate(&me->active_tetromino);
+            rotate_tetromino_collision_check(&me->board_inst,&me->active_tetromino);
             status_ = Q_HANDLED();
             break;
         }

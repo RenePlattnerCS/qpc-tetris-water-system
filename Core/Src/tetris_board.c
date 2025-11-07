@@ -2,6 +2,7 @@
 #include "display.h"
 #include "tetris_board.h"
 #include "app_config.h"
+#include <string.h>
 
 static void Board_draw_outline(const Board *me);
 static void clear_screen(Board *me);
@@ -92,6 +93,23 @@ bool move_down(Board *me, Tetromino *active)
 
 	}
 
+}
+
+void rotate_tetromino_collision_check(Board * me, Tetromino* t) {
+    // Save current rotation
+	uint8_t old_rotation = t->current_rotation;
+	uint8_t old_grid4x4[4][4];
+	memcpy(old_grid4x4, t->grid4x4, sizeof(old_grid4x4));
+
+    // Try new rotation
+    Tetromino_rotate(t);
+
+    // Check collision
+    if (collision_on_move(me,t, 0, 0)) {
+        // Revert if collision detected
+    	t->current_rotation = old_rotation;
+    	memcpy(t->grid4x4, old_grid4x4, sizeof(t->grid4x4));
+    }
 }
 
 

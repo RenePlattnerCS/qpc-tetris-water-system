@@ -390,7 +390,7 @@ draw_board(&amp;me-&gt;board_inst, &amp;me-&gt;active_tetromino);
       </tran>
       <!--${AOs::MainApp::SM::tetris::game::BUTTON_RELEASE}-->
       <tran trig="BUTTON_RELEASE">
-       <action>Tetromino_rotate(&amp;me-&gt;active_tetromino);</action>
+       <action>rotate_tetromino_collision_check(&amp;me-&gt;board_inst,&amp;me-&gt;active_tetromino);</action>
        <tran_glyph conn="276,48,1,-1,-19">
         <action box="0,-2,10,2"/>
        </tran_glyph>

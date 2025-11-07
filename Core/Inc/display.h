@@ -15,6 +15,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include "tetris_board.h"
+void rotate_tetromino_collision_check(Board * me, Tetromino* t);
 
 typedef struct {
     int x0, y0, x1, y1, dx, dy, sx, sy, err;
