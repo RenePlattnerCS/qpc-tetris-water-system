@@ -191,7 +191,7 @@ QState MainApp_display(MainApp * const me, QEvt const * const e) {
             }
 
 
-            switch(me->currentState)
+            switch(currentState)
             {
                 case TEMPERATURE:
                 display_temp(me->currentTemp);
@@ -235,14 +235,14 @@ QState MainApp_display(MainApp * const me, QEvt const * const e) {
         //${AOs::MainApp::SM::display::BUTTON_RELEASE}
         case BUTTON_RELEASE_SIG: {
             QTimeEvt_disarm(&me->longPressEvt);
-            if(me->currentState == TEMPERATURE)
+            if(currentState == TEMPERATURE)
             {
-                me->currentState = DRYNESS;
+                currentState = DRYNESS;
                 display_dry(me->currentDryness);
             }
             else
             {
-                me->currentState = TEMPERATURE;
+                currentState = TEMPERATURE;
                 display_temp(me->currentTemp);
             }
             status_ = Q_HANDLED();
@@ -252,6 +252,8 @@ QState MainApp_display(MainApp * const me, QEvt const * const e) {
         case START_TETRIS_SIG: {
             QTimeEvt_disarm(&me->tempPollEvt);
             QTimeEvt_disarm(&me->longPressEvt);
+
+            currentState = TETRIS;
             status_ = Q_TRAN(&MainApp_tetris);
             break;
         }
@@ -384,6 +386,7 @@ QState MainApp_tetris(MainApp * const me, QEvt const * const e) {
         }
         //${AOs::MainApp::SM::tetris::WATER_PLANT}
         case WATER_PLANT_SIG: {
+            currentState = TEMPERATURE;
             status_ = Q_TRAN(&MainApp_display);
             break;
         }
@@ -822,6 +825,9 @@ void RFButton_ctor(RFButton * const me) {
     QActive_ctor(&me->super, Q_STATE_CAST(&RFButton_initial));
 
 }
+
+//${Shared::currentState} ....................................................
+display_states currentState = TEMPERATURE;
 //$enddef${Shared} ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 

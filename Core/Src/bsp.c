@@ -511,22 +511,26 @@ void QF_onCleanup(void) {
 
 //............................................................................
 void QK_onIdle(void) {
-	// 1. Enable PWR peripheral
-	RCC->APBENR1 |= RCC_APBENR1_PWREN;
+	if(currentState != TETRIS)
+	{
+		// 1. Enable PWR peripheral
+		RCC->APBENR1 |= RCC_APBENR1_PWREN;
 
-	// 2. Clear previous wakeup flags
-	PWR->SCR |= PWR_SCR_CWUF;
+		// 2. Clear previous wakeup flags
+		PWR->SCR |= PWR_SCR_CWUF;
 
-	// 3. Set STOP mode (main regulator)
-	PWR->CR1 &= ~PWR_CR1_LPMS;   // LPMS = 0 => STOP mode, main regulator
+		// 3. Set STOP mode (main regulator)
+		PWR->CR1 &= ~PWR_CR1_LPMS;   // LPMS = 0 => STOP mode, main regulator
 
-	// 4. Allow deep sleep
-	SCB->SCR |= SCB_SCR_SLEEPDEEP_Msk;
+		// 4. Allow deep sleep
+		SCB->SCR |= SCB_SCR_SLEEPDEEP_Msk;
 
-	// 5. Enter STOP mode, wait for interrupt
-	__WFI();
+		// 5. Enter STOP mode, wait for interrupt
+		__WFI();
 
-    SystemClock_Config();
+		SystemClock_Config();
+	}
+
 
 
 

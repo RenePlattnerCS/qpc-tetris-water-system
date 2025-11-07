@@ -20,4 +20,4 @@
 ../Core/Src/bsp.c:479:6:BSP_terminate	1
 ../Core/Src/bsp.c:485:6:QF_onStartup	2
 ../Core/Src/bsp.c:509:6:QF_onCleanup	1
-../Core/Src/bsp.c:513:6:QK_onIdle	1
+../Core/Src/bsp.c:513:6:QK_onIdle	2

@@ -48,6 +48,10 @@ me-&gt;dma_index = 0;
    <code>QActive_ctor(&amp;me-&gt;super, Q_STATE_CAST(&amp;RFButton_initial));
 </code>
   </operation>
+  <!--${Shared::currentState}-->
+  <attribute name="currentState" type="display_states" visibility="0x00" properties="0x00">
+   <code>= TEMPERATURE;</code>
+  </attribute>
  </package>
  <!--${AOs}-->
  <package name="AOs" stereotype="0x02">
@@ -61,10 +65,6 @@ me-&gt;dma_index = 0;
    <attribute name="currentTemp" type="uint8_t" visibility="0x02" properties="0x00"/>
    <!--${AOs::MainApp::currentDryness}-->
    <attribute name="currentDryness" type="uint16_t" visibility="0x02" properties="0x00"/>
-   <!--${AOs::MainApp::currentState}-->
-   <attribute name="currentState" type="display_states" visibility="0x02" properties="0x00">
-    <code>curr_state = &quot;t&quot;;</code>
-   </attribute>
    <!--${AOs::MainApp::longPressEvt}-->
    <attribute name="longPressEvt" type="QTimeEvt" visibility="0x00" properties="0x00"/>
    <!--${AOs::MainApp::dryTimerEvt}-->
@@ -210,7 +210,7 @@ if (p &gt; PLANT_DRY_THREASHOLD)
 }
 
 
-switch(me-&gt;currentState)
+switch(currentState)
 {
     case TEMPERATURE:
     display_temp(me-&gt;currentTemp);
@@ -258,14 +258,14 @@ QTimeEvt_armX(&amp;me-&gt;longPressEvt, LONG_PRESS_TIME_MS / 10, 0U);
      <!--${AOs::MainApp::SM::display::BUTTON_RELEASE}-->
      <tran trig="BUTTON_RELEASE">
       <action brief="short press">QTimeEvt_disarm(&amp;me-&gt;longPressEvt);
-if(me-&gt;currentState == TEMPERATURE)
+if(currentState == TEMPERATURE)
 {
-    me-&gt;currentState = DRYNESS;
+    currentState = DRYNESS;
     display_dry(me-&gt;currentDryness);
 }
 else
 {
-    me-&gt;currentState = TEMPERATURE;
+    currentState = TEMPERATURE;
     display_temp(me-&gt;currentTemp);
 }</action>
       <tran_glyph conn="106,68,1,-1,-23">
@@ -275,7 +275,9 @@ else
      <!--${AOs::MainApp::SM::display::START_TETRIS}-->
      <tran trig="START_TETRIS" target="../../3">
       <action>QTimeEvt_disarm(&amp;me-&gt;tempPollEvt);
-QTimeEvt_disarm(&amp;me-&gt;longPressEvt);</action>
+QTimeEvt_disarm(&amp;me-&gt;longPressEvt);
+
+currentState = TETRIS;</action>
       <tran_glyph conn="106,45,1,3,23">
        <action box="0,-2,10,2"/>
       </tran_glyph>
@@ -368,6 +370,7 @@ HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_RESET);</action>
      </initial>
      <!--${AOs::MainApp::SM::tetris::WATER_PLANT}-->
      <tran trig="WATER_PLANT" target="../../1">
+      <action>currentState = TEMPERATURE;</action>
       <tran_glyph conn="129,26,3,1,-23">
        <action box="-17,-2,10,2"/>
       </tran_glyph>
@@ -974,7 +977,8 @@ HAL_GPIO_WritePin(DHT11_RESET_PORT, DHT11_RESET_PIN, GPIO_PIN_SET);</entry>
 //keep track of substates
 typedef enum {
     TEMPERATURE,
-    DRYNESS
+    DRYNESS,
+    TETRIS,
 } display_states;
 
 $declare${AOs::MainApp}

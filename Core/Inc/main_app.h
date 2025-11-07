@@ -50,7 +50,8 @@
 //keep track of substates
 typedef enum {
     TEMPERATURE,
-    DRYNESS
+    DRYNESS,
+    TETRIS,
 } display_states;
 
 //$declare${AOs::MainApp} vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
@@ -68,7 +69,6 @@ typedef struct MainApp {
 // private:
     uint8_t currentTemp;
     uint16_t currentDryness;
-    display_states currentState;
 
 // public:
     QTimeEvt longPressEvt;
@@ -137,6 +137,9 @@ extern QActive * const AO_RFButton;
 
 //${Shared::RFButton_ctor} ...................................................
 void RFButton_ctor(RFButton * const me);
+
+//${Shared::currentState} ....................................................
+extern display_states currentState;
 //$enddecl${Shared} ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 // Signals
 enum MenuGameSignals {
