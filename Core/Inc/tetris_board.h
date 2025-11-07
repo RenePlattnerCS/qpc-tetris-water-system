@@ -28,5 +28,6 @@ void clear_board();
 void Board_init(Board *me);
 bool collision_on_move(Board *me, const Tetromino *t, int dx, int dy);
 bool move_down(Board *me, Tetromino *active);
+void check_and_clear_lines(Board * me);
 
 #endif /* INC_TETRIS_BOARD_H_ */

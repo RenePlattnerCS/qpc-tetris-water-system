@@ -106,7 +106,8 @@ void MainApp_init_line_state(
 
 //${AOs::MainApp::spawn_tetromino} ...........................................
 void MainApp_spawn_tetromino(MainApp * const me) {
-    me->active_tetromino.type = BSP_random(7);
+    //me->active_tetromino.type = BSP_random(7);
+    me->active_tetromino.type = 0;
     memcpy(me->active_tetromino.grid4x4, shapes[me->active_tetromino.type ], sizeof(me->active_tetromino.grid4x4));
     me->active_tetromino.x = 4;
     me->active_tetromino.y = 19;
@@ -423,6 +424,7 @@ QState MainApp_game(MainApp * const me, QEvt const * const e) {
             if(! (move_down(&me->board_inst, &me->active_tetromino)) )
             {
                 Board_placeTetromino( &me->board_inst, &me->active_tetromino);
+                check_and_clear_lines(&me->board_inst);
                 MainApp_spawn_tetromino(me);
             }
 

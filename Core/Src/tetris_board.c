@@ -6,6 +6,8 @@
 
 static void Board_draw_outline(const Board *me);
 static void clear_screen(Board *me);
+static void clear_line(Board * me, int line_to_clear);
+static bool is_line_full(Board * me, int row);
 
 void Board_ctor(Board *me, uint8_t *grid,
                 uint8_t width, uint8_t height, uint8_t pos_x , uint8_t pos_y, bool rotate_90, uint8_t blockSize)
@@ -200,3 +202,40 @@ void draw_board(Board *me, Tetromino *active)
 	}
 	ssd1306_UpdateScreen();
 }
+
+
+// Check if a row is full (all cells occupied)
+static bool is_line_full(Board * me, int row) {
+    for (int col = 0; col < me->width; col++) {
+        if (me->grid[row * me->width + col] == 0) {
+            return false;
+        }
+    }
+    return true;
+}
+
+static void clear_line(Board *me, int line_to_clear) {
+    // Shift all rows ABOVE the cleared line DOWN by one
+    for (int row = line_to_clear; row < me->height - 1; row++) {
+        for (int col = 0; col < me->width; col++) {
+            me->grid[row * me->width + col] = me->grid[(row + 1) * me->width + col];
+        }
+    }
+
+    // Clear the TOP row (highest row number)
+    for (int col = 0; col < me->width; col++) {
+        me->grid[(me->height - 1) * me->width + col] = 0;
+    }
+}
+
+// Check all lines and clear completed ones
+ void check_and_clear_lines(Board * me) {
+	 for (int row = 0; row < me->height; row++) {
+	     if (is_line_full(me, row)) {
+	         clear_line(me, row);
+	         //lines_cleared++;
+	         row--;
+	     }
+	 }
+}
+

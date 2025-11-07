@@ -134,7 +134,8 @@ ls-&gt;done = false;
    </operation>
    <!--${AOs::MainApp::spawn_tetromino}-->
    <operation name="spawn_tetromino" type="void" visibility="0x02" properties="0x00">
-    <code>me-&gt;active_tetromino.type = BSP_random(7);
+    <code>//me-&gt;active_tetromino.type = BSP_random(7);
+me-&gt;active_tetromino.type = 0;
 memcpy(me-&gt;active_tetromino.grid4x4, shapes[me-&gt;active_tetromino.type ], sizeof(me-&gt;active_tetromino.grid4x4));
 me-&gt;active_tetromino.x = 4;
 me-&gt;active_tetromino.y = 19;
@@ -377,6 +378,7 @@ process_tilt_move(&amp;me-&gt;board_inst, &amp;me-&gt;active_tetromino, tilt);
 if(! (move_down(&amp;me-&gt;board_inst, &amp;me-&gt;active_tetromino)) )
 {
     Board_placeTetromino( &amp;me-&gt;board_inst, &amp;me-&gt;active_tetromino);
+    check_and_clear_lines(&amp;me-&gt;board_inst);
     MainApp_spawn_tetromino(me);
 }
 
