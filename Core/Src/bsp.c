@@ -48,6 +48,8 @@
 #include "accelerometer.h"
 // add other drivers if necessary...
 extern MainApp MainApp_inst;
+extern  volatile bool allowDeepSleep ;
+
 static void RTC_ReadTime(uint8_t *hours, uint8_t *minutes, uint8_t *seconds);
 
 Q_DEFINE_THIS_FILE  // define the name of this file for assertions
@@ -249,7 +251,10 @@ void RTC_IRQHandler(void)
         /* Also clear EXTI line 17 flag */
         LL_EXTI_ClearRisingFlag_0_31(LL_EXTI_LINE_19);
 
-        RTC_setWakeIntervalSeconds(5);
+        RTC_setWakeIntervalSeconds(20);
+
+        static QEvt const pollSensorEvt = QEVT_INITIALIZER(POLL_SENSOR_SIG);
+		QACTIVE_POST(AO_Main_App, &pollSensorEvt, (void*)0);
     }
 }
 
@@ -292,9 +297,7 @@ void QF_onContextSw(QActive *prev, QActive *next) {
 // BSP functions...
 
 void BSP_init(void) {
-    // Initialize LEDs, buttons, UART, etc.
-    //HAL_Init();
-    SystemClock_Config();  // configure system clock
+    //SystemClock_Config();  // configure system clock
     HAL_SYSTICK_Config(HAL_RCC_GetHCLKFreq() / 1000U);
 
 	// start TIM17/14
@@ -343,6 +346,17 @@ void BSP_init(void) {
 	PWR->SCR |= PWR_SCR_CWUF; //clear wake up flag
 
 
+
+	HAL_NVIC_SetPriority(SysTick_IRQn, 0, 0);
+
+}
+
+void BSP_reset_systick()
+{
+	// 3. Set SysTick priority
+	SysTick->CTRL &= ~SysTick_CTRL_ENABLE_Msk;
+	SystemClock_Config();
+	SysTick->CTRL |= SysTick_CTRL_ENABLE_Msk;
 }
 
 void BSP_RTC_init2(void)
@@ -576,37 +590,52 @@ void QF_onCleanup(void) {
 //............................................................................
 //............................................................................
 //............................................................................
+static bool systick_10ms_too_long_workaround = false;
 void QK_onIdle(void) {
 
-
-	if(currentState != TETRIS)
-	{
-		// Disable SysTick before entering Stop mode
-		SysTick->CTRL &= ~SysTick_CTRL_ENABLE_Msk;
-		// Clear wakeup flags BEFORE configuring stop mode
+	if(currentState != TETRIS && allowDeepSleep)
+	    {
 		LL_GPIO_SetOutputPin(GPIOA, GPIO_PIN_15);
+		// Disable SysTick
+		SysTick->CTRL &= ~SysTick_CTRL_ENABLE_Msk;
+
 		PWR->SCR |= PWR_SCR_CWUF;
-
-		// Set STOP mode (main regulator)
-		PWR->CR1 &= ~PWR_CR1_LPMS_Msk;  // Clear all LPMS bits = STOP mode
-
-		// Enable deep sleep
+		PWR->CR1 &= ~PWR_CR1_LPMS_Msk;
 		SCB->SCR |= SCB_SCR_SLEEPDEEP_Msk;
 
-		// Enter STOP mode - wait for RTC alarm interrupt
-		__WFI();
+		__WFI();  // Deep sleep - only RTC alarm wakes
 
-		// === MCU wakes here when RTC alarm fires ===
-		LL_GPIO_ResetOutputPin(GPIOA, GPIO_PIN_15);
-		// Reconfigure system clock (HSE stopped in STOP mode)
+		// === Woke from RTC alarm ===
 		SystemClock_Config();
-		BSP_delayMs(20);
-		// Note: Remove the delay here - it defeats the power saving!
-		// The RTC alarm will wake up every 10 seconds as configured
+		SysTick->CTRL |= SysTick_CTRL_ENABLE_Msk;
+		LL_GPIO_ResetOutputPin(GPIOA, GPIO_PIN_15);
+		// Don't allow deep sleep during sensor sequence
+		allowDeepSleep = false;
+
+
+
+
+	}
+	else
+	{
+		// Shallow sleep - normal WFI (wakes on SysTick)
+		//__WFI();
+		if(!systick_10ms_too_long_workaround)
+		{
+			 BSP_reset_systick();
+			 systick_10ms_too_long_workaround = true;
+		}
 	}
 
 
-
+	//............................................................................
+	//............................................................................
+	//............................................................................
+	//............................................................................
+	//............................................................................
+	//............................................................................
+	//............................................................................
+	//............................................................................
 
 #ifdef Q_SPY
     QS_rxParse();  // parse all the received bytes

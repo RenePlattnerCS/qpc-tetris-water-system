@@ -143,6 +143,7 @@ void MainApp_tetris_init(void) {
 //${AOs::MainApp::SM} ........................................................
 QState MainApp_initial(MainApp * const me, void const * const par) {
     //${AOs::MainApp::SM::initial}
+    allowDeepSleep = false;
     return Q_TRAN(&MainApp_display);
 }
 
@@ -158,7 +159,6 @@ QState MainApp_display(MainApp * const me, QEvt const * const e) {
         }
         //${AOs::MainApp::SM::display}
         case Q_EXIT_SIG: {
-            QTimeEvt_disarm(&me->tempPollEvt);
             QTimeEvt_disarm(&me->longPressEvt);
             status_ = Q_HANDLED();
             break;
@@ -212,6 +212,7 @@ QState MainApp_display(MainApp * const me, QEvt const * const e) {
         }
         //${AOs::MainApp::SM::display::POLL_SENSOR}
         case POLL_SENSOR_SIG: {
+            allowDeepSleep = false;
             static QEvt const ADC_Start_Evt = {START_SENSOR_SIG, 0U, 0U};
             QACTIVE_POST(AO_Sensor,&ADC_Start_Evt, me);
 
@@ -221,6 +222,7 @@ QState MainApp_display(MainApp * const me, QEvt const * const e) {
         }
         //${AOs::MainApp::SM::display::BUTTON_PRESS}
         case BUTTON_PRESS_SIG: {
+            allowDeepSleep = false;
             QTimeEvt_disarm(&me->longPressEvt);
             QTimeEvt_armX(&me->longPressEvt, LONG_PRESS_TIME_MS / 10, 0U);
 
@@ -229,6 +231,7 @@ QState MainApp_display(MainApp * const me, QEvt const * const e) {
         }
         //${AOs::MainApp::SM::display::BUTTON_LONG}
         case BUTTON_LONG_SIG: {
+            allowDeepSleep = false;
             status_ = Q_TRAN(&MainApp_pump);
             break;
         }
@@ -245,12 +248,13 @@ QState MainApp_display(MainApp * const me, QEvt const * const e) {
                 currentState = TEMPERATURE;
                 display_temp(me->currentTemp);
             }
+
+            allowDeepSleep = true;
             status_ = Q_HANDLED();
             break;
         }
         //${AOs::MainApp::SM::display::START_TETRIS}
         case START_TETRIS_SIG: {
-            QTimeEvt_disarm(&me->tempPollEvt);
             QTimeEvt_disarm(&me->longPressEvt);
 
             currentState = TETRIS;
@@ -272,10 +276,9 @@ QState MainApp_display_stats(MainApp * const me, QEvt const * const e) {
         //${AOs::MainApp::SM::display::display_stats}
         case Q_ENTRY_SIG: {
             display_temp(me->currentTemp);
-            QTimeEvt_disarm(&me->tempPollEvt);
-            QTimeEvt_armX(&me->tempPollEvt,
-                          200U,    // Fire after 10 seconds
-                          2000U);   // Then repeat every 10 seconds
+            //static QEvt const pollSensorEvt = QEVT_INITIALIZER(POLL_SENSOR_SIG);
+            //QACTIVE_POST(AO_YourActiveObject, &pollSensorEvt, (void*)0);
+
 
             init_accelerometer(); //tap/shake detection
 
@@ -301,6 +304,7 @@ QState MainApp_dry_alert(MainApp * const me, QEvt const * const e) {
     switch (e->sig) {
         //${AOs::MainApp::SM::display::dry_alert}
         case Q_ENTRY_SIG: {
+            allowDeepSleep = false;
             QTimeEvt_armX(&me->dryTimerEvt, DRY_TIMEOUT , 0U);
 
             status_ = Q_HANDLED();
@@ -310,7 +314,6 @@ QState MainApp_dry_alert(MainApp * const me, QEvt const * const e) {
         case Q_EXIT_SIG: {
             //QTimeEvt_disarm(&me->dryTimerEvt);
             QTimeEvt_disarm(&me->tempPollEvt);
-
             status_ = Q_HANDLED();
             break;
         }
@@ -337,13 +340,14 @@ QState MainApp_pump(MainApp * const me, QEvt const * const e) {
     switch (e->sig) {
         //${AOs::MainApp::SM::pump}
         case Q_ENTRY_SIG: {
+            allowDeepSleep = false;
+
             QTimeEvt_disarm(&me->longPressEvt);
             HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_SET);
 
             QTimeEvt_disarm(&me->dryTimerEvt);
-            QTimeEvt_armX(&me->dryTimerEvt, 300U , 0U);
+            QTimeEvt_armX(&me->dryTimerEvt, 3000U , 0U);
 
-            QTimeEvt_disarm(&me->tempPollEvt);
             status_ = Q_HANDLED();
             break;
         }
@@ -357,6 +361,7 @@ QState MainApp_pump(MainApp * const me, QEvt const * const e) {
         }
         //${AOs::MainApp::SM::pump::BUTTON_RELEASE}
         case BUTTON_RELEASE_SIG: {
+            allowDeepSleep = true;
             status_ = Q_TRAN(&MainApp_display_stats);
             break;
         }
@@ -364,6 +369,9 @@ QState MainApp_pump(MainApp * const me, QEvt const * const e) {
         case WATER_PLANT_SIG: {
             QTimeEvt_disarm(&me->dryTimerEvt);
             HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_RESET);
+            allowDeepSleep = true;
+
+
             status_ = Q_TRAN(&MainApp_display);
             break;
         }
@@ -828,6 +836,9 @@ void RFButton_ctor(RFButton * const me) {
 
 //${Shared::currentState} ....................................................
 display_states currentState = TEMPERATURE;
+
+//${Shared::allowDeepSleep } .................................................
+ volatile bool allowDeepSleep  = false;
 //$enddef${Shared} ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 

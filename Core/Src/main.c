@@ -151,6 +151,7 @@ int main(void)
   /* USER CODE BEGIN 2 */
   QF_init();       // initialize the framework and the underlying RT kernel
   BSP_init();      // initialize the BSP
+
   /* USER CODE END 2 */
 
   /* Infinite loop */

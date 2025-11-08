@@ -105,6 +105,8 @@ QState Sensor_waiting(Sensor * const me, QEvt const * const e) {
         }
         //${AOs::Sensor::SM::waiting::START_SENSOR}
         case START_SENSOR_SIG: {
+            allowDeepSleep = false;
+
             status_ = Q_TRAN(&Sensor_start_dht);
             break;
         }
@@ -171,13 +173,13 @@ QState Sensor_wait_response(Sensor * const me, QEvt const * const e) {
                         if (me->byte_index >= 5) {
                             // Verify checksum
                             uint8_t checksum = me->bits[0] + me->bits[1] + me->bits[2] + me->bits[3];
-                            printf("5 sending data");
                             if (checksum == me->bits[4]) {
                                 uint16_t dryness_val = Sensor_get_adc_dryness();
 
                                 SensorEvent *evt = Q_NEW(SensorEvent, SENSOR_DONE_SIG);
                                 evt->dryness = dryness_val;
                                 evt->temperature = me->bits[2];
+                                allowDeepSleep = true;
 
                                 QACTIVE_POST(AO_Main_App, &evt->super, NULL);
                                 status_ = Q_TRAN(&Sensor_waiting);
@@ -226,7 +228,7 @@ QState Sensor_start_dht(Sensor * const me, QEvt const * const e) {
             // Pull DHT11 LOW ≥18ms
             DHT11_SetPinOutput();
             HAL_GPIO_WritePin(DHT11_PORT, DHT11_PIN, GPIO_PIN_RESET);
-            QTimeEvt_armX(&me->dht11StartEvt, 2U, 0U); // 20ms
+            QTimeEvt_armX(&me->dht11StartEvt, 20U, 0U); // 20ms
             status_ = Q_HANDLED();
             break;
         }

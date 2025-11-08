@@ -140,6 +140,9 @@ void RFButton_ctor(RFButton * const me);
 
 //${Shared::currentState} ....................................................
 extern display_states currentState;
+
+//${Shared::allowDeepSleep } .................................................
+extern  volatile bool allowDeepSleep ;
 //$enddecl${Shared} ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 // Signals
 enum MenuGameSignals {
