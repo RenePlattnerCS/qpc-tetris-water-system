@@ -741,7 +741,7 @@ QState MainApp_gameover_screen(MainApp * const me, QEvt const * const e) {
     switch (e->sig) {
         //${AOs::MainApp::SM::tetris::gameover_screen}
         case Q_ENTRY_SIG: {
-            display_tetris_gameover();
+            //display_tetris_gameover();
             QTimeEvt_disarm(&me->dryTimerEvt);
             QTimeEvt_armX(&me->dryTimerEvt, 400U , 0U);
             status_ = Q_HANDLED();

@@ -8,4 +8,3 @@
 ../Core/Src/display.c:63:6:draw_pixel	8	static
 ../Core/Src/display.c:69:6:draw_line_step	24	static
 ../Core/Src/display.c:100:6:display_dry	32	static
-../Core/Src/display.c:210:6:display_tetris_gameover	16	static

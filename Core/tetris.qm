@@ -661,7 +661,7 @@ QACTIVE_POST(AO_Main_App, &amp;e, me);
      </state>
      <!--${AOs::MainApp::SM::tetris::gameover_screen}-->
      <state name="gameover_screen">
-      <entry>display_tetris_gameover();
+      <entry>//display_tetris_gameover();
 QTimeEvt_disarm(&amp;me-&gt;dryTimerEvt);
 QTimeEvt_armX(&amp;me-&gt;dryTimerEvt, 400U , 0U);</entry>
       <exit>QTimeEvt_disarm(&amp;me-&gt;dryTimerEvt);</exit>

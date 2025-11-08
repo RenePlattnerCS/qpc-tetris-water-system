@@ -42,12 +42,12 @@
 #include "stm32c0xx_ll_tim.h"
 #include "stm32c0xx_ll_adc.h"
 #include "stm32c0xx_ll_spi.h"
-#include "stm32c0xx_ll_rtc.h"
-#include "stm32c0xx_ll_exti.h"
+
 #include "stm32c0xx_ll_pwr.h"
 #include "accelerometer.h"
 // add other drivers if necessary...
 extern MainApp MainApp_inst;
+extern RTC_HandleTypeDef hrtc;
 static void RTC_ReadTime(uint8_t *hours, uint8_t *minutes, uint8_t *seconds);
 
 Q_DEFINE_THIS_FILE  // define the name of this file for assertions
@@ -240,18 +240,53 @@ void HAL_GPIO_EXTI_Rising_Callback(uint16_t GPIO_Pin)
 
 void RTC_IRQHandler(void)
 {
-    /* Alarm A event occurred? */
-    if (LL_RTC_IsActiveFlag_ALRA(RTC))
-    {
-        /* Clear the Alarm A flag */
-        LL_RTC_ClearFlag_ALRA(RTC);
+    QK_ISR_ENTRY();
 
-        /* Also clear EXTI line 17 flag */
-        LL_EXTI_ClearRisingFlag_0_31(LL_EXTI_LINE_19);
+    HAL_RTC_AlarmIRQHandler(&hrtc);
 
-        RTC_setWakeIntervalSeconds(5);
-    }
+    QK_ISR_EXIT();
 }
+
+void HAL_RTC_AlarmAEventCallback(RTC_HandleTypeDef *hrtc)
+{
+    RTC_AlarmTypeDef sAlarm = {0};
+    RTC_TimeTypeDef sTime = {0};
+    RTC_DateTypeDef sDate = {0};  // Add this
+
+    /* Get current time AND date */
+    HAL_RTC_GetTime(hrtc, &sTime, RTC_FORMAT_BIN);
+    HAL_RTC_GetDate(hrtc, &sDate, RTC_FORMAT_BIN);  // Required after GetTime!
+
+    /* Calculate next alarm time (+10 seconds) */
+    uint8_t sec = sTime.Seconds + 10;
+    uint8_t min = sTime.Minutes;
+    uint8_t hour = sTime.Hours;
+
+    if (sec >= 60) {
+        min += sec / 60;
+        sec %= 60;
+    }
+    if (min >= 60) {
+        hour += min / 60;
+        min %= 60;
+    }
+    hour %= 24;
+
+    /* Configure next alarm - ALL fields must be set */
+    sAlarm.AlarmTime.Hours = hour;
+    sAlarm.AlarmTime.Minutes = min;
+    sAlarm.AlarmTime.Seconds = sec;
+    sAlarm.AlarmTime.SubSeconds = 0;
+    sAlarm.AlarmTime.TimeFormat = RTC_HOURFORMAT12_AM;
+    sAlarm.AlarmMask = RTC_ALARMMASK_DATEWEEKDAY;  // Only mask date
+    sAlarm.AlarmSubSecondMask = RTC_ALARMSUBSECONDMASK_ALL;
+    sAlarm.AlarmDateWeekDaySel = RTC_ALARMDATEWEEKDAYSEL_DATE;
+    sAlarm.AlarmDateWeekDay = 1;
+    sAlarm.Alarm = RTC_ALARM_A;
+
+    HAL_RTC_SetAlarm_IT(hrtc, &sAlarm, RTC_FORMAT_BIN);
+}
+
 
 
 //............................................................................
@@ -325,8 +360,6 @@ void BSP_init(void) {
 	LL_SPI_Enable(SPI1);
 	init_nrf();
 	init_accelerometer(); //tap/shake detection
-	RTC_ClockConfig();
-	BSP_RTC_init();
 	//init_accelerometer();
 	//turn on DHT11
 	HAL_GPIO_WritePin(DHT11_RESET_PORT, DHT11_RESET_PIN, GPIO_PIN_SET);
@@ -337,135 +370,21 @@ void BSP_init(void) {
 	adc_seed();
 
 
-	//stop mode:
-	RCC->APBENR1 |= RCC_APBENR1_PWREN;
-	PWR->CR1 &= ~PWR_CR1_LPMS;
-	PWR->SCR |= PWR_SCR_CWUF; //clear wake up flag
+	// RTC initialization
+	    __HAL_RCC_PWR_CLK_ENABLE();  // Enable PWR clock first
+	    RTC_ClockConfig();            // Configure RTC clock source
+	    BSP_RTC_init();               // Initialize RTC alarm (ONLY ONCE!)
 
-
-}
-
-void BSP_RTC_init2(void)
-{
-    LL_RTC_AlarmTypeDef AlarmA = {0};
-
-    /* Enable RTC interrupt in NVIC */
-    NVIC_SetPriority(RTC_IRQn, 3);
-    NVIC_EnableIRQ(RTC_IRQn);
-
-    /* Clear any pending RTC Alarm flags */
-    LL_RTC_ClearFlag_ALRA(RTC);
-
-    /* Disable write protection to configure the RTC alarm */
-    LL_RTC_DisableWriteProtection(RTC);
-
-    /* Configure Alarm A to fire every 20 seconds */
-    AlarmA.AlarmTime.Hours   = 0;
-    AlarmA.AlarmTime.Minutes = 0;
-    AlarmA.AlarmTime.Seconds = 0;
-    AlarmA.AlarmMask = LL_RTC_ALMA_MASK_HOURS | LL_RTC_ALMA_MASK_MINUTES;
-    AlarmA.AlarmDateWeekDaySel = LL_RTC_ALMA_DATEWEEKDAYSEL_DATE;
-    AlarmA.AlarmDateWeekDay = 1;
-
-    /* Initialize Alarm A hardware */
-    LL_RTC_ALMA_Init(RTC, LL_RTC_FORMAT_BCD, &AlarmA);
-
-    /* ===== ADD THESE EXTI LINES ===== */
-    /* Configure EXTI Line 19 for RTC Alarm */
-    LL_EXTI_EnableIT_0_31(LL_EXTI_LINE_19);
-    LL_EXTI_EnableRisingTrig_0_31(LL_EXTI_LINE_19);
-    /* ================================ */
-
-    /* Enable Alarm A interrupt */
-    LL_RTC_EnableIT_ALRA(RTC);
-
-    /* Enable Alarm A */
-    LL_RTC_ALMA_Enable(RTC);  // <- Also make sure this is called!
-
-    /* Re-enable write protection */
-    LL_RTC_EnableWriteProtection(RTC);
-}
-
-void BSP_RTC_init(void)
-{
-    NVIC_SetPriority(RTC_IRQn, 3);
-    NVIC_EnableIRQ(RTC_IRQn);
-
-    LL_RTC_ClearFlag_ALRA(RTC);
-    LL_RTC_DisableWriteProtection(RTC);
-
-    /* ===== ADD EXTI CONFIGURATION ===== */
-    LL_EXTI_EnableIT_0_31(LL_EXTI_LINE_19);
-    LL_EXTI_EnableRisingTrig_0_31(LL_EXTI_LINE_19);
-    /* ================================== */
-
-    LL_RTC_EnableIT_ALRA(RTC);
-
-    RTC_setWakeIntervalSeconds(10);
-
-    LL_RTC_EnableWriteProtection(RTC);
-}
-
-void RTC_setWakeIntervalSeconds(uint32_t seconds)
-{
-    uint8_t hour, min, sec;
-
-    RTC_ReadTime(&hour, &min, &sec);
-
-    /* Add seconds */
-    sec += seconds;
-    if (sec >= 60) {
-        min += sec / 60;
-        sec %= 60;
-    }
-    if (min >= 60) {
-        hour += min / 60;
-        min %= 60;
-    }
-    hour %= 24;
-
-    /* Convert back to BCD */
-    uint32_t tr =
-	((hour / 10) << RTC_TR_HT_Pos) | ((hour % 10) << RTC_TR_HU_Pos) |
-	((min  / 10) << RTC_TR_MNT_Pos) | ((min  % 10) << RTC_TR_MNU_Pos) |
-	((sec  / 10) << RTC_TR_ST_Pos)  | ((sec  % 10) << RTC_TR_SU_Pos);
-
-    /* Program Alarm A */
-    LL_RTC_DisableWriteProtection(RTC);
-
-    LL_RTC_ALMA_Disable(RTC);
-    LL_RTC_WriteReg(RTC, ALRMAR, tr | RTC_ALRMAR_MSK4); // Ignore date
-    LL_RTC_ClearFlag_ALRA(RTC);
-    LL_RTC_ALMA_Enable(RTC);
-
-    LL_RTC_EnableWriteProtection(RTC);
-}
-
-
-
-static void RTC_ReadTime(uint8_t *hours, uint8_t *minutes, uint8_t *seconds)
-{
-    uint32_t tr = LL_RTC_TIME_Get(RTC); // This returns the raw TR register
-
-    uint8_t h1 = (tr >> RTC_TR_HT_Pos) & 0x3;     // tens of hours
-    uint8_t h0 = (tr >> RTC_TR_HU_Pos) & 0xF;     // units of hours
-    uint8_t m1 = (tr >> RTC_TR_MNT_Pos) & 0x7;    // tens of minutes
-    uint8_t m0 = (tr >> RTC_TR_MNU_Pos) & 0xF;    // units of minutes
-    uint8_t s1 = (tr >> RTC_TR_ST_Pos) & 0x7;     // tens of seconds
-    uint8_t s0 = (tr >> RTC_TR_SU_Pos) & 0xF;     // units of seconds
-
-    *hours   = h1 * 10 + h0;
-    *minutes = m1 * 10 + m0;
-    *seconds = s1 * 10 + s0;
 }
 
 void RTC_ClockConfig(void)
 {
     RCC_PeriphCLKInitTypeDef PeriphClkInit = {0};
 
-    /* Enable PWR clock and backup domain access */
+    /* Enable PWR clock */
     __HAL_RCC_PWR_CLK_ENABLE();
-    //HAL_PWR_EnableBkUpAccess();
+
+    /* STM32C0 doesn't have backup domain write protection - no DBP bit needed */
 
     /* Configure LSI as RTC clock source */
     PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_RTC;
@@ -479,6 +398,38 @@ void RTC_ClockConfig(void)
     /* Enable RTC Clock */
     __HAL_RCC_RTC_ENABLE();
 }
+
+void BSP_RTC_init(void)
+{
+    RTC_AlarmTypeDef sAlarm = {0};
+
+    /* Configure the Alarm A */
+    sAlarm.AlarmTime.Hours = 0;
+    sAlarm.AlarmTime.Minutes = 0;
+    sAlarm.AlarmTime.Seconds = 10;  // First alarm in 10 seconds
+    sAlarm.AlarmTime.SubSeconds = 0;
+    sAlarm.AlarmTime.TimeFormat = RTC_HOURFORMAT12_AM;
+    sAlarm.AlarmMask = RTC_ALARMMASK_DATEWEEKDAY | RTC_ALARMMASK_HOURS | RTC_ALARMMASK_MINUTES;
+    sAlarm.AlarmSubSecondMask = RTC_ALARMSUBSECONDMASK_ALL;
+    sAlarm.AlarmDateWeekDaySel = RTC_ALARMDATEWEEKDAYSEL_DATE;
+    sAlarm.AlarmDateWeekDay = 1;
+    sAlarm.Alarm = RTC_ALARM_A;
+
+    if (HAL_RTC_SetAlarm_IT(&hrtc, &sAlarm, RTC_FORMAT_BIN) != HAL_OK)
+    {
+        Error_Handler();
+    }
+
+    /* Configure EXTI Line 19 for RTC Alarm - STM32C0 simplified version */
+    __HAL_RTC_ALARM_EXTI_ENABLE_IT();
+
+    /* Set RTC interrupt priority */
+    HAL_NVIC_SetPriority(RTC_IRQn, QF_AWARE_ISR_CMSIS_PRI + 1U, 0);
+    HAL_NVIC_EnableIRQ(RTC_IRQn);
+}
+
+
+
 //............................................................................
 void BSP_start(void)
 {
@@ -577,30 +528,6 @@ void QF_onCleanup(void) {
 //............................................................................
 //............................................................................
 void QK_onIdle(void) {
-if(currentState != TETRIS)
-	{
-		// Clear wakeup flags BEFORE configuring stop mode
-		LL_GPIO_SetOutputPin(GPIOA, GPIO_PIN_15);
-		PWR->SCR |= PWR_SCR_CWUF;
-
-		// Set STOP mode (main regulator)
-		PWR->CR1 &= ~PWR_CR1_LPMS_Msk;  // Clear all LPMS bits = STOP mode
-
-		// Enable deep sleep
-		SCB->SCR |= SCB_SCR_SLEEPDEEP_Msk;
-
-		// Enter STOP mode - wait for RTC alarm interrupt
-		__WFI();
-
-		// === MCU wakes here when RTC alarm fires ===
-		LL_GPIO_ResetOutputPin(GPIOA, GPIO_PIN_15);
-		// Reconfigure system clock (HSE stopped in STOP mode)
-		SystemClock_Config();
-		BSP_delayMs(20);
-		// Note: Remove the delay here - it defeats the power saving!
-		// The RTC alarm will wake up every 10 seconds as configured
-	}
-
 
 
 
