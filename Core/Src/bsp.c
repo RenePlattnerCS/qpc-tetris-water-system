@@ -577,8 +577,12 @@ void QF_onCleanup(void) {
 //............................................................................
 //............................................................................
 void QK_onIdle(void) {
-if(currentState != TETRIS)
+
+
+	if(currentState != TETRIS)
 	{
+		// Disable SysTick before entering Stop mode
+		SysTick->CTRL &= ~SysTick_CTRL_ENABLE_Msk;
 		// Clear wakeup flags BEFORE configuring stop mode
 		LL_GPIO_SetOutputPin(GPIOA, GPIO_PIN_15);
 		PWR->SCR |= PWR_SCR_CWUF;
