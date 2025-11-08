@@ -54,6 +54,11 @@ extern MainApp MainApp_inst;
 extern  volatile bool allowDeepSleep ;
 
 static void RTC_ReadTime(uint8_t *hours, uint8_t *minutes, uint8_t *seconds);
+static void TIM3_input_capture_init(void);
+static void BSP_RTC_init(void);
+static void RTC_setWakeInterval(uint32_t hours , uint32_t minutes, uint32_t seconds);
+static void RTC_setWakeIntervalSeconds(uint32_t seconds);
+static void RTC_ClockConfig(void);
 
 Q_DEFINE_THIS_FILE  // define the name of this file for assertions
 
@@ -183,7 +188,6 @@ void TIM3_IRQHandler(void)
 
 		timestamps[pulseCount] = capture;
 		pulseCount++;
-		//pulseCount %= TIMESTAMP_SIZE;
 
 		if (pulseCount >= TIMESTAMP_SIZE) {
 		    static QEvt const dht11CompleteEvt = QEVT_INITIALIZER(DHT11_TIMER_IC_SIG);
@@ -217,7 +221,6 @@ void HAL_GPIO_EXTI_Rising_Callback(uint16_t GPIO_Pin)
 {
 		 if (GPIO_Pin == GPIO_PIN_6) {
 		        uint8_t src;
-		        //HAL_I2C_Mem_Read(&hi2c1, ADXL_ADDR, ADXL_INT_SOURCE, 1, &src, 1, HAL_MAX_DELAY);
 		        HAL_I2C_Mem_Read(&hi2c1, ADXL_ADDR, 0x30, 1, &src, 1, HAL_MAX_DELAY);
 
 		        if (src & 0x10) { // Bit 4 = Activity interrupt
@@ -226,7 +229,6 @@ void HAL_GPIO_EXTI_Rising_Callback(uint16_t GPIO_Pin)
 				if(src & 0x40) // SINGLE_TAP bit
 				{
 					// Tap detected
-					// Example: toggle an LED
 					static QEvt const dht11CompleteEvt = QEVT_INITIALIZER(START_TETRIS_SIG);
 					QACTIVE_POST(AO_Main_App, &dht11CompleteEvt, 0U);
 				}
@@ -246,7 +248,7 @@ void RTC_IRQHandler(void)
         /* Clear the Alarm A flag */
         LL_RTC_ClearFlag_ALRA(RTC);
 
-        /* Also clear EXTI line 17 flag */
+        /* clear EXTI line 17 flag */
         LL_EXTI_ClearRisingFlag_0_31(LL_EXTI_LINE_19);
 
         RTC_setWakeInterval(3 , 0 , 0);
@@ -298,7 +300,36 @@ void BSP_init(void) {
 	(void)Q_this_module_; // ignore
 
     HAL_SYSTICK_Config(HAL_RCC_GetHCLKFreq() / 1000U);
+    TIM3_input_capture_init();
 
+
+	//ADC
+	LL_ADC_Enable(ADC1);
+
+	ssd1306_Init();
+	LL_SPI_Enable(SPI1);
+	init_nrf();
+	init_accelerometer(); //tap/shake detection
+	RTC_ClockConfig();
+	BSP_RTC_init();
+
+	//turn on DHT11
+	HAL_GPIO_WritePin(DHT11_RESET_PORT, DHT11_RESET_PIN, GPIO_PIN_SET);
+
+	adc_seed(); // for bsp rand
+
+
+	//stop mode:
+	RCC->APBENR1 |= RCC_APBENR1_PWREN;
+	PWR->CR1 &= ~PWR_CR1_LPMS;
+	PWR->SCR |= PWR_SCR_CWUF; //clear wake up flag
+	HAL_NVIC_SetPriority(SysTick_IRQn, 0, 0);
+
+}
+
+
+static void TIM3_input_capture_init(void)
+{
 	// start TIM17/14
 	LL_TIM_EnableCounter(TIM17);
 	LL_TIM_EnableCounter(TIM14);
@@ -319,38 +350,9 @@ void BSP_init(void) {
 	LL_TIM_CC_EnableChannel(TIM3, LL_TIM_CHANNEL_CH1);
 	LL_TIM_EnableCounter(TIM3);          // counter enabled
 	LL_TIM_EnableIT_CC1(TIM3);           // interrupt enabled
-
-	//ADC
-	LL_ADC_Enable(ADC1);
-
-	ssd1306_Init();
-	LL_SPI_Enable(SPI1);
-	init_nrf();
-	init_accelerometer(); //tap/shake detection
-	RTC_ClockConfig();
-	BSP_RTC_init();
-	//init_accelerometer();
-	//turn on DHT11
-	HAL_GPIO_WritePin(DHT11_RESET_PORT, DHT11_RESET_PIN, GPIO_PIN_SET);
-	//__HAL_LINKDMA(&htim3, hdma[TIM_DMA_ID_CC1], hdma_tim3_ch1);
-
-	// Start input capture with DMA
-	//HAL_TIM_IC_Start_DMA(&htim3, TIM_CHANNEL_1, (uint32_t *)dht11_dma_buffer, DHT11_MAX_EDGES);
-	adc_seed();
-
-
-	//stop mode:
-	RCC->APBENR1 |= RCC_APBENR1_PWREN;
-	PWR->CR1 &= ~PWR_CR1_LPMS;
-	PWR->SCR |= PWR_SCR_CWUF; //clear wake up flag
-
-
-
-	HAL_NVIC_SetPriority(SysTick_IRQn, 0, 0);
-
 }
 
-void BSP_reset_systick()
+void BSP_reset_systick(void)
 {
 	// 3. Set SysTick priority
 	SysTick->CTRL &= ~SysTick_CTRL_ENABLE_Msk;
@@ -358,51 +360,11 @@ void BSP_reset_systick()
 	SysTick->CTRL |= SysTick_CTRL_ENABLE_Msk;
 }
 
-void BSP_RTC_init2(void)
+
+static void BSP_RTC_init(void)
 {
-    LL_RTC_AlarmTypeDef AlarmA = {0};
-
-    /* Enable RTC interrupt in NVIC */
-    NVIC_SetPriority(RTC_IRQn, 3);
-    NVIC_EnableIRQ(RTC_IRQn);
-
-    /* Clear any pending RTC Alarm flags */
-    LL_RTC_ClearFlag_ALRA(RTC);
-
-    /* Disable write protection to configure the RTC alarm */
-    LL_RTC_DisableWriteProtection(RTC);
-
-    /* Configure Alarm A to fire every 20 seconds */
-    AlarmA.AlarmTime.Hours   = 0;
-    AlarmA.AlarmTime.Minutes = 0;
-    AlarmA.AlarmTime.Seconds = 0;
-    AlarmA.AlarmMask = LL_RTC_ALMA_MASK_HOURS | LL_RTC_ALMA_MASK_MINUTES;
-    AlarmA.AlarmDateWeekDaySel = LL_RTC_ALMA_DATEWEEKDAYSEL_DATE;
-    AlarmA.AlarmDateWeekDay = 1;
-
-    /* Initialize Alarm A hardware */
-    LL_RTC_ALMA_Init(RTC, LL_RTC_FORMAT_BCD, &AlarmA);
-
-    /* ===== ADD THESE EXTI LINES ===== */
-    /* Configure EXTI Line 19 for RTC Alarm */
-    LL_EXTI_EnableIT_0_31(LL_EXTI_LINE_19);
-    LL_EXTI_EnableRisingTrig_0_31(LL_EXTI_LINE_19);
-    /* ================================ */
-
-    /* Enable Alarm A interrupt */
-    LL_RTC_EnableIT_ALRA(RTC);
-
-    /* Enable Alarm A */
-    LL_RTC_ALMA_Enable(RTC);  // <- Also make sure this is called!
-
-    /* Re-enable write protection */
-    LL_RTC_EnableWriteProtection(RTC);
-}
-
-void BSP_RTC_init(void)
-{
-    NVIC_SetPriority(RTC_IRQn, 3);
-    NVIC_EnableIRQ(RTC_IRQn);
+	NVIC_SetPriority(RTC_IRQn, QF_AWARE_ISR_CMSIS_PRI + 0U);
+	NVIC_EnableIRQ(RTC_IRQn);
 
     LL_RTC_ClearFlag_ALRA(RTC);
     LL_RTC_DisableWriteProtection(RTC);
@@ -419,7 +381,7 @@ void BSP_RTC_init(void)
     LL_RTC_EnableWriteProtection(RTC);
 }
 
-void RTC_setWakeInterval(uint32_t hours , uint32_t minutes, uint32_t seconds)
+static void RTC_setWakeInterval(uint32_t hours , uint32_t minutes, uint32_t seconds)
 {
     uint8_t hour, min, sec;
     RTC_ReadTime(&hour, &min, &sec);
@@ -503,7 +465,7 @@ void RTC_setWakeInterval(uint32_t hours , uint32_t minutes, uint32_t seconds)
 }
 
 
-void RTC_setWakeIntervalSeconds(uint32_t seconds)
+static void RTC_setWakeIntervalSeconds(uint32_t seconds)
 {
     uint8_t hour, min, sec;
 
@@ -557,13 +519,12 @@ static void RTC_ReadTime(uint8_t *hours, uint8_t *minutes, uint8_t *seconds)
     *seconds = s1 * 10 + s0;
 }
 
-void RTC_ClockConfig(void)
+static void RTC_ClockConfig(void)
 {
     RCC_PeriphCLKInitTypeDef PeriphClkInit = {0};
 
     /* Enable PWR clock and backup domain access */
     __HAL_RCC_PWR_CLK_ENABLE();
-    //HAL_PWR_EnableBkUpAccess();
 
     /* Configure LSI as RTC clock source */
     PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_RTC;
@@ -580,12 +541,6 @@ void RTC_ClockConfig(void)
 //............................................................................
 void BSP_start(void)
 {
-    // Optional: initialize LEDs or other board indicators
-    // BSP_ledInit();
-
-    // Optional: initialize QSPY (if using tracing)
-    // QS_initBuf(qsBuf, sizeof(qsBuf));
-
     // Enter the QP event loop
     (void)QF_run();  // never returns
 }
@@ -652,9 +607,8 @@ void QF_onStartup(void) {
     NVIC_SetPriority(EXTI0_1_IRQn,   QF_AWARE_ISR_CMSIS_PRI + 0U);
     NVIC_SetPriority(EXTI4_15_IRQn,   QF_AWARE_ISR_CMSIS_PRI + 2U);
     NVIC_SetPriority(SysTick_IRQn,   QF_AWARE_ISR_CMSIS_PRI + 3U);
-    // ...
 
-    // enable IRQs...
+    //enable
     NVIC_EnableIRQ(EXTI0_1_IRQn);
     NVIC_EnableIRQ(EXTI4_15_IRQn);
 
@@ -667,14 +621,7 @@ void QF_onCleanup(void) {
 }
 
 //............................................................................
-//............................................................................
-//............................................................................
-//............................................................................
-//............................................................................
-//............................................................................
-//............................................................................
-//............................................................................
-static bool systick_10ms_too_long_workaround = false;
+
 void QK_onIdle(void) {
 
 	if(currentState != TETRIS && allowDeepSleep)
@@ -697,30 +644,13 @@ void QK_onIdle(void) {
 		allowDeepSleep = false;
 		LL_GPIO_ResetOutputPin(GPIOA, GPIO_PIN_15);
 
-
-
-
 	}
 	else
 	{
-		// Shallow sleep - normal WFI (wakes on SysTick)
-		//__WFI();
-		if(!systick_10ms_too_long_workaround)
-		{
-			 BSP_reset_systick();
-			 systick_10ms_too_long_workaround = true;
-		}
+
 	}
 
 
-	//............................................................................
-	//............................................................................
-	//............................................................................
-	//............................................................................
-	//............................................................................
-	//............................................................................
-	//............................................................................
-	//............................................................................
 
 #ifdef Q_SPY
     QS_rxParse();  // parse all the received bytes

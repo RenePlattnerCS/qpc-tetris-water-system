@@ -416,7 +416,7 @@ QState MainApp_game(MainApp * const me, QEvt const * const e) {
             Tetromino_ctor(&me->active_tetromino, TETRO_L);
             int top = tetro_top(&me->active_tetromino);
             me->active_tetromino.x = (me->board_inst.width / 2) - 2;
-            me->active_tetromino.y = me->board_inst.height - 1 - top;
+            me->active_tetromino.y = me->board_inst.height - 2 - top;
 
             draw_board(&me->board_inst, &me->active_tetromino, MainApp_score);
 
@@ -431,8 +431,6 @@ QState MainApp_game(MainApp * const me, QEvt const * const e) {
         case WATER_PLANT_SIG: {
             bool col = false;
 
-
-
             int xtilt = 0;
             int ytilt = 0;
             read_accelerometer_tilt(&xtilt, &ytilt);
@@ -441,16 +439,17 @@ QState MainApp_game(MainApp * const me, QEvt const * const e) {
             if( col ||  !(move_down(&me->board_inst, &me->active_tetromino)) )
             {
                 Board_placeTetromino( &me->board_inst, &me->active_tetromino);
+                me->active_tetromino.speed -= 1;
+                if(me->active_tetromino.speed < 10)
+                {
+                    me->active_tetromino.speed = 10;
+                }
+
                 uint8_t old_score = MainApp_score;
                 MainApp_score += check_and_clear_lines(&me->board_inst);
                 if(old_score != MainApp_score)
                 {
-                    me->active_tetromino.speed -= 2;
-                    if(me->active_tetromino.speed < 10)
-                    {
-                        me->active_tetromino.speed = 10;
-                    }
-                    if(MainApp_score >= 4)
+                    if(MainApp_score >= 1)
                     {
                         QEvt *e = Q_NEW(QEvt, WON_TETRIS_SIG);
                         QACTIVE_POST(AO_Main_App, e, me);
@@ -458,10 +457,6 @@ QState MainApp_game(MainApp * const me, QEvt const * const e) {
                 }
                 MainApp_spawn_tetromino(me);
             }
-
-
-
-
 
 
             draw_board(&me->board_inst, &me->active_tetromino, MainApp_score);

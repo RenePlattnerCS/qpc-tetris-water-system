@@ -11,42 +11,42 @@ static int compute_tiltX(int32_t rawX, int32_t rawZ);
 void init_accelerometer(void) //tap detection
 {
 	//clear the interrupt
-		uint8_t int_source;
-		HAL_I2C_Mem_Read(&hi2c1, ADXL_ADDR, 0x30, 1, &int_source, 1, HAL_MAX_DELAY);
+	uint8_t int_source;
+	HAL_I2C_Mem_Read(&hi2c1, ADXL_ADDR, 0x30, 1, &int_source, 1, HAL_MAX_DELAY);
 
-	    uint8_t data;
+	uint8_t data;
 
-	    // Full resolution ±2g
-	    data = 0x08;
-	    HAL_I2C_Mem_Write(&hi2c1, ADXL_ADDR, 0x31, 1, &data, 1, HAL_MAX_DELAY);
+	// Full resolution ±2g
+	data = 0x08;
+	HAL_I2C_Mem_Write(&hi2c1, ADXL_ADDR, 0x31, 1, &data, 1, HAL_MAX_DELAY);
 
-	    //Tap threshold (adjust)
-	    data = 0xc8;
-	    HAL_I2C_Mem_Write(&hi2c1, ADXL_ADDR, REG_THRESH_SHAKE , 1, &data, 1, HAL_MAX_DELAY);
+	//Tap threshold (adjust)
+	data = 0xc8;
+	HAL_I2C_Mem_Write(&hi2c1, ADXL_ADDR, REG_THRESH_SHAKE , 1, &data, 1, HAL_MAX_DELAY);
 
-	     //Tap duration
-	    data = 0x90;
-	    HAL_I2C_Mem_Write(&hi2c1, ADXL_ADDR, 0x21, 1, &data, 1, HAL_MAX_DELAY);
+	 //Tap duration
+	data = 0x90;
+	HAL_I2C_Mem_Write(&hi2c1, ADXL_ADDR, 0x21, 1, &data, 1, HAL_MAX_DELAY);
 
-	    // Enable tap on XYZ
-	    data = 0x07;
-	    HAL_I2C_Mem_Write(&hi2c1, ADXL_ADDR, 0x2A, 1, &data, 1, HAL_MAX_DELAY);
+	// Enable tap on XYZ
+	data = 0x07;
+	HAL_I2C_Mem_Write(&hi2c1, ADXL_ADDR, 0x2A, 1, &data, 1, HAL_MAX_DELAY);
 
-	    // Route single-tap interrupt to INT1
-	    data = 0x00;
-	    HAL_I2C_Mem_Write(&hi2c1, ADXL_ADDR, 0x2F, 1, &data, 1, HAL_MAX_DELAY);
+	// Route single-tap interrupt to INT1
+	data = 0x00;
+	HAL_I2C_Mem_Write(&hi2c1, ADXL_ADDR, 0x2F, 1, &data, 1, HAL_MAX_DELAY);
 
-	    // Enable single tap interrupt
-	    data = 0x40;
-	    HAL_I2C_Mem_Write(&hi2c1, ADXL_ADDR, 0x2E, 1, &data, 1, HAL_MAX_DELAY);
+	// Enable single tap interrupt
+	data = 0x40;
+	HAL_I2C_Mem_Write(&hi2c1, ADXL_ADDR, 0x2E, 1, &data, 1, HAL_MAX_DELAY);
 
-	    // Measurement mode
-	    data = 0x08;
-	    HAL_I2C_Mem_Write(&hi2c1, ADXL_ADDR, 0x2D, 1, &data, 1, HAL_MAX_DELAY);
+	// Measurement mode
+	data = 0x08;
+	HAL_I2C_Mem_Write(&hi2c1, ADXL_ADDR, 0x2D, 1, &data, 1, HAL_MAX_DELAY);
 
-	    // NOW clear the interrupt
+	// clear the interrupt
 
-		HAL_I2C_Mem_Read(&hi2c1, ADXL_ADDR, 0x30, 1, &int_source, 1, HAL_MAX_DELAY);
+	HAL_I2C_Mem_Read(&hi2c1, ADXL_ADDR, 0x30, 1, &int_source, 1, HAL_MAX_DELAY);
 }
 void accelerometer_init_polling(void)
 {
@@ -86,15 +86,10 @@ void read_accelerometer_tilt(int * xtilt, int * ytilt)
 
 
 	//g force conversion
-	//float x_g = rawX * 0.0039f;
-	//float y_g = rawY * 0.0039f;
-	//float z_g = rawZ * 0.0039f;
-	int x_mg = (rawX * 1000) / 256;  // or simply * 39 if you prefer smaller numbers
+	int x_mg = (rawX * 1000) / 256;
 	int y_mg = (rawY * 1000) / 256;
 	int z_mg = (rawZ * 1000) / 256;
 
-	//float tiltX = atan2f(-x_g, z_g) * 180.0f / 3.14159f; // tilt left/right
-	//float tiltY = atan2f(-y_g, z_g) * 180.0f / 3.14159f; // tilt forward/back
 
 	*xtilt = compute_tiltX(x_mg, z_mg);
 	*ytilt = compute_tiltX(y_mg, z_mg);

@@ -91,7 +91,7 @@ bool move_down(Board *me, Tetromino *active)
 
 
 	}
-	return false;
+	return true;
 }
 
 void rotate_tetromino_collision_check(Board * me, Tetromino* t) {
