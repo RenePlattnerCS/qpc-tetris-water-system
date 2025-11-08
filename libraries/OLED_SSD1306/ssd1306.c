@@ -2,6 +2,7 @@
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>  // For memcpy
+#include "bsp.h"
 
 #if defined(SSD1306_USE_I2C)
 
@@ -75,7 +76,6 @@ void ssd1306_Init(void) {
     ssd1306_Reset();
 
     // Wait for the screen to boot
-    //HAL_Delay(100);
     BSP_delayMs(100);
     // Init OLED
     ssd1306_SetDisplayOn(0); //display off

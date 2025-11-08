@@ -41,6 +41,7 @@
 #include "app_config.h"
 #include "temp_sensor.h"
 #include "stm32c0xx_ll_adc.h"
+#include "bsp.h"
 //extern ADC_HandleTypeDef hadc1;
 //extern TIM_HandleTypeDef htim3;
 //extern DMA_HandleTypeDef hdma;
@@ -89,7 +90,7 @@ uint16_t Sensor_get_adc_dryness(void) {
 //${AOs::Sensor::SM} .........................................................
 QState Sensor_initial(Sensor * const me, void const * const par) {
     //${AOs::Sensor::SM::initial}
-    return Q_TRAN(&Sensor_start_dht);
+    return Q_TRAN(&Sensor_waiting);
 }
 
 //${AOs::Sensor::SM::waiting} ................................................
@@ -99,7 +100,7 @@ QState Sensor_waiting(Sensor * const me, QEvt const * const e) {
         //${AOs::Sensor::SM::waiting}
         case Q_ENTRY_SIG: {
             QTimeEvt_disarm(&me->resetEvt);
-
+            allowDeepSleep = true;
             status_ = Q_HANDLED();
             break;
         }

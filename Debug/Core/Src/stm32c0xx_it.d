@@ -41,7 +41,8 @@ Core/Src/stm32c0xx_it.o: ../Core/Src/stm32c0xx_it.c ../Core/Inc/main.h \
  ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_pwr.h \
  ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_dma.h \
  ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_dmamux.h \
- ../Core/Inc/stm32c0xx_it.h
+ ../Core/Inc/stm32c0xx_it.h ../Core/Inc/bsp.h \
+ ../Middlewares/Third_Party/QuantumLeaps_RTEF_qpc/include/qsafe.h
 ../Core/Inc/main.h:
 ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal.h:
 ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_system.h:
@@ -86,3 +87,5 @@ Core/Src/stm32c0xx_it.o: ../Core/Src/stm32c0xx_it.c ../Core/Inc/main.h \
 ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_dma.h:
 ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_dmamux.h:
 ../Core/Inc/stm32c0xx_it.h:
+../Core/Inc/bsp.h:
+../Middlewares/Third_Party/QuantumLeaps_RTEF_qpc/include/qsafe.h:

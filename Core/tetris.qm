@@ -315,7 +315,6 @@ QTimeEvt_armX(&amp;me-&gt;dryTimerEvt, DRY_TIMEOUT , 0U);
       <!--${AOs::MainApp::SM::display::dry_alert::WATER_PLANT}-->
       <tran trig="WATER_PLANT" target="../../../2">
        <action>QTimeEvt_disarm(&amp;me-&gt;dryTimerEvt);
-//QTimeEvt_armX(&amp;me-&gt;dryTimerEvt, 300U , 0U);
 
 </action>
        <tran_glyph conn="77,90,2,1,35,-19">
@@ -340,7 +339,7 @@ QTimeEvt_disarm(&amp;me-&gt;longPressEvt);
 HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_SET);
 
 QTimeEvt_disarm(&amp;me-&gt;dryTimerEvt);
-QTimeEvt_armX(&amp;me-&gt;dryTimerEvt, 3000U , 0U);
+QTimeEvt_armX(&amp;me-&gt;dryTimerEvt, PUMP_TIMEOUT , 0U);
 </entry>
      <exit brief="OFF">HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_RESET);
 QTimeEvt_disarm(&amp;me-&gt;dryTimerEvt);
@@ -754,16 +753,15 @@ return adc_value;</code>
    <!--${AOs::Sensor::SM}-->
    <statechart properties="0x00">
     <!--${AOs::Sensor::SM::initial}-->
-    <initial target="../3">
-     <action brief="poll sensor on boot"/>
-     <initial_glyph conn="58,79,5,3,13">
-      <action box="1,-4,10,7"/>
+    <initial target="../1">
+     <initial_glyph conn="72,24,5,0,7,7">
+      <action box="0,-2,10,2"/>
      </initial_glyph>
     </initial>
     <!--${AOs::Sensor::SM::waiting}-->
     <state name="waiting">
      <entry>QTimeEvt_disarm(&amp;me-&gt;resetEvt);
-</entry>
+allowDeepSleep = true;</entry>
      <!--${AOs::Sensor::SM::waiting::START_SENSOR}-->
      <tran trig="START_SENSOR" target="../../3">
       <tran_glyph conn="76,62,4,0,13">
@@ -1068,13 +1066,17 @@ $declare${AOs::RFButton}
    <text>
 
 #include &quot;main_app.h&quot;
+#include &quot;main.h&quot;
 #include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
 #include &quot;app_config.h&quot;
 #include &quot;NRF_chip.h&quot;
-#include &quot;main.h&quot;;
 #include &quot;tetris_input_handler.h&quot;
 #include &quot;tetris_shapes.h&quot;
 #include &quot;bsp.h&quot;
+
+#include &quot;accelerometer.h&quot;
+
 
 //DMA buffer
 static __attribute__((section(&quot;.bss&quot;))) __attribute__((aligned(4))) volatile uint32_t Sensor_dht11_dma_buffer[DHT11_MAX_EDGES];
@@ -1094,6 +1096,7 @@ $define${Shared}
 #include &quot;app_config.h&quot;
 #include &quot;temp_sensor.h&quot;
 #include &quot;stm32c0xx_ll_adc.h&quot;
+#include &quot;bsp.h&quot;
 //extern ADC_HandleTypeDef hadc1;
 //extern TIM_HandleTypeDef htim3;
 //extern DMA_HandleTypeDef hdma;

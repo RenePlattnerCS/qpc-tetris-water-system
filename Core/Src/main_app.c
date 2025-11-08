@@ -38,13 +38,17 @@
 
 
 #include "main_app.h"
+#include "main.h"
 #include <stdio.h>
+#include <stdlib.h>
 #include "app_config.h"
 #include "NRF_chip.h"
-#include "main.h";
 #include "tetris_input_handler.h"
 #include "tetris_shapes.h"
 #include "bsp.h"
+
+#include "accelerometer.h"
+
 
 //DMA buffer
 static __attribute__((section(".bss"))) __attribute__((aligned(4))) volatile uint32_t Sensor_dht11_dma_buffer[DHT11_MAX_EDGES];
@@ -316,7 +320,6 @@ QState MainApp_dry_alert(MainApp * const me, QEvt const * const e) {
         //${AOs::MainApp::SM::display::dry_alert::WATER_PLANT}
         case WATER_PLANT_SIG: {
             QTimeEvt_disarm(&me->dryTimerEvt);
-            //QTimeEvt_armX(&me->dryTimerEvt, 300U , 0U);
 
 
             status_ = Q_TRAN(&MainApp_pump);
@@ -342,7 +345,7 @@ QState MainApp_pump(MainApp * const me, QEvt const * const e) {
             HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_SET);
 
             QTimeEvt_disarm(&me->dryTimerEvt);
-            QTimeEvt_armX(&me->dryTimerEvt, 3000U , 0U);
+            QTimeEvt_armX(&me->dryTimerEvt, PUMP_TIMEOUT , 0U);
 
             status_ = Q_HANDLED();
             break;

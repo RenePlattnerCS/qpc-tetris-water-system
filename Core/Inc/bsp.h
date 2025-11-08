@@ -50,4 +50,7 @@ void BSP_ledOn(void);
 void BSP_ledOff(void);
 void RTC_ClockConfig(void);
 void BSP_reset_systick();
+void RTC_setWakeInterval(uint32_t hours , uint32_t minutes, uint32_t seconds);
+void RTC_setWakeIntervalSeconds(uint32_t seconds);
+
 #endif // BSP_H_

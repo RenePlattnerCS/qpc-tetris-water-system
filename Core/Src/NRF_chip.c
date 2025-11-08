@@ -25,7 +25,7 @@ void init_nrf(void)
 
 	  nrf24_init();
 	  uint8_t reg = nrf24_r_reg(0x00,1 );
-
+	  (void)reg;
 
 	  nrf24_auto_ack_all(auto_ack);
 	  nrf24_en_ack_pld(disable);
@@ -145,6 +145,7 @@ void verify_rx_mode(void)
 {
     uint8_t config = nrf24_r_reg(0x00, 1);
     uint8_t status = nrf24_r_status();
+    (void) status;
     uint8_t en_rxaddr = nrf24_r_reg(0x02, 1);
     uint8_t rx_pw_p0 = nrf24_r_reg(0x11, 1);
 

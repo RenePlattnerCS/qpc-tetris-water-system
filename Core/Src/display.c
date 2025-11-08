@@ -2,7 +2,7 @@
 #include <stddef.h>
 #include "qpc.h"
 #include "main_app.h"
-
+#include <stdio.h>
 
 static void display_text(char * text, uint8_t x, uint8_t y);
 static void RectangleFill(uint8_t percent);
@@ -39,7 +39,7 @@ void clear_display()
 	ssd1306_UpdateScreen();
 }
 
-void draw_border(Board * board)
+void draw_border(const Board * const board)
 {
 	//redraw border
 		if(board->rotate_90)

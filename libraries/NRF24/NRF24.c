@@ -3,8 +3,7 @@
  * Replace HAL SPI calls with LL equivalents
  */
 
-#include "stm32c0xx_ll_spi.h"
-#include "stm32c0xx_ll_gpio.h"
+
 #include "NRF24_conf.h"
 #include "NRF24.h"
 #include "NRF24_reg_addresses.h"
@@ -12,8 +11,10 @@
 // LOW-LEVEL SPI FUNCTIONS (Replace HAL)
 // ============================================================================
 
+
+
 // Simple SPI transmit using LL
-static void LL_SPI_Transmit(SPI_TypeDef *SPIx, uint8_t *data, uint16_t size) {
+void LL_SPI_Transmit(SPI_TypeDef *SPIx, uint8_t *data, uint16_t size) {
     for (uint16_t i = 0; i < size; i++) {
         // Wait until TX buffer is empty
         while (!LL_SPI_IsActiveFlag_TXE(SPIx));
@@ -31,7 +32,7 @@ static void LL_SPI_Transmit(SPI_TypeDef *SPIx, uint8_t *data, uint16_t size) {
 }
 
 // Simple SPI receive using LL
-static void LL_SPI_Receive(SPI_TypeDef *SPIx, uint8_t *data, uint16_t size) {
+void LL_SPI_Receive(SPI_TypeDef *SPIx, uint8_t *data, uint16_t size) {
     for (uint16_t i = 0; i < size; i++) {
         // Wait until TX buffer is empty
         while (!LL_SPI_IsActiveFlag_TXE(SPIx));

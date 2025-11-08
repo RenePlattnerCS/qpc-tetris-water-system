@@ -51,6 +51,7 @@
 #define Q_DEFINE_THIS_MODULE(name_) \
     static char const Q_this_module_[] = name_;
 
+
 #define Q_ASSERT_INCRIT(id_, expr_) \
     ((expr_) ? (void)0 : Q_onError(&Q_this_module_[0], (id_)))
 

@@ -46,7 +46,7 @@ Core/Src/sensor.o: ../Core/Src/sensor.c ../Core/Inc/sensor.h \
  ../Core/Inc/tetris_board.h ../Core/Inc/tetromino.h \
  ../Core/Inc/plant_sensor.h ../Core/Inc/sensor.h ../Core/Inc/rfbutton.h \
  ../Core/Inc/app_config.h ../Core/Inc/temp_sensor.h \
- ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_adc.h
+ ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_adc.h ../Core/Inc/bsp.h
 ../Core/Inc/sensor.h:
 ../Middlewares/Third_Party/QuantumLeaps_RTEF_qpc/include/qpc.h:
 ../Middlewares/Third_Party/QuantumLeaps_RTEF_qpc/ports/arm-cm/qk/gnu/qp_port.h:
@@ -101,3 +101,4 @@ M:/embedded/stm32C0_Nucleus/qpc-tetris-water-system/libraries/OLED_SSD1306/inclu
 ../Core/Inc/app_config.h:
 ../Core/Inc/temp_sensor.h:
 ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_adc.h:
+../Core/Inc/bsp.h:

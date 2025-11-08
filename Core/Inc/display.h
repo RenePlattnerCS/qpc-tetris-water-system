@@ -32,7 +32,7 @@ void draw_pixel(uint8_t x, uint8_t y);
 void draw_pixel_block(uint8_t x, uint8_t y, uint8_t width, uint8_t height);
 //void display_tetris_won(void);
 void draw_line_step(LineState *ls);
-void draw_border(Board * board);
 void display_win(void);
+void draw_border(const Board * const board);
 
 #endif /* INC_DISPLAY_H_ */

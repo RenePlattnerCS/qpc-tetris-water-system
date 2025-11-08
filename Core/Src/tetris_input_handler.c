@@ -1,6 +1,7 @@
 #include "tetris_input_handler.h"
 #include <stdint.h>
 #include "tetris_board.h"
+#include <stdlib.h>
 
 uint8_t compute_move_delay(int16_t tilt) {
 	tilt = abs(tilt);

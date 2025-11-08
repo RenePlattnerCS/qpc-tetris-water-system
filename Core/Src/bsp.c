@@ -32,7 +32,10 @@
 // <info@state-machine.com>
 //============================================================================
 #include "qpc.h"                 // QP/C real-time event framework
+#include "qp_port.h"
+#include "qsafe.h"
 #include "bsp.h"                 // Board Support Package
+#include "main.h"
 #include "stm32c0xx.h"  // CMSIS-compliant header file for the MCU used
 #include "ssd1306.h"
 #include "app_config.h"
@@ -62,8 +65,6 @@ Q_DEFINE_THIS_FILE  // define the name of this file for assertions
 #define B1_PIN   13U
 
 // Local-scope objects -----------------------------------------------------
-static uint32_t l_rndSeed;
-
 
 #ifdef Q_SPY
 
@@ -136,9 +137,6 @@ void BSP_delayMs(uint32_t ms) {
 }
 
 
-
-static uint32_t buttonPressTime = 0;
-static uint8_t buttonPressed = 0;
 
 void EXTI0_1_IRQHandler(void);
 void EXTI0_1_IRQHandler(void)
@@ -251,7 +249,7 @@ void RTC_IRQHandler(void)
         /* Also clear EXTI line 17 flag */
         LL_EXTI_ClearRisingFlag_0_31(LL_EXTI_LINE_19);
 
-        RTC_setWakeIntervalSeconds(20);
+        RTC_setWakeInterval(3 , 0 , 0);
 
         static QEvt const pollSensorEvt = QEVT_INITIALIZER(POLL_SENSOR_SIG);
 		QACTIVE_POST(AO_Main_App, &pollSensorEvt, (void*)0);
@@ -297,7 +295,8 @@ void QF_onContextSw(QActive *prev, QActive *next) {
 // BSP functions...
 
 void BSP_init(void) {
-    //SystemClock_Config();  // configure system clock
+	(void)Q_this_module_; // ignore
+
     HAL_SYSTICK_Config(HAL_RCC_GetHCLKFreq() / 1000U);
 
 	// start TIM17/14
@@ -415,10 +414,94 @@ void BSP_RTC_init(void)
 
     LL_RTC_EnableIT_ALRA(RTC);
 
-    RTC_setWakeIntervalSeconds(10);
+    RTC_setWakeIntervalSeconds(4);
 
     LL_RTC_EnableWriteProtection(RTC);
 }
+
+void RTC_setWakeInterval(uint32_t hours , uint32_t minutes, uint32_t seconds)
+{
+    uint8_t hour, min, sec;
+    RTC_ReadTime(&hour, &min, &sec);
+
+    LL_RTC_DisableWriteProtection(RTC);
+    LL_RTC_ALMA_Disable(RTC);
+
+    /* ---- HOURS MODE ---- */
+    if (hours > 0) {
+
+        // If we're not aligned to whole hour, bump to next hour boundary
+        if (min > 0 || sec > 0) {
+            hour++;
+        }
+
+        hour = (hour + hours) % 24;
+        min = 0;
+        sec = 0;
+
+        uint32_t tr =
+            ((hour / 10) << RTC_TR_HT_Pos) | ((hour % 10) << RTC_TR_HU_Pos);
+
+        // Compare only hours (ignore minutes & day)
+        // Seconds must be 00 when alarm triggers
+        LL_RTC_WriteReg(RTC, ALRMAR,
+            tr |
+            RTC_ALRMAR_MSK1 |   // ignore minutes
+            RTC_ALRMAR_MSK2 |   // ignore hours (hour field still compared)
+            RTC_ALRMAR_MSK4);   // ignore day
+
+        LL_RTC_ClearFlag_ALRA(RTC);
+        LL_RTC_ALMA_Enable(RTC);
+        LL_RTC_EnableWriteProtection(RTC);
+        return;
+    }
+
+    /* ---- MINUTES MODE ---- */
+    if (minutes > 0) {
+
+        // Align to next whole minute if necessary
+        if (sec > 0) {
+            min++;
+        }
+
+        min += minutes;
+        hour += min / 60;
+        min %= 60;
+        hour %= 24;
+        sec = 0;
+
+        uint32_t tr =
+            ((hour / 10) << RTC_TR_HT_Pos) | ((hour % 10) << RTC_TR_HU_Pos) |
+            ((min  / 10) << RTC_TR_MNT_Pos) | ((min  % 10) << RTC_TR_MNU_Pos);
+
+        // Compare HH and MM only (ignore seconds, date)
+        LL_RTC_WriteReg(RTC, ALRMAR, tr | RTC_ALRMAR_MSK1 | RTC_ALRMAR_MSK4);
+
+        LL_RTC_ClearFlag_ALRA(RTC);
+        LL_RTC_ALMA_Enable(RTC);
+        LL_RTC_EnableWriteProtection(RTC);
+        return;
+    }
+
+    /* ---- SECONDS MODE ---- */
+    sec += seconds;
+    min += sec / 60;
+    hour += min / 60;
+    sec %= 60;
+    min %= 60;
+    hour %= 24;
+
+    uint32_t tr =
+        ((hour / 10) << RTC_TR_HT_Pos) | ((hour % 10) << RTC_TR_HU_Pos) |
+        ((min  / 10) << RTC_TR_MNT_Pos) | ((min  % 10) << RTC_TR_MNU_Pos) |
+        ((sec  / 10) << RTC_TR_ST_Pos)  | ((sec  % 10) << RTC_TR_SU_Pos);
+
+    LL_RTC_WriteReg(RTC, ALRMAR, tr | RTC_ALRMAR_MSK4);
+    LL_RTC_ClearFlag_ALRA(RTC);
+    LL_RTC_ALMA_Enable(RTC);
+    LL_RTC_EnableWriteProtection(RTC);
+}
+
 
 void RTC_setWakeIntervalSeconds(uint32_t seconds)
 {
@@ -447,10 +530,11 @@ void RTC_setWakeIntervalSeconds(uint32_t seconds)
     /* Program Alarm A */
     LL_RTC_DisableWriteProtection(RTC);
 
-    LL_RTC_ALMA_Disable(RTC);
-    LL_RTC_WriteReg(RTC, ALRMAR, tr | RTC_ALRMAR_MSK4); // Ignore date
-    LL_RTC_ClearFlag_ALRA(RTC);
-    LL_RTC_ALMA_Enable(RTC);
+	LL_RTC_ALMA_Disable(RTC);
+	LL_RTC_WriteReg(RTC, ALRMAR, tr | RTC_ALRMAR_MSK4); // Ignore date
+	LL_RTC_ClearFlag_ALRA(RTC);
+	LL_RTC_ALMA_Enable(RTC);
+
 
     LL_RTC_EnableWriteProtection(RTC);
 }
@@ -608,9 +692,10 @@ void QK_onIdle(void) {
 		// === Woke from RTC alarm ===
 		SystemClock_Config();
 		SysTick->CTRL |= SysTick_CTRL_ENABLE_Msk;
-		LL_GPIO_ResetOutputPin(GPIOA, GPIO_PIN_15);
+
 		// Don't allow deep sleep during sensor sequence
 		allowDeepSleep = false;
+		LL_GPIO_ResetOutputPin(GPIOA, GPIO_PIN_15);
 
 
 
