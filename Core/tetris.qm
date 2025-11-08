@@ -147,9 +147,9 @@ if(rand &lt; 0 )
 {
     rand = 0;
 }
-if(rand &gt; 7 )
+if(rand &gt;= 7 ) //more shance for a I type
 {
-    rand = 7;
+    rand = 0;
 }
 
 me-&gt;active_tetromino.type = rand;
@@ -157,7 +157,7 @@ me-&gt;active_tetromino.type = rand;
 memcpy(me-&gt;active_tetromino.grid4x4, shapes[me-&gt;active_tetromino.type ], sizeof(me-&gt;active_tetromino.grid4x4));
 int top = tetro_top(&amp;me-&gt;active_tetromino);
 me-&gt;active_tetromino.x = (me-&gt;board_inst.width / 2) - 2;
-me-&gt;active_tetromino.y = me-&gt;board_inst.height - 5 - top;
+me-&gt;active_tetromino.y = me-&gt;board_inst.height - 4 - top;
 
 
 bool col = collision_on_spawn(&amp;me-&gt;board_inst, &amp;me-&gt;active_tetromino);
@@ -298,7 +298,7 @@ currentState = TETRIS;</action>
 
 
 init_accelerometer(); //tap/shake detection
-</entry>
+allowDeepSleep = true;</entry>
       <!--${AOs::MainApp::SM::display::display_stats::PLANT_DRY}-->
       <tran trig="PLANT_DRY" target="../../8">
        <tran_glyph conn="54,50,1,0,23,29">
@@ -314,8 +314,8 @@ init_accelerometer(); //tap/shake detection
       <entry>allowDeepSleep = false;
 QTimeEvt_armX(&amp;me-&gt;dryTimerEvt, DRY_TIMEOUT , 0U);
 </entry>
-      <exit>//QTimeEvt_disarm(&amp;me-&gt;dryTimerEvt);
-QTimeEvt_disarm(&amp;me-&gt;tempPollEvt);</exit>
+      <exit>QTimeEvt_disarm(&amp;me-&gt;dryTimerEvt);
+//QTimeEvt_disarm(&amp;me-&gt;tempPollEvt);</exit>
       <!--${AOs::MainApp::SM::display::dry_alert::WATER_PLANT}-->
       <tran trig="WATER_PLANT" target="../../../2">
        <action>QTimeEvt_disarm(&amp;me-&gt;dryTimerEvt);
@@ -351,7 +351,6 @@ QTimeEvt_disarm(&amp;me-&gt;dryTimerEvt);
 </exit>
      <!--${AOs::MainApp::SM::pump::BUTTON_RELEASE}-->
      <tran trig="BUTTON_RELEASE" target="../../1/7">
-      <action>allowDeepSleep = true;</action>
       <tran_glyph conn="38,115,0,2,-59">
        <action box="-17,-4,15,3"/>
       </tran_glyph>
@@ -360,7 +359,7 @@ QTimeEvt_disarm(&amp;me-&gt;dryTimerEvt);
      <tran trig="WATER_PLANT" target="../../1">
       <action brief="turn off pump after some time">QTimeEvt_disarm(&amp;me-&gt;dryTimerEvt);
 HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_RESET);
-allowDeepSleep = true;
+
 
 </action>
       <tran_glyph conn="43,115,0,2,-16">
@@ -390,12 +389,12 @@ allowDeepSleep = true;
      <!--${AOs::MainApp::SM::tetris::game}-->
      <state name="game">
       <entry>QTimeEvt_disarm(&amp;me-&gt;dryTimerEvt);
-QTimeEvt_armX(&amp;me-&gt;dryTimerEvt, MainApp_delta_time / 10U , MainApp_delta_time / 10U);
+QTimeEvt_armX(&amp;me-&gt;dryTimerEvt, MainApp_delta_time , MainApp_delta_time);
 
 Tetromino_ctor(&amp;me-&gt;active_tetromino, TETRO_L);
 int top = tetro_top(&amp;me-&gt;active_tetromino);
 me-&gt;active_tetromino.x = (me-&gt;board_inst.width / 2) - 2;
-me-&gt;active_tetromino.y = me-&gt;board_inst.height - 2 - top;
+me-&gt;active_tetromino.y = me-&gt;board_inst.height - 1 - top;
 
 draw_board(&amp;me-&gt;board_inst, &amp;me-&gt;active_tetromino, MainApp_score);
 
@@ -514,6 +513,7 @@ else
         me-&gt;line_x0 + me-&gt;line_h , me-&gt;line_y0 + me-&gt;line_w );
 }
 
+ssd1306_UpdateScreen();
 static QEvt const e = {DRAW_OUTLINE_SIG, 0U, 0U};
 QACTIVE_POST(AO_Main_App, &amp;e, me);
 </entry>
@@ -556,6 +556,8 @@ if (!me-&gt;board_inst.rotate_90) {
         me-&gt;line_x0 + me-&gt;line_h , me-&gt;line_y0 + me-&gt;line_w,
         me-&gt;line_x0 , me-&gt;line_y0 + me-&gt;line_w);
 }
+
+ssd1306_UpdateScreen();
 
 static QEvt const e = {DRAW_OUTLINE_SIG, 0U, 0U};
 QACTIVE_POST(AO_Main_App, &amp;e, me);
@@ -601,6 +603,8 @@ if (!me-&gt;board_inst.rotate_90) {
         me-&gt;line_x0, me-&gt;line_y0
     );
 }
+
+ssd1306_UpdateScreen();
 static QEvt const e = {DRAW_OUTLINE_SIG, 0U, 0U};
 QACTIVE_POST(AO_Main_App, &amp;e, me);
 
@@ -642,7 +646,7 @@ if (!me-&gt;board_inst.rotate_90) {
         me-&gt;line_x0 + me-&gt;line_h, me-&gt;line_y0
     );
 }
-
+ssd1306_UpdateScreen();
 static QEvt const e = {DRAW_OUTLINE_SIG, 0U, 0U};
 QACTIVE_POST(AO_Main_App, &amp;e, me);
 
@@ -675,7 +679,7 @@ QACTIVE_POST(AO_Main_App, &amp;e, me);
      <state name="gameover_screen">
       <entry>display_tetris_gameover();
 QTimeEvt_disarm(&amp;me-&gt;dryTimerEvt);
-QTimeEvt_armX(&amp;me-&gt;dryTimerEvt, 400U , 0U);</entry>
+QTimeEvt_armX(&amp;me-&gt;dryTimerEvt, 4000U , 0U);</entry>
       <exit>QTimeEvt_disarm(&amp;me-&gt;dryTimerEvt);</exit>
       <state_glyph node="134,20,27,14">
        <entry box="0,3,6,2"/>
@@ -686,7 +690,7 @@ QTimeEvt_armX(&amp;me-&gt;dryTimerEvt, 400U , 0U);</entry>
      <state name="win_sceen">
       <entry>display_win();
 QTimeEvt_disarm(&amp;me-&gt;dryTimerEvt);
-QTimeEvt_armX(&amp;me-&gt;dryTimerEvt, 400U , 0U);</entry>
+QTimeEvt_armX(&amp;me-&gt;dryTimerEvt, 4000U , 0U);</entry>
       <exit>QTimeEvt_disarm(&amp;me-&gt;dryTimerEvt);</exit>
       <state_glyph node="134,38,27,13">
        <entry box="0,3,6,2"/>

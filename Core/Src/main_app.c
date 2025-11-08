@@ -113,9 +113,9 @@ void MainApp_spawn_tetromino(MainApp * const me) {
     {
         rand = 0;
     }
-    if(rand > 7 )
+    if(rand >= 7 ) //more shance for a I type
     {
-        rand = 7;
+        rand = 0;
     }
 
     me->active_tetromino.type = rand;
@@ -123,7 +123,7 @@ void MainApp_spawn_tetromino(MainApp * const me) {
     memcpy(me->active_tetromino.grid4x4, shapes[me->active_tetromino.type ], sizeof(me->active_tetromino.grid4x4));
     int top = tetro_top(&me->active_tetromino);
     me->active_tetromino.x = (me->board_inst.width / 2) - 2;
-    me->active_tetromino.y = me->board_inst.height - 5 - top;
+    me->active_tetromino.y = me->board_inst.height - 4 - top;
 
 
     bool col = collision_on_spawn(&me->board_inst, &me->active_tetromino);
@@ -281,7 +281,7 @@ QState MainApp_display_stats(MainApp * const me, QEvt const * const e) {
 
 
             init_accelerometer(); //tap/shake detection
-
+            allowDeepSleep = true;
             status_ = Q_HANDLED();
             break;
         }
@@ -312,8 +312,8 @@ QState MainApp_dry_alert(MainApp * const me, QEvt const * const e) {
         }
         //${AOs::MainApp::SM::display::dry_alert}
         case Q_EXIT_SIG: {
-            //QTimeEvt_disarm(&me->dryTimerEvt);
-            QTimeEvt_disarm(&me->tempPollEvt);
+            QTimeEvt_disarm(&me->dryTimerEvt);
+            //QTimeEvt_disarm(&me->tempPollEvt);
             status_ = Q_HANDLED();
             break;
         }
@@ -361,7 +361,6 @@ QState MainApp_pump(MainApp * const me, QEvt const * const e) {
         }
         //${AOs::MainApp::SM::pump::BUTTON_RELEASE}
         case BUTTON_RELEASE_SIG: {
-            allowDeepSleep = true;
             status_ = Q_TRAN(&MainApp_display_stats);
             break;
         }
@@ -369,7 +368,7 @@ QState MainApp_pump(MainApp * const me, QEvt const * const e) {
         case WATER_PLANT_SIG: {
             QTimeEvt_disarm(&me->dryTimerEvt);
             HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_RESET);
-            allowDeepSleep = true;
+
 
 
             status_ = Q_TRAN(&MainApp_display);
@@ -413,12 +412,12 @@ QState MainApp_game(MainApp * const me, QEvt const * const e) {
         //${AOs::MainApp::SM::tetris::game}
         case Q_ENTRY_SIG: {
             QTimeEvt_disarm(&me->dryTimerEvt);
-            QTimeEvt_armX(&me->dryTimerEvt, MainApp_delta_time / 10U , MainApp_delta_time / 10U);
+            QTimeEvt_armX(&me->dryTimerEvt, MainApp_delta_time , MainApp_delta_time);
 
             Tetromino_ctor(&me->active_tetromino, TETRO_L);
             int top = tetro_top(&me->active_tetromino);
             me->active_tetromino.x = (me->board_inst.width / 2) - 2;
-            me->active_tetromino.y = me->board_inst.height - 2 - top;
+            me->active_tetromino.y = me->board_inst.height - 1 - top;
 
             draw_board(&me->board_inst, &me->active_tetromino, MainApp_score);
 
@@ -558,6 +557,7 @@ QState MainApp_top_border(MainApp * const me, QEvt const * const e) {
                     me->line_x0 + me->line_h , me->line_y0 + me->line_w );
             }
 
+            ssd1306_UpdateScreen();
             static QEvt const e = {DRAW_OUTLINE_SIG, 0U, 0U};
             QACTIVE_POST(AO_Main_App, &e, me);
 
@@ -609,6 +609,8 @@ QState MainApp_left_border(MainApp * const me, QEvt const * const e) {
                     me->line_x0 + me->line_h , me->line_y0 + me->line_w,
                     me->line_x0 , me->line_y0 + me->line_w);
             }
+
+            ssd1306_UpdateScreen();
 
             static QEvt const e = {DRAW_OUTLINE_SIG, 0U, 0U};
             QACTIVE_POST(AO_Main_App, &e, me);
@@ -663,6 +665,8 @@ QState MainApp_btm_border(MainApp * const me, QEvt const * const e) {
                     me->line_x0, me->line_y0
                 );
             }
+
+            ssd1306_UpdateScreen();
             static QEvt const e = {DRAW_OUTLINE_SIG, 0U, 0U};
             QACTIVE_POST(AO_Main_App, &e, me);
 
@@ -713,7 +717,7 @@ QState MainApp_right_border(MainApp * const me, QEvt const * const e) {
                     me->line_x0 + me->line_h, me->line_y0
                 );
             }
-
+            ssd1306_UpdateScreen();
             static QEvt const e = {DRAW_OUTLINE_SIG, 0U, 0U};
             QACTIVE_POST(AO_Main_App, &e, me);
 
@@ -751,7 +755,7 @@ QState MainApp_gameover_screen(MainApp * const me, QEvt const * const e) {
         case Q_ENTRY_SIG: {
             display_tetris_gameover();
             QTimeEvt_disarm(&me->dryTimerEvt);
-            QTimeEvt_armX(&me->dryTimerEvt, 400U , 0U);
+            QTimeEvt_armX(&me->dryTimerEvt, 4000U , 0U);
             status_ = Q_HANDLED();
             break;
         }
@@ -777,7 +781,7 @@ QState MainApp_win_sceen(MainApp * const me, QEvt const * const e) {
         case Q_ENTRY_SIG: {
             display_win();
             QTimeEvt_disarm(&me->dryTimerEvt);
-            QTimeEvt_armX(&me->dryTimerEvt, 400U , 0U);
+            QTimeEvt_armX(&me->dryTimerEvt, 4000U , 0U);
             status_ = Q_HANDLED();
             break;
         }
