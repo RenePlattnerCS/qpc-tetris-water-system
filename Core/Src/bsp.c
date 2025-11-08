@@ -63,8 +63,6 @@ Q_DEFINE_THIS_FILE  // define the name of this file for assertions
 static uint32_t l_rndSeed;
 
 
-
-
 #ifdef Q_SPY
 
     QSTimeCtr QS_tickTime_;
@@ -327,6 +325,7 @@ void BSP_init(void) {
 	LL_SPI_Enable(SPI1);
 	init_nrf();
 	init_accelerometer(); //tap/shake detection
+	RTC_ClockConfig();
 	BSP_RTC_init();
 	//init_accelerometer();
 	//turn on DHT11
@@ -346,24 +345,65 @@ void BSP_init(void) {
 
 }
 
+void BSP_RTC_init2(void)
+{
+    LL_RTC_AlarmTypeDef AlarmA = {0};
+
+    /* Enable RTC interrupt in NVIC */
+    NVIC_SetPriority(RTC_IRQn, 3);
+    NVIC_EnableIRQ(RTC_IRQn);
+
+    /* Clear any pending RTC Alarm flags */
+    LL_RTC_ClearFlag_ALRA(RTC);
+
+    /* Disable write protection to configure the RTC alarm */
+    LL_RTC_DisableWriteProtection(RTC);
+
+    /* Configure Alarm A to fire every 20 seconds */
+    AlarmA.AlarmTime.Hours   = 0;
+    AlarmA.AlarmTime.Minutes = 0;
+    AlarmA.AlarmTime.Seconds = 0;
+    AlarmA.AlarmMask = LL_RTC_ALMA_MASK_HOURS | LL_RTC_ALMA_MASK_MINUTES;
+    AlarmA.AlarmDateWeekDaySel = LL_RTC_ALMA_DATEWEEKDAYSEL_DATE;
+    AlarmA.AlarmDateWeekDay = 1;
+
+    /* Initialize Alarm A hardware */
+    LL_RTC_ALMA_Init(RTC, LL_RTC_FORMAT_BCD, &AlarmA);
+
+    /* ===== ADD THESE EXTI LINES ===== */
+    /* Configure EXTI Line 19 for RTC Alarm */
+    LL_EXTI_EnableIT_0_31(LL_EXTI_LINE_19);
+    LL_EXTI_EnableRisingTrig_0_31(LL_EXTI_LINE_19);
+    /* ================================ */
+
+    /* Enable Alarm A interrupt */
+    LL_RTC_EnableIT_ALRA(RTC);
+
+    /* Enable Alarm A */
+    LL_RTC_ALMA_Enable(RTC);  // <- Also make sure this is called!
+
+    /* Re-enable write protection */
+    LL_RTC_EnableWriteProtection(RTC);
+}
+
 void BSP_RTC_init(void)
 {
+    NVIC_SetPriority(RTC_IRQn, 3);
+    NVIC_EnableIRQ(RTC_IRQn);
 
-	/* Enable RTC interrupt in NVIC */
-	NVIC_SetPriority(RTC_IRQn, 3);
-	NVIC_EnableIRQ(RTC_IRQn);
+    LL_RTC_ClearFlag_ALRA(RTC);
+    LL_RTC_DisableWriteProtection(RTC);
 
-	/* Clear any pending RTC Alarm flags */
-	LL_RTC_ClearFlag_ALRA(RTC);
-	LL_RTC_DisableWriteProtection(RTC);
+    /* ===== ADD EXTI CONFIGURATION ===== */
+    LL_EXTI_EnableIT_0_31(LL_EXTI_LINE_19);
+    LL_EXTI_EnableRisingTrig_0_31(LL_EXTI_LINE_19);
+    /* ================================== */
 
-	/* Enable Alarm A interrupt */
-	LL_RTC_EnableIT_ALRA(RTC);
+    LL_RTC_EnableIT_ALRA(RTC);
 
-	/* Set first alarm wake in 20 seconds */
-	RTC_setWakeIntervalSeconds(10);
+    RTC_setWakeIntervalSeconds(10);
 
-	LL_RTC_EnableWriteProtection(RTC);
+    LL_RTC_EnableWriteProtection(RTC);
 }
 
 void RTC_setWakeIntervalSeconds(uint32_t seconds)
@@ -419,7 +459,26 @@ static void RTC_ReadTime(uint8_t *hours, uint8_t *minutes, uint8_t *seconds)
     *seconds = s1 * 10 + s0;
 }
 
+void RTC_ClockConfig(void)
+{
+    RCC_PeriphCLKInitTypeDef PeriphClkInit = {0};
 
+    /* Enable PWR clock and backup domain access */
+    __HAL_RCC_PWR_CLK_ENABLE();
+    //HAL_PWR_EnableBkUpAccess();
+
+    /* Configure LSI as RTC clock source */
+    PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_RTC;
+    PeriphClkInit.RTCClockSelection = RCC_RTCCLKSOURCE_LSI;
+
+    if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK)
+    {
+        Error_Handler();
+    }
+
+    /* Enable RTC Clock */
+    __HAL_RCC_RTC_ENABLE();
+}
 //............................................................................
 void BSP_start(void)
 {
@@ -510,25 +569,36 @@ void QF_onCleanup(void) {
 }
 
 //............................................................................
+//............................................................................
+//............................................................................
+//............................................................................
+//............................................................................
+//............................................................................
+//............................................................................
+//............................................................................
 void QK_onIdle(void) {
-	if(currentState != TETRIS)
+if(currentState != TETRIS)
 	{
-		// 1. Enable PWR peripheral
-		RCC->APBENR1 |= RCC_APBENR1_PWREN;
-
-		// 2. Clear previous wakeup flags
+		// Clear wakeup flags BEFORE configuring stop mode
+		LL_GPIO_SetOutputPin(GPIOA, GPIO_PIN_15);
 		PWR->SCR |= PWR_SCR_CWUF;
 
-		// 3. Set STOP mode (main regulator)
-		PWR->CR1 &= ~PWR_CR1_LPMS;   // LPMS = 0 => STOP mode, main regulator
+		// Set STOP mode (main regulator)
+		PWR->CR1 &= ~PWR_CR1_LPMS_Msk;  // Clear all LPMS bits = STOP mode
 
-		// 4. Allow deep sleep
+		// Enable deep sleep
 		SCB->SCR |= SCB_SCR_SLEEPDEEP_Msk;
 
-		// 5. Enter STOP mode, wait for interrupt
+		// Enter STOP mode - wait for RTC alarm interrupt
 		__WFI();
 
+		// === MCU wakes here when RTC alarm fires ===
+		LL_GPIO_ResetOutputPin(GPIOA, GPIO_PIN_15);
+		// Reconfigure system clock (HSE stopped in STOP mode)
 		SystemClock_Config();
+		BSP_delayMs(20);
+		// Note: Remove the delay here - it defeats the power saving!
+		// The RTC alarm will wake up every 10 seconds as configured
 	}
 
 

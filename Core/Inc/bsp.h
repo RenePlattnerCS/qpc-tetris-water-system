@@ -48,5 +48,5 @@ void adc_seed(void);
 void RTC_SetNextAlarm(uint32_t seconds_from_now);
 void BSP_ledOn(void);
 void BSP_ledOff(void);
-
+void RTC_ClockConfig(void);
 #endif // BSP_H_
