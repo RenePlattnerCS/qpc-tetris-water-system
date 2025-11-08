@@ -100,7 +100,7 @@ QState Sensor_waiting(Sensor * const me, QEvt const * const e) {
         //${AOs::Sensor::SM::waiting}
         case Q_ENTRY_SIG: {
             QTimeEvt_disarm(&me->resetEvt);
-            allowDeepSleep = true;
+            //allowDeepSleep = true;
             status_ = Q_HANDLED();
             break;
         }

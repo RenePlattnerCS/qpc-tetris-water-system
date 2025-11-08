@@ -20,5 +20,5 @@
 #define FPS						(20U) 		//20fps tetris
 #define MS_PER_SEC		 		(1000U)
 
-
+#define POLL_HOUR_INTERVALL		(3)
 #endif /* INC_APP_CONFIG_H_ */

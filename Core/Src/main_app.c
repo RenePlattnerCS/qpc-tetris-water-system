@@ -158,7 +158,7 @@ QState MainApp_display(MainApp * const me, QEvt const * const e) {
         //${AOs::MainApp::SM::display}
         case Q_ENTRY_SIG: {
             HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_RESET);
-
+            LL_GPIO_SetOutputPin(GPIOA, GPIO_PIN_15);
 
             status_ = Q_HANDLED();
             break;
@@ -207,6 +207,7 @@ QState MainApp_display(MainApp * const me, QEvt const * const e) {
 
             }
 
+            allowDeepSleep = true;
             status_ = Q_HANDLED();
             break;
         }

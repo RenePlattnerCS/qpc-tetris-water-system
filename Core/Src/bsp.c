@@ -251,7 +251,7 @@ void RTC_IRQHandler(void)
         /* clear EXTI line 17 flag */
         LL_EXTI_ClearRisingFlag_0_31(LL_EXTI_LINE_19);
 
-        RTC_setWakeInterval(3 , 0 , 0);
+        RTC_setWakeInterval( POLL_HOUR_INTERVALL , 0 , 0);
 
         static QEvt const pollSensorEvt = QEVT_INITIALIZER(POLL_SENSOR_SIG);
 		QACTIVE_POST(AO_Main_App, &pollSensorEvt, (void*)0);
@@ -626,7 +626,7 @@ void QK_onIdle(void) {
 
 	if(currentState != TETRIS && allowDeepSleep)
 	    {
-		LL_GPIO_SetOutputPin(GPIOA, GPIO_PIN_15);
+		LL_GPIO_ResetOutputPin(GPIOA, GPIO_PIN_15);
 		// Disable SysTick
 		SysTick->CTRL &= ~SysTick_CTRL_ENABLE_Msk;
 
@@ -642,7 +642,8 @@ void QK_onIdle(void) {
 
 		// Don't allow deep sleep during sensor sequence
 		allowDeepSleep = false;
-		LL_GPIO_ResetOutputPin(GPIOA, GPIO_PIN_15);
+		LL_GPIO_SetOutputPin(GPIOA, GPIO_PIN_15);
+
 
 	}
 	else

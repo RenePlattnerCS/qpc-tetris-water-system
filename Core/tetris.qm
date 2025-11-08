@@ -184,7 +184,7 @@ ssd1306_Fill(Black);</code>
     <!--${AOs::MainApp::SM::display}-->
     <state name="display">
      <entry brief="make sure water pump is off">HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_RESET);
-
+LL_GPIO_SetOutputPin(GPIOA, GPIO_PIN_15);
 </entry>
      <exit>QTimeEvt_disarm(&amp;me-&gt;longPressEvt);</exit>
      <!--${AOs::MainApp::SM::display::initial}-->
@@ -225,7 +225,8 @@ switch(currentState)
             break;
 
 }
-</action>
+
+allowDeepSleep = true;</action>
       <tran_glyph conn="106,38,1,-1,-22">
        <action box="-18,-3,18,2"/>
       </tran_glyph>
@@ -756,7 +757,7 @@ return adc_value;</code>
     <!--${AOs::Sensor::SM::waiting}-->
     <state name="waiting">
      <entry>QTimeEvt_disarm(&amp;me-&gt;resetEvt);
-allowDeepSleep = true;</entry>
+//allowDeepSleep = true;</entry>
      <!--${AOs::Sensor::SM::waiting::START_SENSOR}-->
      <tran trig="START_SENSOR" target="../../3">
       <tran_glyph conn="76,62,4,0,13">
