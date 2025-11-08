@@ -35,11 +35,11 @@ Idx Name          Size      VMA       LMA       File off  Algn
                   CONTENTS, READONLY, DEBUGGING, OCTETS
  15 .debug_aranges 00001300  00000000  00000000  00044f20  2**3
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 16 .debug_rnglists 00001cdd  00000000  00000000  00046220  2**0
+ 16 .debug_rnglists 00001cda  00000000  00000000  00046220  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 17 .debug_macro  0001bac2  00000000  00000000  00047efd  2**0
+ 17 .debug_macro  0001bac2  00000000  00000000  00047efa  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 18 .debug_line   00026198  00000000  00000000  000639bf  2**0
+ 18 .debug_line   0002619b  00000000  00000000  000639bc  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
  19 .debug_str    0008f8fa  00000000  00000000  00089b57  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
@@ -5327,238 +5327,238 @@ QState RFButton_wait(RFButton * const me, QEvt const * const e) {
 QState Sensor_waiting(Sensor * const me, QEvt const * const e) {
     QState status_;
     switch (e->sig) {
- 8001f8c:	880a      	ldrh	r2, [r1, #0]
+ 8001f8c:	880b      	ldrh	r3, [r1, #0]
 QState Sensor_waiting(Sensor * const me, QEvt const * const e) {
  8001f8e:	b510      	push	{r4, lr}
     switch (e->sig) {
- 8001f90:	2a01      	cmp	r2, #1
- 8001f92:	d006      	beq.n	8001fa2 <Sensor_waiting+0x16>
- 8001f94:	2300      	movs	r3, #0
- 8001f96:	2a09      	cmp	r2, #9
- 8001f98:	d008      	beq.n	8001fac <Sensor_waiting+0x20>
-
+ 8001f90:	2b01      	cmp	r3, #1
+ 8001f92:	d005      	beq.n	8001fa0 <Sensor_waiting+0x14>
+ 8001f94:	2b09      	cmp	r3, #9
+ 8001f96:	d008      	beq.n	8001faa <Sensor_waiting+0x1e>
+        case START_SENSOR_SIG: {
             status_ = Q_TRAN(&Sensor_start_dht);
             break;
         }
         default: {
             status_ = Q_SUPER(&QHsm_top);
- 8001f9a:	4a07      	ldr	r2, [pc, #28]	@ (8001fb8 <Sensor_waiting+0x2c>)
- 8001f9c:	6082      	str	r2, [r0, #8]
- 8001f9e:	0018      	movs	r0, r3
+ 8001f98:	4b06      	ldr	r3, [pc, #24]	@ (8001fb4 <Sensor_waiting+0x28>)
+ 8001f9a:	6083      	str	r3, [r0, #8]
+ 8001f9c:	2000      	movs	r0, #0
             break;
         }
     }
     return status_;
- 8001fa0:	e003      	b.n	8001faa <Sensor_waiting+0x1e>
+ 8001f9e:	e003      	b.n	8001fa8 <Sensor_waiting+0x1c>
             QTimeEvt_disarm(&me->resetEvt);
- 8001fa2:	3038      	adds	r0, #56	@ 0x38
- 8001fa4:	f002 fcae 	bl	8004904 <QTimeEvt_disarm>
+ 8001fa0:	3038      	adds	r0, #56	@ 0x38
+ 8001fa2:	f002 fcaf 	bl	8004904 <QTimeEvt_disarm>
             status_ = Q_HANDLED();
- 8001fa8:	2002      	movs	r0, #2
+ 8001fa6:	2002      	movs	r0, #2
 }
- 8001faa:	bd10      	pop	{r4, pc}
-            allowDeepSleep = false;
- 8001fac:	4a03      	ldr	r2, [pc, #12]	@ (8001fbc <Sensor_waiting+0x30>)
- 8001fae:	7013      	strb	r3, [r2, #0]
+ 8001fa8:	bd10      	pop	{r4, pc}
             status_ = Q_TRAN(&Sensor_start_dht);
- 8001fb0:	4b03      	ldr	r3, [pc, #12]	@ (8001fc0 <Sensor_waiting+0x34>)
- 8001fb2:	6083      	str	r3, [r0, #8]
- 8001fb4:	2003      	movs	r0, #3
+ 8001faa:	4b03      	ldr	r3, [pc, #12]	@ (8001fb8 <Sensor_waiting+0x2c>)
+ 8001fac:	6083      	str	r3, [r0, #8]
+ 8001fae:	2003      	movs	r0, #3
             break;
- 8001fb6:	e7f8      	b.n	8001faa <Sensor_waiting+0x1e>
- 8001fb8:	08003fdd 	.word	0x08003fdd
- 8001fbc:	2000052c 	.word	0x2000052c
- 8001fc0:	08002075 	.word	0x08002075
+ 8001fb0:	e7fa      	b.n	8001fa8 <Sensor_waiting+0x1c>
+ 8001fb2:	46c0      	nop			@ (mov r8, r8)
+ 8001fb4:	08003fdd 	.word	0x08003fdd
+ 8001fb8:	0800206d 	.word	0x0800206d
 
-08001fc4 <Sensor_turn_off>:
+08001fbc <Sensor_turn_off>:
 }
 
 //${AOs::Sensor::SM::turn_off} ...............................................
 QState Sensor_turn_off(Sensor * const me, QEvt const * const e) {
     QState status_;
     switch (e->sig) {
- 8001fc4:	880b      	ldrh	r3, [r1, #0]
+ 8001fbc:	880b      	ldrh	r3, [r1, #0]
 QState Sensor_turn_off(Sensor * const me, QEvt const * const e) {
- 8001fc6:	b510      	push	{r4, lr}
+ 8001fbe:	b510      	push	{r4, lr}
     switch (e->sig) {
- 8001fc8:	2b02      	cmp	r3, #2
- 8001fca:	d014      	beq.n	8001ff6 <Sensor_turn_off+0x32>
- 8001fcc:	2b0e      	cmp	r3, #14
- 8001fce:	d016      	beq.n	8001ffe <Sensor_turn_off+0x3a>
- 8001fd0:	2b01      	cmp	r3, #1
- 8001fd2:	d118      	bne.n	8002006 <Sensor_turn_off+0x42>
+ 8001fc0:	2b02      	cmp	r3, #2
+ 8001fc2:	d014      	beq.n	8001fee <Sensor_turn_off+0x32>
+ 8001fc4:	2b0e      	cmp	r3, #14
+ 8001fc6:	d016      	beq.n	8001ff6 <Sensor_turn_off+0x3a>
+ 8001fc8:	2b01      	cmp	r3, #1
+ 8001fca:	d118      	bne.n	8001ffe <Sensor_turn_off+0x42>
         //${AOs::Sensor::SM::turn_off}
         case Q_ENTRY_SIG: {
             QTimeEvt_disarm(&me->resetEvt);
- 8001fd4:	3038      	adds	r0, #56	@ 0x38
- 8001fd6:	0004      	movs	r4, r0
- 8001fd8:	f002 fc94 	bl	8004904 <QTimeEvt_disarm>
+ 8001fcc:	3038      	adds	r0, #56	@ 0x38
+ 8001fce:	0004      	movs	r4, r0
+ 8001fd0:	f002 fc98 	bl	8004904 <QTimeEvt_disarm>
             QTimeEvt_armX(&me->resetEvt, DHT11_RESET_TIME, 0U);
- 8001fdc:	2200      	movs	r2, #0
- 8001fde:	0020      	movs	r0, r4
- 8001fe0:	490b      	ldr	r1, [pc, #44]	@ (8002010 <Sensor_turn_off+0x4c>)
- 8001fe2:	f002 fc59 	bl	8004898 <QTimeEvt_armX>
+ 8001fd4:	2200      	movs	r2, #0
+ 8001fd6:	0020      	movs	r0, r4
+ 8001fd8:	490b      	ldr	r1, [pc, #44]	@ (8002008 <Sensor_turn_off+0x4c>)
+ 8001fda:	f002 fc5d 	bl	8004898 <QTimeEvt_armX>
             HAL_GPIO_WritePin(DHT11_RESET_PORT, DHT11_RESET_PIN, GPIO_PIN_RESET);
- 8001fe6:	20a0      	movs	r0, #160	@ 0xa0
- 8001fe8:	2200      	movs	r2, #0
- 8001fea:	2102      	movs	r1, #2
- 8001fec:	05c0      	lsls	r0, r0, #23
- 8001fee:	f000 fd9f 	bl	8002b30 <HAL_GPIO_WritePin>
+ 8001fde:	20a0      	movs	r0, #160	@ 0xa0
+ 8001fe0:	2200      	movs	r2, #0
+ 8001fe2:	2102      	movs	r1, #2
+ 8001fe4:	05c0      	lsls	r0, r0, #23
+ 8001fe6:	f000 fda3 	bl	8002b30 <HAL_GPIO_WritePin>
             status_ = Q_HANDLED();
- 8001ff2:	2002      	movs	r0, #2
+ 8001fea:	2002      	movs	r0, #2
             status_ = Q_SUPER(&QHsm_top);
             break;
         }
     }
     return status_;
 }
- 8001ff4:	bd10      	pop	{r4, pc}
+ 8001fec:	bd10      	pop	{r4, pc}
             QTimeEvt_disarm(&me->resetEvt);
- 8001ff6:	3038      	adds	r0, #56	@ 0x38
- 8001ff8:	f002 fc84 	bl	8004904 <QTimeEvt_disarm>
+ 8001fee:	3038      	adds	r0, #56	@ 0x38
+ 8001ff0:	f002 fc88 	bl	8004904 <QTimeEvt_disarm>
             break;
- 8001ffc:	e7f9      	b.n	8001ff2 <Sensor_turn_off+0x2e>
+ 8001ff4:	e7f9      	b.n	8001fea <Sensor_turn_off+0x2e>
             status_ = Q_TRAN(&Sensor_turn_on);
- 8001ffe:	4b05      	ldr	r3, [pc, #20]	@ (8002014 <Sensor_turn_off+0x50>)
- 8002000:	6083      	str	r3, [r0, #8]
- 8002002:	2003      	movs	r0, #3
+ 8001ff6:	4b05      	ldr	r3, [pc, #20]	@ (800200c <Sensor_turn_off+0x50>)
+ 8001ff8:	6083      	str	r3, [r0, #8]
+ 8001ffa:	2003      	movs	r0, #3
             break;
- 8002004:	e7f6      	b.n	8001ff4 <Sensor_turn_off+0x30>
+ 8001ffc:	e7f6      	b.n	8001fec <Sensor_turn_off+0x30>
             status_ = Q_SUPER(&QHsm_top);
- 8002006:	4b04      	ldr	r3, [pc, #16]	@ (8002018 <Sensor_turn_off+0x54>)
- 8002008:	6083      	str	r3, [r0, #8]
- 800200a:	2000      	movs	r0, #0
+ 8001ffe:	4b04      	ldr	r3, [pc, #16]	@ (8002010 <Sensor_turn_off+0x54>)
+ 8002000:	6083      	str	r3, [r0, #8]
+ 8002002:	2000      	movs	r0, #0
     return status_;
- 800200c:	e7f2      	b.n	8001ff4 <Sensor_turn_off+0x30>
- 800200e:	46c0      	nop			@ (mov r8, r8)
- 8002010:	00007530 	.word	0x00007530
- 8002014:	0800201d 	.word	0x0800201d
- 8002018:	08003fdd 	.word	0x08003fdd
+ 8002004:	e7f2      	b.n	8001fec <Sensor_turn_off+0x30>
+ 8002006:	46c0      	nop			@ (mov r8, r8)
+ 8002008:	00007530 	.word	0x00007530
+ 800200c:	08002015 	.word	0x08002015
+ 8002010:	08003fdd 	.word	0x08003fdd
 
-0800201c <Sensor_turn_on>:
+08002014 <Sensor_turn_on>:
 
 //${AOs::Sensor::SM::turn_on} ................................................
 QState Sensor_turn_on(Sensor * const me, QEvt const * const e) {
- 800201c:	b570      	push	{r4, r5, r6, lr}
+ 8002014:	b570      	push	{r4, r5, r6, lr}
     QState status_;
     switch (e->sig) {
- 800201e:	880d      	ldrh	r5, [r1, #0]
- 8002020:	2d02      	cmp	r5, #2
- 8002022:	d014      	beq.n	800204e <Sensor_turn_on+0x32>
- 8002024:	2d0e      	cmp	r5, #14
- 8002026:	d016      	beq.n	8002056 <Sensor_turn_on+0x3a>
- 8002028:	2d01      	cmp	r5, #1
- 800202a:	d118      	bne.n	800205e <Sensor_turn_on+0x42>
+ 8002016:	880d      	ldrh	r5, [r1, #0]
+ 8002018:	2d02      	cmp	r5, #2
+ 800201a:	d014      	beq.n	8002046 <Sensor_turn_on+0x32>
+ 800201c:	2d0e      	cmp	r5, #14
+ 800201e:	d016      	beq.n	800204e <Sensor_turn_on+0x3a>
+ 8002020:	2d01      	cmp	r5, #1
+ 8002022:	d118      	bne.n	8002056 <Sensor_turn_on+0x42>
         //${AOs::Sensor::SM::turn_on}
         case Q_ENTRY_SIG: {
             QTimeEvt_disarm(&me->resetEvt);
- 800202c:	3038      	adds	r0, #56	@ 0x38
- 800202e:	0004      	movs	r4, r0
- 8002030:	f002 fc68 	bl	8004904 <QTimeEvt_disarm>
+ 8002024:	3038      	adds	r0, #56	@ 0x38
+ 8002026:	0004      	movs	r4, r0
+ 8002028:	f002 fc6c 	bl	8004904 <QTimeEvt_disarm>
             QTimeEvt_armX(&me->resetEvt, DHT11_RESET_TIME, 0U);
- 8002034:	2200      	movs	r2, #0
- 8002036:	0020      	movs	r0, r4
- 8002038:	490b      	ldr	r1, [pc, #44]	@ (8002068 <Sensor_turn_on+0x4c>)
- 800203a:	f002 fc2d 	bl	8004898 <QTimeEvt_armX>
+ 800202c:	2200      	movs	r2, #0
+ 800202e:	0020      	movs	r0, r4
+ 8002030:	490b      	ldr	r1, [pc, #44]	@ (8002060 <Sensor_turn_on+0x4c>)
+ 8002032:	f002 fc31 	bl	8004898 <QTimeEvt_armX>
             HAL_GPIO_WritePin(DHT11_RESET_PORT, DHT11_RESET_PIN, GPIO_PIN_SET);
- 800203e:	20a0      	movs	r0, #160	@ 0xa0
- 8002040:	002a      	movs	r2, r5
- 8002042:	2102      	movs	r1, #2
- 8002044:	05c0      	lsls	r0, r0, #23
- 8002046:	f000 fd73 	bl	8002b30 <HAL_GPIO_WritePin>
+ 8002036:	20a0      	movs	r0, #160	@ 0xa0
+ 8002038:	002a      	movs	r2, r5
+ 800203a:	2102      	movs	r1, #2
+ 800203c:	05c0      	lsls	r0, r0, #23
+ 800203e:	f000 fd77 	bl	8002b30 <HAL_GPIO_WritePin>
             status_ = Q_HANDLED();
- 800204a:	2002      	movs	r0, #2
+ 8002042:	2002      	movs	r0, #2
             status_ = Q_SUPER(&QHsm_top);
             break;
         }
     }
     return status_;
 }
- 800204c:	bd70      	pop	{r4, r5, r6, pc}
+ 8002044:	bd70      	pop	{r4, r5, r6, pc}
             QTimeEvt_disarm(&me->resetEvt);
- 800204e:	3038      	adds	r0, #56	@ 0x38
- 8002050:	f002 fc58 	bl	8004904 <QTimeEvt_disarm>
+ 8002046:	3038      	adds	r0, #56	@ 0x38
+ 8002048:	f002 fc5c 	bl	8004904 <QTimeEvt_disarm>
             break;
- 8002054:	e7f9      	b.n	800204a <Sensor_turn_on+0x2e>
+ 800204c:	e7f9      	b.n	8002042 <Sensor_turn_on+0x2e>
             status_ = Q_TRAN(&Sensor_waiting);
- 8002056:	4b05      	ldr	r3, [pc, #20]	@ (800206c <Sensor_turn_on+0x50>)
- 8002058:	6083      	str	r3, [r0, #8]
- 800205a:	2003      	movs	r0, #3
+ 800204e:	4b05      	ldr	r3, [pc, #20]	@ (8002064 <Sensor_turn_on+0x50>)
+ 8002050:	6083      	str	r3, [r0, #8]
+ 8002052:	2003      	movs	r0, #3
             break;
- 800205c:	e7f6      	b.n	800204c <Sensor_turn_on+0x30>
+ 8002054:	e7f6      	b.n	8002044 <Sensor_turn_on+0x30>
             status_ = Q_SUPER(&QHsm_top);
- 800205e:	4b04      	ldr	r3, [pc, #16]	@ (8002070 <Sensor_turn_on+0x54>)
- 8002060:	6083      	str	r3, [r0, #8]
- 8002062:	2000      	movs	r0, #0
+ 8002056:	4b04      	ldr	r3, [pc, #16]	@ (8002068 <Sensor_turn_on+0x54>)
+ 8002058:	6083      	str	r3, [r0, #8]
+ 800205a:	2000      	movs	r0, #0
     return status_;
- 8002064:	e7f2      	b.n	800204c <Sensor_turn_on+0x30>
- 8002066:	46c0      	nop			@ (mov r8, r8)
- 8002068:	00007530 	.word	0x00007530
- 800206c:	08001f8d 	.word	0x08001f8d
- 8002070:	08003fdd 	.word	0x08003fdd
+ 800205c:	e7f2      	b.n	8002044 <Sensor_turn_on+0x30>
+ 800205e:	46c0      	nop			@ (mov r8, r8)
+ 8002060:	00007530 	.word	0x00007530
+ 8002064:	08001f8d 	.word	0x08001f8d
+ 8002068:	08003fdd 	.word	0x08003fdd
 
-08002074 <Sensor_start_dht>:
+0800206c <Sensor_start_dht>:
     switch (e->sig) {
- 8002074:	880b      	ldrh	r3, [r1, #0]
+ 800206c:	880b      	ldrh	r3, [r1, #0]
 QState Sensor_start_dht(Sensor * const me, QEvt const * const e) {
- 8002076:	b570      	push	{r4, r5, r6, lr}
- 8002078:	0004      	movs	r4, r0
+ 800206e:	b570      	push	{r4, r5, r6, lr}
+ 8002070:	0004      	movs	r4, r0
     switch (e->sig) {
- 800207a:	2b01      	cmp	r3, #1
- 800207c:	d005      	beq.n	800208a <Sensor_start_dht+0x16>
- 800207e:	2b0c      	cmp	r3, #12
- 8002080:	d01d      	beq.n	80020be <Sensor_start_dht+0x4a>
+ 8002072:	2b01      	cmp	r3, #1
+ 8002074:	d005      	beq.n	8002082 <Sensor_start_dht+0x16>
+ 8002076:	2b0c      	cmp	r3, #12
+ 8002078:	d01f      	beq.n	80020ba <Sensor_start_dht+0x4e>
             status_ = Q_SUPER(&QHsm_top);
- 8002082:	4b13      	ldr	r3, [pc, #76]	@ (80020d0 <Sensor_start_dht+0x5c>)
- 8002084:	6083      	str	r3, [r0, #8]
- 8002086:	2000      	movs	r0, #0
+ 800207a:	4b14      	ldr	r3, [pc, #80]	@ (80020cc <Sensor_start_dht+0x60>)
+ 800207c:	6083      	str	r3, [r0, #8]
+ 800207e:	2000      	movs	r0, #0
     return status_;
- 8002088:	e018      	b.n	80020bc <Sensor_start_dht+0x48>
+ 8002080:	e01a      	b.n	80020b8 <Sensor_start_dht+0x4c>
+            allowDeepSleep = false;
+ 8002082:	2500      	movs	r5, #0
+ 8002084:	4b12      	ldr	r3, [pc, #72]	@ (80020d0 <Sensor_start_dht+0x64>)
+            QTimeEvt_armX(&me->resetEvt, DHT11_RESET_TIME, 0U);
+ 8002086:	002a      	movs	r2, r5
+            allowDeepSleep = false;
+ 8002088:	701d      	strb	r5, [r3, #0]
             me->byte_index = 0;
  800208a:	0003      	movs	r3, r0
-            for(int i=0;i<5;i++) me->bits[i]=0;
- 800208c:	2500      	movs	r5, #0
-            me->byte_index = 0;
- 800208e:	332a      	adds	r3, #42	@ 0x2a
+ 800208c:	332a      	adds	r3, #42	@ 0x2a
             QTimeEvt_armX(&me->resetEvt, DHT11_RESET_TIME, 0U);
- 8002090:	002a      	movs	r2, r5
- 8002092:	4910      	ldr	r1, [pc, #64]	@ (80020d4 <Sensor_start_dht+0x60>)
+ 800208e:	4911      	ldr	r1, [pc, #68]	@ (80020d4 <Sensor_start_dht+0x68>)
             for(int i=0;i<5;i++) me->bits[i]=0;
- 8002094:	6245      	str	r5, [r0, #36]	@ 0x24
- 8002096:	8505      	strh	r5, [r0, #40]	@ 0x28
+ 8002090:	6245      	str	r5, [r0, #36]	@ 0x24
+ 8002092:	8505      	strh	r5, [r0, #40]	@ 0x28
             me->byte_index = 0;
- 8002098:	701d      	strb	r5, [r3, #0]
+ 8002094:	701d      	strb	r5, [r3, #0]
             QTimeEvt_armX(&me->resetEvt, DHT11_RESET_TIME, 0U);
- 800209a:	3038      	adds	r0, #56	@ 0x38
- 800209c:	f002 fbfc 	bl	8004898 <QTimeEvt_armX>
+ 8002096:	3038      	adds	r0, #56	@ 0x38
+ 8002098:	f002 fbfe 	bl	8004898 <QTimeEvt_armX>
             DHT11_SetPinOutput();
- 80020a0:	f000 f95c 	bl	800235c <DHT11_SetPinOutput>
+ 800209c:	f000 f95e 	bl	800235c <DHT11_SetPinOutput>
             HAL_GPIO_WritePin(DHT11_PORT, DHT11_PIN, GPIO_PIN_RESET);
- 80020a4:	002a      	movs	r2, r5
- 80020a6:	2140      	movs	r1, #64	@ 0x40
- 80020a8:	480b      	ldr	r0, [pc, #44]	@ (80020d8 <Sensor_start_dht+0x64>)
- 80020aa:	f000 fd41 	bl	8002b30 <HAL_GPIO_WritePin>
+ 80020a0:	002a      	movs	r2, r5
+ 80020a2:	2140      	movs	r1, #64	@ 0x40
+ 80020a4:	480c      	ldr	r0, [pc, #48]	@ (80020d8 <Sensor_start_dht+0x6c>)
+ 80020a6:	f000 fd43 	bl	8002b30 <HAL_GPIO_WritePin>
             QTimeEvt_armX(&me->dht11StartEvt, 20U, 0U); // 20ms
- 80020ae:	0020      	movs	r0, r4
- 80020b0:	002a      	movs	r2, r5
- 80020b2:	3054      	adds	r0, #84	@ 0x54
- 80020b4:	2114      	movs	r1, #20
- 80020b6:	f002 fbef 	bl	8004898 <QTimeEvt_armX>
- 80020ba:	2002      	movs	r0, #2
+ 80020aa:	0020      	movs	r0, r4
+ 80020ac:	002a      	movs	r2, r5
+ 80020ae:	3054      	adds	r0, #84	@ 0x54
+ 80020b0:	2114      	movs	r1, #20
+ 80020b2:	f002 fbf1 	bl	8004898 <QTimeEvt_armX>
+ 80020b6:	2002      	movs	r0, #2
 }
- 80020bc:	bd70      	pop	{r4, r5, r6, pc}
+ 80020b8:	bd70      	pop	{r4, r5, r6, pc}
             DHT11_SetPinInput();
- 80020be:	f000 f96b 	bl	8002398 <DHT11_SetPinInput>
+ 80020ba:	f000 f96d 	bl	8002398 <DHT11_SetPinInput>
             Delay_us(30);  // 20–40 µs wait
- 80020c2:	201e      	movs	r0, #30
- 80020c4:	f000 f9b4 	bl	8002430 <Delay_us>
+ 80020be:	201e      	movs	r0, #30
+ 80020c0:	f000 f9b6 	bl	8002430 <Delay_us>
             status_ = Q_TRAN(&Sensor_wait_response);
- 80020c8:	4b04      	ldr	r3, [pc, #16]	@ (80020dc <Sensor_start_dht+0x68>)
- 80020ca:	2003      	movs	r0, #3
- 80020cc:	60a3      	str	r3, [r4, #8]
+ 80020c4:	4b05      	ldr	r3, [pc, #20]	@ (80020dc <Sensor_start_dht+0x70>)
+ 80020c6:	2003      	movs	r0, #3
+ 80020c8:	60a3      	str	r3, [r4, #8]
             break;
- 80020ce:	e7f5      	b.n	80020bc <Sensor_start_dht+0x48>
- 80020d0:	08003fdd 	.word	0x08003fdd
+ 80020ca:	e7f5      	b.n	80020b8 <Sensor_start_dht+0x4c>
+ 80020cc:	08003fdd 	.word	0x08003fdd
+ 80020d0:	2000052c 	.word	0x2000052c
  80020d4:	00007530 	.word	0x00007530
  80020d8:	50000800 	.word	0x50000800
  80020dc:	08002105 	.word	0x08002105
@@ -5782,7 +5782,7 @@ QState Sensor_wait_response(Sensor * const me, QEvt const * const e) {
  8002218:	0008      	movs	r0, r1
     return status_;
  800221a:	e78d      	b.n	8002138 <Sensor_wait_response+0x34>
- 800221c:	08001fc5 	.word	0x08001fc5
+ 800221c:	08001fbd 	.word	0x08001fbd
  8002220:	0000ffff 	.word	0x0000ffff
  8002224:	2000052c 	.word	0x2000052c
  8002228:	08005f0c 	.word	0x08005f0c
@@ -5790,13 +5790,13 @@ QState Sensor_wait_response(Sensor * const me, QEvt const * const e) {
  8002230:	08003fdd 	.word	0x08003fdd
 
 08002234 <Sensor_initial>:
-    return Q_TRAN(&Sensor_waiting);
+    return Q_TRAN(&Sensor_start_dht);
  8002234:	4b01      	ldr	r3, [pc, #4]	@ (800223c <Sensor_initial+0x8>)
  8002236:	6083      	str	r3, [r0, #8]
 }
  8002238:	2003      	movs	r0, #3
  800223a:	4770      	bx	lr
- 800223c:	08001f8d 	.word	0x08001f8d
+ 800223c:	0800206d 	.word	0x0800206d
 
 08002240 <HAL_MspInit>:
 

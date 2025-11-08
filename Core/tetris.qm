@@ -183,7 +183,9 @@ ssd1306_Fill(Black);</code>
     </initial>
     <!--${AOs::MainApp::SM::display}-->
     <state name="display">
-     <entry>HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_RESET);</entry>
+     <entry brief="make sure water pump is off">HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_RESET);
+
+</entry>
      <exit>QTimeEvt_disarm(&amp;me-&gt;longPressEvt);</exit>
      <!--${AOs::MainApp::SM::display::initial}-->
      <initial target="../7">
@@ -193,13 +195,7 @@ ssd1306_Fill(Black);</code>
      </initial>
      <!--${AOs::MainApp::SM::display::SENSOR_DONE}-->
      <tran trig="SENSOR_DONE">
-      <action>//QTimeEvt_disarm(&amp;me-&gt;tempPollEvt);
-//QTimeEvt_armX(&amp;me-&gt;tempPollEvt, 
-//              20000U,    // Fire after 10 seconds
-//              20000U);   // Then repeat every 10 seconds
-
-
-SensorEvent const *sensorEvt = (SensorEvent const *)e;
+      <action>SensorEvent const *sensorEvt = (SensorEvent const *)e;
 
 me-&gt;currentTemp = sensorEvt-&gt;temperature;
 
@@ -292,13 +288,13 @@ currentState = TETRIS;</action>
      </tran>
      <!--${AOs::MainApp::SM::display::display_stats}-->
      <state name="display_stats">
-      <entry brief="display and poll timer">display_temp(me-&gt;currentTemp);
-//static QEvt const pollSensorEvt = QEVT_INITIALIZER(POLL_SENSOR_SIG);
-//QACTIVE_POST(AO_YourActiveObject, &amp;pollSensorEvt, (void*)0);
-
+      <entry brief="conf accelerometer">display_temp(me-&gt;currentTemp);
 
 init_accelerometer(); //tap/shake detection
-allowDeepSleep = true;</entry>
+
+allowDeepSleep = true;
+
+</entry>
       <!--${AOs::MainApp::SM::display::display_stats::PLANT_DRY}-->
       <tran trig="PLANT_DRY" target="../../8">
        <tran_glyph conn="54,50,1,0,23,29">
@@ -306,7 +302,7 @@ allowDeepSleep = true;</entry>
        </tran_glyph>
       </tran>
       <state_glyph node="13,25,41,31">
-       <entry box="0,3,6,2"/>
+       <entry box="0,3,22,2"/>
       </state_glyph>
      </state>
      <!--${AOs::MainApp::SM::display::dry_alert}-->
@@ -332,7 +328,7 @@ QTimeEvt_armX(&amp;me-&gt;dryTimerEvt, DRY_TIMEOUT , 0U);
       </state_glyph>
      </state>
      <state_glyph node="9,12,97,87">
-      <entry box="0,3,6,2"/>
+      <entry box="0,3,23,2"/>
       <exit box="0,5,6,2"/>
      </state_glyph>
     </state>
@@ -758,9 +754,10 @@ return adc_value;</code>
    <!--${AOs::Sensor::SM}-->
    <statechart properties="0x00">
     <!--${AOs::Sensor::SM::initial}-->
-    <initial target="../1">
-     <initial_glyph conn="60,16,4,0,15">
-      <action box="0,-2,10,2"/>
+    <initial target="../3">
+     <action brief="poll sensor on boot"/>
+     <initial_glyph conn="58,79,5,3,13">
+      <action box="1,-4,10,7"/>
      </initial_glyph>
     </initial>
     <!--${AOs::Sensor::SM::waiting}-->
@@ -769,8 +766,6 @@ return adc_value;</code>
 </entry>
      <!--${AOs::Sensor::SM::waiting::START_SENSOR}-->
      <tran trig="START_SENSOR" target="../../3">
-      <action>allowDeepSleep = false;
-</action>
       <tran_glyph conn="76,62,4,0,13">
        <action box="0,-2,10,2"/>
       </tran_glyph>
@@ -866,7 +861,9 @@ for(uint8_t i = 0; i &lt; TIMESTAMP_SIZE; i++)
     </state>
     <!--${AOs::Sensor::SM::start_dht}-->
     <state name="start_dht">
-     <entry>for(int i=0;i&lt;5;i++) me-&gt;bits[i]=0;
+     <entry>allowDeepSleep = false;
+
+for(int i=0;i&lt;5;i++) me-&gt;bits[i]=0;
 me-&gt;bit_index = 0;
 me-&gt;byte_index = 0;
 

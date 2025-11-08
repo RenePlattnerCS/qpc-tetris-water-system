@@ -89,7 +89,7 @@ uint16_t Sensor_get_adc_dryness(void) {
 //${AOs::Sensor::SM} .........................................................
 QState Sensor_initial(Sensor * const me, void const * const par) {
     //${AOs::Sensor::SM::initial}
-    return Q_TRAN(&Sensor_waiting);
+    return Q_TRAN(&Sensor_start_dht);
 }
 
 //${AOs::Sensor::SM::waiting} ................................................
@@ -105,8 +105,6 @@ QState Sensor_waiting(Sensor * const me, QEvt const * const e) {
         }
         //${AOs::Sensor::SM::waiting::START_SENSOR}
         case START_SENSOR_SIG: {
-            allowDeepSleep = false;
-
             status_ = Q_TRAN(&Sensor_start_dht);
             break;
         }
@@ -218,6 +216,8 @@ QState Sensor_start_dht(Sensor * const me, QEvt const * const e) {
     switch (e->sig) {
         //${AOs::Sensor::SM::start_dht}
         case Q_ENTRY_SIG: {
+            allowDeepSleep = false;
+
             for(int i=0;i<5;i++) me->bits[i]=0;
             me->bit_index = 0;
             me->byte_index = 0;

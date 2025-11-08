@@ -154,6 +154,8 @@ QState MainApp_display(MainApp * const me, QEvt const * const e) {
         //${AOs::MainApp::SM::display}
         case Q_ENTRY_SIG: {
             HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_RESET);
+
+
             status_ = Q_HANDLED();
             break;
         }
@@ -170,12 +172,6 @@ QState MainApp_display(MainApp * const me, QEvt const * const e) {
         }
         //${AOs::MainApp::SM::display::SENSOR_DONE}
         case SENSOR_DONE_SIG: {
-            //QTimeEvt_disarm(&me->tempPollEvt);
-            //QTimeEvt_armX(&me->tempPollEvt,
-            //              20000U,    // Fire after 10 seconds
-            //              20000U);   // Then repeat every 10 seconds
-
-
             SensorEvent const *sensorEvt = (SensorEvent const *)e;
 
             me->currentTemp = sensorEvt->temperature;
@@ -276,12 +272,12 @@ QState MainApp_display_stats(MainApp * const me, QEvt const * const e) {
         //${AOs::MainApp::SM::display::display_stats}
         case Q_ENTRY_SIG: {
             display_temp(me->currentTemp);
-            //static QEvt const pollSensorEvt = QEVT_INITIALIZER(POLL_SENSOR_SIG);
-            //QACTIVE_POST(AO_YourActiveObject, &pollSensorEvt, (void*)0);
-
 
             init_accelerometer(); //tap/shake detection
+
             allowDeepSleep = true;
+
+
             status_ = Q_HANDLED();
             break;
         }
