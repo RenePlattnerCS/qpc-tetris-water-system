@@ -2096,11 +2096,11 @@ __STATIC_INLINE uint32_t SysTick_Config(uint32_t ticks)
  8000d74:	ffff00ff 	.word	0xffff00ff
 
 08000d78 <QK_onIdle>:
+void QF_onCleanup(void) {
 }
 
 //............................................................................
 
-//static bool systick_10ms_too_long_workaround = false;
 void QK_onIdle(void) {
  8000d78:	b5f8      	push	{r3, r4, r5, r6, r7, lr}
 
