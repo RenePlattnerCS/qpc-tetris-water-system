@@ -11,8 +11,8 @@
 #define MAX_DRY 			 	(2500U) 	//for the dryness plant sensor
 #define MAX_WET 			 	(1000U)
 #define PLANT_DRY_THREASHOLD 	(20U) 		//percent
-#define DRY_TIMEOUT			 	(8000U)
-#define PUMP_TIMEOUT			(9000U)
+#define DRY_TIMEOUT			 	(80U)
+#define PUMP_TIMEOUT			(4000U)
 #define DHT11_MAX_EDGES 		(3)
 #define DHT11_RESET_TIME 		(30000U)
 #define TIMESTAMP_SIZE  		(82U)

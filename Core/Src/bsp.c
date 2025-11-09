@@ -251,7 +251,7 @@ void RTC_IRQHandler(void)
         /* clear EXTI line 17 flag */
         LL_EXTI_ClearRisingFlag_0_31(LL_EXTI_LINE_19);
 
-        RTC_setWakeInterval( POLL_HOUR_INTERVALL , 0 , 0);
+        RTC_setWakeInterval( 0 , 0 , 40); //POLL_HOUR_INTERVALL
 
         static QEvt const pollSensorEvt = QEVT_INITIALIZER(POLL_SENSOR_SIG);
 		QACTIVE_POST(AO_Main_App, &pollSensorEvt, (void*)0);

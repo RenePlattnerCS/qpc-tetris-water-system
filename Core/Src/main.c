@@ -705,13 +705,13 @@ static void MX_GPIO_Init(void)
   LL_GPIO_SetPinMode(RF_BTN_GPIO_Port, RF_BTN_Pin, LL_GPIO_MODE_INPUT);
 
   /**/
-  LL_GPIO_SetPinMode(GPIOB, LL_GPIO_PIN_6, LL_GPIO_MODE_INPUT);
+  LL_GPIO_SetPinMode(adxl345_int1_GPIO_Port, adxl345_int1_Pin, LL_GPIO_MODE_INPUT);
 
   /**/
   LL_GPIO_SetPinPull(RF_BTN_GPIO_Port, RF_BTN_Pin, LL_GPIO_PULL_NO);
 
   /**/
-  LL_GPIO_SetPinPull(GPIOB, LL_GPIO_PIN_6, LL_GPIO_PULL_NO);
+  LL_GPIO_SetPinPull(adxl345_int1_GPIO_Port, adxl345_int1_Pin, LL_GPIO_PULL_NO);
 
   /**/
   LL_EXTI_SetEXTISource(LL_EXTI_CONFIG_PORTA, LL_EXTI_CONFIG_LINE0);

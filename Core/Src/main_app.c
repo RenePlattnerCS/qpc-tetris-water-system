@@ -361,6 +361,7 @@ QState MainApp_pump(MainApp * const me, QEvt const * const e) {
         }
         //${AOs::MainApp::SM::pump::BUTTON_RELEASE}
         case BUTTON_RELEASE_SIG: {
+            allowDeepSleep = true;
             status_ = Q_TRAN(&MainApp_display_stats);
             break;
         }
@@ -370,7 +371,7 @@ QState MainApp_pump(MainApp * const me, QEvt const * const e) {
             HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_RESET);
 
 
-
+            allowDeepSleep = true;
             status_ = Q_TRAN(&MainApp_display);
             break;
         }

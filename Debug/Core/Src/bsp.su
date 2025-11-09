@@ -8,7 +8,7 @@
 ../Core/Src/bsp.c:203:6:BSP_get_timestamps	8	static
 ../Core/Src/bsp.c:212:6:EXTI4_15_IRQHandler	8	static
 ../Core/Src/bsp.c:220:6:HAL_GPIO_EXTI_Rising_Callback	40	static
-../Core/Src/bsp.c:243:6:RTC_IRQHandler	32	static
+../Core/Src/bsp.c:243:6:RTC_IRQHandler	40	static
 ../Core/Src/bsp.c:355:6:BSP_reset_systick	16	static
 ../Core/Src/bsp.c:542:6:BSP_start	8	static
 ../Core/Src/bsp.c:551:6:BSP_randomSeed	0	static
