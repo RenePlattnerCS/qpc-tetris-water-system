@@ -53,11 +53,12 @@
 extern MainApp MainApp_inst;
 extern  volatile bool allowDeepSleep ;
 
+static void RTC_ReadDate(uint8_t *day, uint8_t *month, uint8_t *year);
+static uint8_t getDaysInMonth(uint8_t month, uint8_t year);
 static void RTC_ReadTime(uint8_t *hours, uint8_t *minutes, uint8_t *seconds);
 static void TIM3_input_capture_init(void);
 static void BSP_RTC_init(void);
 static void RTC_setWakeInterval(uint32_t hours , uint32_t minutes, uint32_t seconds);
-static void RTC_setWakeIntervalSeconds(uint32_t seconds);
 static void RTC_ClockConfig(void);
 
 Q_DEFINE_THIS_FILE  // define the name of this file for assertions
@@ -251,7 +252,7 @@ void RTC_IRQHandler(void)
         /* clear EXTI line 17 flag */
         LL_EXTI_ClearRisingFlag_0_31(LL_EXTI_LINE_19);
 
-        RTC_setWakeInterval( 0 , 0 , 40); //POLL_HOUR_INTERVALL
+        RTC_setWakeIntervalSeconds(POLL_INTERVALL_SECONDS);
 
         static QEvt const pollSensorEvt = QEVT_INITIALIZER(POLL_SENSOR_SIG);
 		QACTIVE_POST(AO_Main_App, &pollSensorEvt, (void*)0);
@@ -464,12 +465,13 @@ static void RTC_setWakeInterval(uint32_t hours , uint32_t minutes, uint32_t seco
     LL_RTC_EnableWriteProtection(RTC);
 }
 
-
-static void RTC_setWakeIntervalSeconds(uint32_t seconds)
+void RTC_setWakeIntervalSeconds(uint32_t seconds)
 {
     uint8_t hour, min, sec;
+    uint8_t day, month, year;
 
     RTC_ReadTime(&hour, &min, &sec);
+    RTC_ReadDate(&day, &month, &year);
 
     /* Add seconds */
     sec += seconds;
@@ -481,27 +483,78 @@ static void RTC_setWakeIntervalSeconds(uint32_t seconds)
         hour += min / 60;
         min %= 60;
     }
-    hour %= 24;
+    if (hour >= 24) {
+        day += hour / 24;
+        hour %= 24;
+
+        /* Handle day/month/year wraparound */
+        while (day > getDaysInMonth(month, year)) {
+            day -= getDaysInMonth(month, year);
+            month++;
+            if (month > 12) {
+                month = 1;
+                year++;
+                if (year > 99) {
+                    year = 0;  // Wrap at year 2100
+                }
+            }
+        }
+    }
 
     /* Convert back to BCD */
     uint32_t tr =
-	((hour / 10) << RTC_TR_HT_Pos) | ((hour % 10) << RTC_TR_HU_Pos) |
-	((min  / 10) << RTC_TR_MNT_Pos) | ((min  % 10) << RTC_TR_MNU_Pos) |
-	((sec  / 10) << RTC_TR_ST_Pos)  | ((sec  % 10) << RTC_TR_SU_Pos);
+        ((hour / 10) << RTC_TR_HT_Pos) | ((hour % 10) << RTC_TR_HU_Pos) |
+        ((min  / 10) << RTC_TR_MNT_Pos) | ((min  % 10) << RTC_TR_MNU_Pos) |
+        ((sec  / 10) << RTC_TR_ST_Pos)  | ((sec  % 10) << RTC_TR_SU_Pos);
+
+    uint32_t alrmar =tr | ((day / 10) << RTC_ALRMAR_DT_Pos) | ((day % 10) << RTC_ALRMAR_DU_Pos);
 
     /* Program Alarm A */
     LL_RTC_DisableWriteProtection(RTC);
 
-	LL_RTC_ALMA_Disable(RTC);
-	LL_RTC_WriteReg(RTC, ALRMAR, tr | RTC_ALRMAR_MSK4); // Ignore date
-	LL_RTC_ClearFlag_ALRA(RTC);
-	LL_RTC_ALMA_Enable(RTC);
+    LL_RTC_ALMA_Disable(RTC);
+    while(!LL_RTC_IsActiveFlag_ALRAW(RTC));  // Wait until we can write
 
+    LL_RTC_WriteReg(RTC, ALRMAR, alrmar);
+    LL_RTC_ClearFlag_ALRA(RTC);
+    LL_RTC_ALMA_Enable(RTC);
 
     LL_RTC_EnableWriteProtection(RTC);
 }
 
+static void RTC_ReadDate(uint8_t *day, uint8_t *month, uint8_t *year)
+{
+    uint32_t dr = LL_RTC_ReadReg(RTC, DR);
 
+    /* Extract BCD values */
+    uint8_t day_tens = (dr & RTC_DR_DT_Msk) >> RTC_DR_DT_Pos;
+    uint8_t day_units = (dr & RTC_DR_DU_Msk) >> RTC_DR_DU_Pos;
+
+    uint8_t month_tens = (dr & RTC_DR_MT_Msk) >> RTC_DR_MT_Pos;
+    uint8_t month_units = (dr & RTC_DR_MU_Msk) >> RTC_DR_MU_Pos;
+
+    uint8_t year_tens = (dr & RTC_DR_YT_Msk) >> RTC_DR_YT_Pos;
+    uint8_t year_units = (dr & RTC_DR_YU_Msk) >> RTC_DR_YU_Pos;
+
+    /* Convert from BCD to decimal */
+    *day = (day_tens * 10) + day_units;
+    *month = (month_tens * 10) + month_units;
+    *year = (year_tens * 10) + year_units;  // Returns 2-digit year (e.g., 25 for 2025)
+}
+
+
+static uint8_t getDaysInMonth(uint8_t month, uint8_t year)
+{
+    const uint8_t days_in_month[] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+
+    if (month == 2) {
+        // Leap year check (year is 0-99, representing 2000-2099)
+        if (((year % 4) == 0) && ((year % 100) != 0)) {
+            return 29;
+        }
+    }
+    return days_in_month[month - 1];
+}
 
 static void RTC_ReadTime(uint8_t *hours, uint8_t *minutes, uint8_t *seconds)
 {

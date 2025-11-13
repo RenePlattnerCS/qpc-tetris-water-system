@@ -48,5 +48,6 @@ void RTC_SetNextAlarm(uint32_t seconds_from_now);
 void BSP_ledOn(void);
 void BSP_ledOff(void);
 void BSP_reset_systick(void);
+void RTC_setWakeIntervalSeconds(uint32_t seconds);
 
 #endif // BSP_H_

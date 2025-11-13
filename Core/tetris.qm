@@ -293,8 +293,8 @@ currentState = TETRIS;</action>
 
 init_accelerometer(); //tap/shake detection
 
+//RTC_setWakeIntervalSeconds(POLL_INTERVALL_SECONDS);
 allowDeepSleep = true;
-
 </entry>
       <!--${AOs::MainApp::SM::display::display_stats::PLANT_DRY}-->
       <tran trig="PLANT_DRY" target="../../8">

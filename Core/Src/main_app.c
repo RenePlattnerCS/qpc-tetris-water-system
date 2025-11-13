@@ -280,8 +280,8 @@ QState MainApp_display_stats(MainApp * const me, QEvt const * const e) {
 
             init_accelerometer(); //tap/shake detection
 
+            //RTC_setWakeIntervalSeconds(POLL_INTERVALL_SECONDS);
             allowDeepSleep = true;
-
 
             status_ = Q_HANDLED();
             break;

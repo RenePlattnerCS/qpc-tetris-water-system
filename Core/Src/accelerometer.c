@@ -21,7 +21,7 @@ void init_accelerometer(void) //tap detection
 	HAL_I2C_Mem_Write(&hi2c1, ADXL_ADDR, 0x31, 1, &data, 1, HAL_MAX_DELAY);
 
 	//Tap threshold (adjust)
-	data = 0xc8;
+	data = 0x34;
 	HAL_I2C_Mem_Write(&hi2c1, ADXL_ADDR, REG_THRESH_SHAKE , 1, &data, 1, HAL_MAX_DELAY);
 
 	 //Tap duration
@@ -91,8 +91,8 @@ void read_accelerometer_tilt(int * xtilt, int * ytilt)
 	int z_mg = (rawZ * 1000) / 256;
 
 
-	*xtilt = compute_tiltX(x_mg, z_mg);
-	*ytilt = compute_tiltX(y_mg, z_mg);
+	*xtilt = compute_tiltX(x_mg, y_mg);
+	*ytilt = compute_tiltX(z_mg, y_mg);
 
 }
 
