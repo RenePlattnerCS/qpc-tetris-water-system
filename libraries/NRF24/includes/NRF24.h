@@ -8,6 +8,13 @@
 #ifndef NRF_24_H
 #define NRF_24_H
 
+#include "stm32c0xx_ll_spi.h"
+#include "stm32c0xx_ll_gpio.h"
+
+//main LL functions:
+void LL_SPI_Transmit(SPI_TypeDef *SPIx, uint8_t *data, uint16_t size);
+void LL_SPI_Receive(SPI_TypeDef *SPIx, uint8_t *data, uint16_t size);
+
 enum data_rate {
 	_1mbps   = 0,
 	_2mbps   = 1,

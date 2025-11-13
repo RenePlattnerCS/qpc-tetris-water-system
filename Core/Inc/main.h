@@ -64,7 +64,7 @@ extern "C" {
 void Error_Handler(void);
 
 /* USER CODE BEGIN EFP */
-
+void SystemClock_Config(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
@@ -97,6 +97,11 @@ void Error_Handler(void);
 #define DEBUG_SWDIO_GPIO_Port GPIOA
 #define DEBUG_SWCLK_Pin LL_GPIO_PIN_14
 #define DEBUG_SWCLK_GPIO_Port GPIOA
+#define SLEEP_LED_Pin LL_GPIO_PIN_15
+#define SLEEP_LED_GPIO_Port GPIOA
+#define adxl345_int1_Pin LL_GPIO_PIN_6
+#define adxl345_int1_GPIO_Port GPIOB
+#define adxl345_int1_EXTI_IRQn EXTI4_15_IRQn
 
 /* USER CODE BEGIN Private defines */
 

@@ -28,8 +28,7 @@ Core/Src/plant_sensor.o: ../Core/Src/plant_sensor.c \
  ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_i2c_ex.h \
  ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_pwr.h \
  ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_pwr_ex.h \
- ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_rtc.h \
- ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_rtc_ex.h
+ ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_adc.h
 ../Core/Inc/plant_sensor.h:
 ../Drivers/CMSIS/Device/ST/STM32C0xx/Include/stm32c0xx.h:
 ../Drivers/CMSIS/Device/ST/STM32C0xx/Include/stm32c031xx.h:
@@ -59,5 +58,4 @@ Core/Src/plant_sensor.o: ../Core/Src/plant_sensor.c \
 ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_i2c_ex.h:
 ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_pwr.h:
 ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_pwr_ex.h:
-../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_rtc.h:
-../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_rtc_ex.h:
+../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_adc.h:

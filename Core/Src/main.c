@@ -153,6 +153,7 @@ int main(void)
   /* USER CODE BEGIN 2 */
   QF_init();       // initialize the framework and the underlying RT kernel
   BSP_init();      // initialize the BSP
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -703,7 +704,7 @@ static void MX_GPIO_Init(void)
   LL_GPIO_ResetOutputPin(CSN_GPIO_Port, CSN_Pin);
 
   /**/
-  LL_GPIO_ResetOutputPin(GPIOA, LL_GPIO_PIN_15);
+  LL_GPIO_ResetOutputPin(SLEEP_LED_GPIO_Port, SLEEP_LED_Pin);
 
   /**/
   EXTI_InitStruct.Line_0_31 = LL_EXTI_LINE_0;
@@ -723,13 +724,13 @@ static void MX_GPIO_Init(void)
   LL_GPIO_SetPinMode(RF_BTN_GPIO_Port, RF_BTN_Pin, LL_GPIO_MODE_INPUT);
 
   /**/
-  LL_GPIO_SetPinMode(GPIOB, LL_GPIO_PIN_6, LL_GPIO_MODE_INPUT);
+  LL_GPIO_SetPinMode(adxl345_int1_GPIO_Port, adxl345_int1_Pin, LL_GPIO_MODE_INPUT);
 
   /**/
   LL_GPIO_SetPinPull(RF_BTN_GPIO_Port, RF_BTN_Pin, LL_GPIO_PULL_NO);
 
   /**/
-  LL_GPIO_SetPinPull(GPIOB, LL_GPIO_PIN_6, LL_GPIO_PULL_NO);
+  LL_GPIO_SetPinPull(adxl345_int1_GPIO_Port, adxl345_int1_Pin, LL_GPIO_PULL_NO);
 
   /**/
   LL_EXTI_SetEXTISource(LL_EXTI_CONFIG_PORTA, LL_EXTI_CONFIG_LINE0);
@@ -788,12 +789,12 @@ static void MX_GPIO_Init(void)
   LL_GPIO_Init(CSN_GPIO_Port, &GPIO_InitStruct);
 
   /**/
-  GPIO_InitStruct.Pin = LL_GPIO_PIN_15;
+  GPIO_InitStruct.Pin = SLEEP_LED_Pin;
   GPIO_InitStruct.Mode = LL_GPIO_MODE_OUTPUT;
   GPIO_InitStruct.Speed = LL_GPIO_SPEED_FREQ_LOW;
   GPIO_InitStruct.OutputType = LL_GPIO_OUTPUT_PUSHPULL;
   GPIO_InitStruct.Pull = LL_GPIO_PULL_NO;
-  LL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+  LL_GPIO_Init(SLEEP_LED_GPIO_Port, &GPIO_InitStruct);
 
   /* EXTI interrupt init*/
   NVIC_SetPriority(EXTI0_1_IRQn, 0);

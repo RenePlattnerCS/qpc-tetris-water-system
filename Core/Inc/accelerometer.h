@@ -34,5 +34,4 @@ void init_accelerometer(void);
 void accelerometer_init_polling(void);
 void read_accelerometer(int16_t *x, int16_t *y, int16_t *z);
 void read_accelerometer_tilt(int * xtilt, int * ytilt);
-
 #endif /* INC_ACCELEROMETER_H_ */

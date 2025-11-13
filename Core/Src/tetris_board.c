@@ -4,7 +4,7 @@
 #include "app_config.h"
 #include <string.h>
 
-static void Board_draw_outline(const Board *me);
+static void Board_draw_outline(const Board  * const me);
 static void clear_screen(Board *me);
 static void clear_line(Board * me, int line_to_clear);
 static bool is_line_full(Board * me, int row);
@@ -29,7 +29,7 @@ void Board_ctor(Board *me, uint8_t *grid,
 }
 
 
-static void Board_draw_outline(const Board *me)
+static void Board_draw_outline(const Board  * const me)
 {
 	draw_border(me);
 }
@@ -91,7 +91,7 @@ bool move_down(Board *me, Tetromino *active)
 
 
 	}
-
+	return true;
 }
 
 void rotate_tetromino_collision_check(Board * me, Tetromino* t) {

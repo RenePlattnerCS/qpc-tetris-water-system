@@ -1,28 +1,29 @@
 #include "tetris_input_handler.h"
 #include <stdint.h>
 #include "tetris_board.h"
+#include <stdlib.h>
 
 uint8_t compute_move_delay(int16_t tilt) {
 	tilt = abs(tilt);
 
-    if (tilt < 3)  return 255;  // no movement (very flat)
-    if (tilt < 10) return 12;   // slow
-    if (tilt < 25) return 6;    // medium
+    if (tilt < 3)  return 200 ;  // no movement (very flat)
+    if (tilt < 10) return 6  ; // slow
+    if (tilt < 25) return 3  ; // medium
     return 3;                   // fast
 }
 
 uint8_t compute_fall_delay(int16_t ytilt) {
     ytilt = abs(ytilt);
-    if (ytilt < 25)  return 0;
-    if (ytilt < 40)  return 75;   // no extra gravity
-    if (ytilt < 55)  return 50;   // no extra gravity
-    if (ytilt < 70) return 25;    // tilt a bit → falls faster
-    if (ytilt < 100) return 8;    // tilt more → much faster
+    if (ytilt < 10)  return 0;
+    if (ytilt < 20)  return 75 / 2;   // no extra gravity
+    if (ytilt < 35)  return 50 / 2;   // no extra gravity
+    if (ytilt < 40) return 25 / 2;    // tilt a bit → falls faster
+    if (ytilt < 50) return 8 / 2;    // tilt more → much faster
     return 1;                   // strong tilt → "soft drop"
 }
 
 bool process_tilt_move(Board *board, Tetromino *t, int16_t xtilt, int16_t ytilt) {
-    ytilt *= -1; // because your axis is reversed
+    //ytilt *= -1; // because your axis is reversed
     if (!board || !t) return false;
 
     //

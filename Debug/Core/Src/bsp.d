@@ -8,7 +8,10 @@ Core/Src/bsp.o: ../Core/Src/bsp.c \
  ../Middlewares/Third_Party/QuantumLeaps_RTEF_qpc/include/qk.h \
  ../Middlewares/Third_Party/QuantumLeaps_RTEF_qpc/include/qsafe.h \
  ../Middlewares/Third_Party/QuantumLeaps_RTEF_qpc/include/qs_dummy.h \
- ../Core/Inc/bsp.h \
+ ../Middlewares/Third_Party/QuantumLeaps_RTEF_qpc/include/qsafe.h \
+ ../Core/Inc/bsp.h ../Core/Inc/main.h \
+ ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal.h \
+ ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_system.h \
  ../Drivers/CMSIS/Device/ST/STM32C0xx/Include/stm32c0xx.h \
  ../Drivers/CMSIS/Device/ST/STM32C0xx/Include/stm32c031xx.h \
  ../Drivers/CMSIS/Include/core_cm0plus.h \
@@ -17,8 +20,6 @@ Core/Src/bsp.o: ../Core/Src/bsp.c \
  ../Drivers/CMSIS/Include/cmsis_gcc.h \
  ../Drivers/CMSIS/Include/mpu_armv7.h \
  ../Drivers/CMSIS/Device/ST/STM32C0xx/Include/system_stm32c0xx.h \
- ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal.h \
- ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_system.h \
  ../Core/Inc/stm32c0xx_hal_conf.h \
  ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_rcc.h \
  ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_def.h \
@@ -37,8 +38,20 @@ Core/Src/bsp.o: ../Core/Src/bsp.c \
  ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_i2c_ex.h \
  ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_pwr.h \
  ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_pwr_ex.h \
- ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_rtc.h \
- ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_rtc_ex.h \
+ ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_adc.h \
+ ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_rtc.h \
+ ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_spi.h \
+ ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_tim.h \
+ ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_system.h \
+ ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_gpio.h \
+ ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_exti.h \
+ ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_bus.h \
+ ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_cortex.h \
+ ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_rcc.h \
+ ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_utils.h \
+ ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_pwr.h \
+ ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_dma.h \
+ ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_dmamux.h \
  M:/embedded/stm32C0_Nucleus/qpc-tetris-water-system/libraries/OLED_SSD1306/include/ssd1306.h \
  M:/embedded/stm32C0_Nucleus/qpc-tetris-water-system/libraries/OLED_SSD1306/include/ssd1306_conf.h \
  ../Core/Inc/app_config.h ../Core/Inc/main_app.h \
@@ -52,13 +65,7 @@ Core/Src/bsp.o: ../Core/Src/bsp.c \
  M:/embedded/stm32C0_Nucleus/qpc-tetris-water-system/libraries/NRF24/includes/NRF24.h \
  M:/embedded/stm32C0_Nucleus/qpc-tetris-water-system/libraries/NRF24/includes/NRF24_reg_addresses.h \
  M:/embedded/stm32C0_Nucleus/qpc-tetris-water-system/libraries/NRF24/includes/NRF24_conf.h \
- ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_gpio.h \
- ../Core/Inc/temp_sensor.h \
- ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_tim.h \
- ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_adc.h \
- ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_spi.h \
- ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_pwr.h \
- ../Core/Inc/accelerometer.h
+ ../Core/Inc/temp_sensor.h ../Core/Inc/accelerometer.h
 ../Middlewares/Third_Party/QuantumLeaps_RTEF_qpc/include/qpc.h:
 ../Middlewares/Third_Party/QuantumLeaps_RTEF_qpc/ports/arm-cm/qk/gnu/qp_port.h:
 ../Middlewares/Third_Party/QuantumLeaps_RTEF_qpc/ports/arm-cm/config/qp_config.h:
@@ -68,7 +75,11 @@ Core/Src/bsp.o: ../Core/Src/bsp.c \
 ../Middlewares/Third_Party/QuantumLeaps_RTEF_qpc/include/qk.h:
 ../Middlewares/Third_Party/QuantumLeaps_RTEF_qpc/include/qsafe.h:
 ../Middlewares/Third_Party/QuantumLeaps_RTEF_qpc/include/qs_dummy.h:
+../Middlewares/Third_Party/QuantumLeaps_RTEF_qpc/include/qsafe.h:
 ../Core/Inc/bsp.h:
+../Core/Inc/main.h:
+../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal.h:
+../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_system.h:
 ../Drivers/CMSIS/Device/ST/STM32C0xx/Include/stm32c0xx.h:
 ../Drivers/CMSIS/Device/ST/STM32C0xx/Include/stm32c031xx.h:
 ../Drivers/CMSIS/Include/core_cm0plus.h:
@@ -77,8 +88,6 @@ Core/Src/bsp.o: ../Core/Src/bsp.c \
 ../Drivers/CMSIS/Include/cmsis_gcc.h:
 ../Drivers/CMSIS/Include/mpu_armv7.h:
 ../Drivers/CMSIS/Device/ST/STM32C0xx/Include/system_stm32c0xx.h:
-../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal.h:
-../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_system.h:
 ../Core/Inc/stm32c0xx_hal_conf.h:
 ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_rcc.h:
 ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_def.h:
@@ -97,8 +106,20 @@ Core/Src/bsp.o: ../Core/Src/bsp.c \
 ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_i2c_ex.h:
 ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_pwr.h:
 ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_pwr_ex.h:
-../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_rtc.h:
-../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_rtc_ex.h:
+../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_adc.h:
+../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_rtc.h:
+../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_spi.h:
+../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_tim.h:
+../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_system.h:
+../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_gpio.h:
+../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_exti.h:
+../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_bus.h:
+../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_cortex.h:
+../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_rcc.h:
+../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_utils.h:
+../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_pwr.h:
+../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_dma.h:
+../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_dmamux.h:
 M:/embedded/stm32C0_Nucleus/qpc-tetris-water-system/libraries/OLED_SSD1306/include/ssd1306.h:
 M:/embedded/stm32C0_Nucleus/qpc-tetris-water-system/libraries/OLED_SSD1306/include/ssd1306_conf.h:
 ../Core/Inc/app_config.h:
@@ -117,10 +138,5 @@ M:/embedded/stm32C0_Nucleus/qpc-tetris-water-system/libraries/OLED_SSD1306/inclu
 M:/embedded/stm32C0_Nucleus/qpc-tetris-water-system/libraries/NRF24/includes/NRF24.h:
 M:/embedded/stm32C0_Nucleus/qpc-tetris-water-system/libraries/NRF24/includes/NRF24_reg_addresses.h:
 M:/embedded/stm32C0_Nucleus/qpc-tetris-water-system/libraries/NRF24/includes/NRF24_conf.h:
-../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_gpio.h:
 ../Core/Inc/temp_sensor.h:
-../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_tim.h:
-../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_adc.h:
-../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_spi.h:
-../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_ll_pwr.h:
 ../Core/Inc/accelerometer.h:

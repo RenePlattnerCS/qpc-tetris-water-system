@@ -52,6 +52,10 @@ me-&gt;dma_index = 0;
   <attribute name="currentState" type="display_states" visibility="0x00" properties="0x00">
    <code>= TEMPERATURE;</code>
   </attribute>
+  <!--${Shared::allowDeepSleep }-->
+  <attribute name="allowDeepSleep " type=" volatile bool" visibility="0x00" properties="0x00">
+   <code>= false;</code>
+  </attribute>
  </package>
  <!--${AOs}-->
  <package name="AOs" stereotype="0x02">
@@ -143,9 +147,9 @@ if(rand &lt; 0 )
 {
     rand = 0;
 }
-if(rand &gt; 7 )
+if(rand &gt;= 7 ) //more shance for a I type
 {
-    rand = 7;
+    rand = 0;
 }
 
 me-&gt;active_tetromino.type = rand;
@@ -153,7 +157,7 @@ me-&gt;active_tetromino.type = rand;
 memcpy(me-&gt;active_tetromino.grid4x4, shapes[me-&gt;active_tetromino.type ], sizeof(me-&gt;active_tetromino.grid4x4));
 int top = tetro_top(&amp;me-&gt;active_tetromino);
 me-&gt;active_tetromino.x = (me-&gt;board_inst.width / 2) - 2;
-me-&gt;active_tetromino.y = me-&gt;board_inst.height - 5 - top;
+me-&gt;active_tetromino.y = me-&gt;board_inst.height - 4 - top;
 
 
 bool col = collision_on_spawn(&amp;me-&gt;board_inst, &amp;me-&gt;active_tetromino);
@@ -172,15 +176,17 @@ ssd1306_Fill(Black);</code>
    <statechart properties="0x00">
     <!--${AOs::MainApp::SM::initial}-->
     <initial target="../1">
+     <action>allowDeepSleep = false;</action>
      <initial_glyph conn="41,6,5,0,-13,6">
       <action box="0,-2,10,2"/>
      </initial_glyph>
     </initial>
     <!--${AOs::MainApp::SM::display}-->
     <state name="display">
-     <entry>HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_RESET);</entry>
-     <exit>QTimeEvt_disarm(&amp;me-&gt;tempPollEvt);
-QTimeEvt_disarm(&amp;me-&gt;longPressEvt);</exit>
+     <entry brief="make sure water pump is off">HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_RESET);
+LL_GPIO_SetOutputPin(GPIOA, GPIO_PIN_15);
+</entry>
+     <exit>QTimeEvt_disarm(&amp;me-&gt;longPressEvt);</exit>
      <!--${AOs::MainApp::SM::display::initial}-->
      <initial target="../7">
       <initial_glyph conn="49,20,5,0,-6,5">
@@ -189,13 +195,7 @@ QTimeEvt_disarm(&amp;me-&gt;longPressEvt);</exit>
      </initial>
      <!--${AOs::MainApp::SM::display::SENSOR_DONE}-->
      <tran trig="SENSOR_DONE">
-      <action>//QTimeEvt_disarm(&amp;me-&gt;tempPollEvt);
-//QTimeEvt_armX(&amp;me-&gt;tempPollEvt, 
-//              20000U,    // Fire after 10 seconds
-//              20000U);   // Then repeat every 10 seconds
-
-
-SensorEvent const *sensorEvt = (SensorEvent const *)e;
+      <action>SensorEvent const *sensorEvt = (SensorEvent const *)e;
 
 me-&gt;currentTemp = sensorEvt-&gt;temperature;
 
@@ -225,14 +225,16 @@ switch(currentState)
             break;
 
 }
-</action>
+
+allowDeepSleep = true;</action>
       <tran_glyph conn="106,38,1,-1,-22">
        <action box="-18,-3,18,2"/>
       </tran_glyph>
      </tran>
      <!--${AOs::MainApp::SM::display::POLL_SENSOR}-->
      <tran trig="POLL_SENSOR">
-      <action>static QEvt const ADC_Start_Evt = {START_SENSOR_SIG, 0U, 0U};
+      <action>allowDeepSleep = false;
+static QEvt const ADC_Start_Evt = {START_SENSOR_SIG, 0U, 0U};
 QACTIVE_POST(AO_Sensor,&amp;ADC_Start_Evt, me);
 
 </action>
@@ -242,7 +244,8 @@ QACTIVE_POST(AO_Sensor,&amp;ADC_Start_Evt, me);
      </tran>
      <!--${AOs::MainApp::SM::display::BUTTON_PRESS}-->
      <tran trig="BUTTON_PRESS">
-      <action>QTimeEvt_disarm(&amp;me-&gt;longPressEvt);
+      <action>allowDeepSleep = false;
+QTimeEvt_disarm(&amp;me-&gt;longPressEvt);
 QTimeEvt_armX(&amp;me-&gt;longPressEvt, LONG_PRESS_TIME_MS / 10, 0U);
 </action>
       <tran_glyph conn="106,57,1,-1,-22">
@@ -251,6 +254,7 @@ QTimeEvt_armX(&amp;me-&gt;longPressEvt, LONG_PRESS_TIME_MS / 10, 0U);
      </tran>
      <!--${AOs::MainApp::SM::display::BUTTON_LONG}-->
      <tran trig="BUTTON_LONG" target="../../2">
+      <action>allowDeepSleep = false;</action>
       <tran_glyph conn="53,99,2,0,16">
        <action box="0,0,22,4"/>
       </tran_glyph>
@@ -267,15 +271,16 @@ else
 {
     currentState = TEMPERATURE;
     display_temp(me-&gt;currentTemp);
-}</action>
+}
+
+allowDeepSleep = true;</action>
       <tran_glyph conn="106,68,1,-1,-23">
        <action box="-24,-4,24,7"/>
       </tran_glyph>
      </tran>
      <!--${AOs::MainApp::SM::display::START_TETRIS}-->
      <tran trig="START_TETRIS" target="../../3">
-      <action>QTimeEvt_disarm(&amp;me-&gt;tempPollEvt);
-QTimeEvt_disarm(&amp;me-&gt;longPressEvt);
+      <action>QTimeEvt_disarm(&amp;me-&gt;longPressEvt);
 
 currentState = TETRIS;</action>
       <tran_glyph conn="106,45,1,3,23">
@@ -284,13 +289,12 @@ currentState = TETRIS;</action>
      </tran>
      <!--${AOs::MainApp::SM::display::display_stats}-->
      <state name="display_stats">
-      <entry brief="display and poll timer">display_temp(me-&gt;currentTemp);
-QTimeEvt_disarm(&amp;me-&gt;tempPollEvt);
-QTimeEvt_armX(&amp;me-&gt;tempPollEvt, 
-              200U,    // Fire after 10 seconds
-              2000U);   // Then repeat every 10 seconds
+      <entry brief="conf accelerometer">display_temp(me-&gt;currentTemp);
 
 init_accelerometer(); //tap/shake detection
+
+//RTC_setWakeIntervalSeconds(POLL_INTERVALL_SECONDS);
+allowDeepSleep = true;
 </entry>
       <!--${AOs::MainApp::SM::display::display_stats::PLANT_DRY}-->
       <tran trig="PLANT_DRY" target="../../8">
@@ -299,20 +303,19 @@ init_accelerometer(); //tap/shake detection
        </tran_glyph>
       </tran>
       <state_glyph node="13,25,41,31">
-       <entry box="0,3,6,2"/>
+       <entry box="0,3,22,2"/>
       </state_glyph>
      </state>
      <!--${AOs::MainApp::SM::display::dry_alert}-->
      <state name="dry_alert">
-      <entry>QTimeEvt_armX(&amp;me-&gt;dryTimerEvt, DRY_TIMEOUT , 0U);
+      <entry>allowDeepSleep = false;
+QTimeEvt_armX(&amp;me-&gt;dryTimerEvt, DRY_TIMEOUT , 0U);
 </entry>
-      <exit>//QTimeEvt_disarm(&amp;me-&gt;dryTimerEvt);
-QTimeEvt_disarm(&amp;me-&gt;tempPollEvt);
-</exit>
+      <exit>QTimeEvt_disarm(&amp;me-&gt;dryTimerEvt);
+//QTimeEvt_disarm(&amp;me-&gt;tempPollEvt);</exit>
       <!--${AOs::MainApp::SM::display::dry_alert::WATER_PLANT}-->
       <tran trig="WATER_PLANT" target="../../../2">
        <action>QTimeEvt_disarm(&amp;me-&gt;dryTimerEvt);
-//QTimeEvt_armX(&amp;me-&gt;dryTimerEvt, 300U , 0U);
 
 </action>
        <tran_glyph conn="77,90,2,1,35,-19">
@@ -325,32 +328,37 @@ QTimeEvt_disarm(&amp;me-&gt;tempPollEvt);
       </state_glyph>
      </state>
      <state_glyph node="9,12,97,87">
-      <entry box="0,3,6,2"/>
+      <entry box="0,3,23,2"/>
       <exit box="0,5,6,2"/>
      </state_glyph>
     </state>
     <!--${AOs::MainApp::SM::pump}-->
     <state name="pump">
-     <entry brief="ON">QTimeEvt_disarm(&amp;me-&gt;longPressEvt);
+     <entry brief="ON">allowDeepSleep = false;
+
+QTimeEvt_disarm(&amp;me-&gt;longPressEvt);
 HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_SET);
 
 QTimeEvt_disarm(&amp;me-&gt;dryTimerEvt);
-QTimeEvt_armX(&amp;me-&gt;dryTimerEvt, 300U , 0U);
-
-QTimeEvt_disarm(&amp;me-&gt;tempPollEvt);</entry>
+QTimeEvt_armX(&amp;me-&gt;dryTimerEvt, PUMP_TIMEOUT , 0U);
+</entry>
      <exit brief="OFF">HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_RESET);
 QTimeEvt_disarm(&amp;me-&gt;dryTimerEvt);
 </exit>
      <!--${AOs::MainApp::SM::pump::BUTTON_RELEASE}-->
      <tran trig="BUTTON_RELEASE" target="../../1/7">
-      <tran_glyph conn="38,115,0,2,-57,-1,-2">
+      <action>allowDeepSleep = true;</action>
+      <tran_glyph conn="38,115,0,2,-59">
        <action box="-17,-4,15,3"/>
       </tran_glyph>
      </tran>
      <!--${AOs::MainApp::SM::pump::WATER_PLANT}-->
      <tran trig="WATER_PLANT" target="../../1">
       <action brief="turn off pump after some time">QTimeEvt_disarm(&amp;me-&gt;dryTimerEvt);
-HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_RESET);</action>
+HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_RESET);
+
+
+allowDeepSleep = true;</action>
       <tran_glyph conn="43,115,0,2,-16">
        <action box="0,-2,10,2"/>
       </tran_glyph>
@@ -378,7 +386,7 @@ HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_RESET);</action>
      <!--${AOs::MainApp::SM::tetris::game}-->
      <state name="game">
       <entry>QTimeEvt_disarm(&amp;me-&gt;dryTimerEvt);
-QTimeEvt_armX(&amp;me-&gt;dryTimerEvt, MainApp_delta_time / 10U , MainApp_delta_time / 10U);
+QTimeEvt_armX(&amp;me-&gt;dryTimerEvt, MainApp_delta_time , MainApp_delta_time);
 
 Tetromino_ctor(&amp;me-&gt;active_tetromino, TETRO_L);
 int top = tetro_top(&amp;me-&gt;active_tetromino);
@@ -395,8 +403,6 @@ accelerometer_init_polling();
       <tran trig="WATER_PLANT">
        <action brief="TICK">bool col = false;
 
-
-
 int xtilt = 0;
 int ytilt = 0;
 read_accelerometer_tilt(&amp;xtilt, &amp;ytilt);
@@ -405,16 +411,17 @@ col = process_tilt_move(&amp;me-&gt;board_inst, &amp;me-&gt;active_tetromino, xt
 if( col ||  !(move_down(&amp;me-&gt;board_inst, &amp;me-&gt;active_tetromino)) )
 {
     Board_placeTetromino( &amp;me-&gt;board_inst, &amp;me-&gt;active_tetromino);
+    me-&gt;active_tetromino.speed -= 1;
+    if(me-&gt;active_tetromino.speed &lt; 10)
+    {
+        me-&gt;active_tetromino.speed = 10;
+    }
+
     uint8_t old_score = MainApp_score;
     MainApp_score += check_and_clear_lines(&amp;me-&gt;board_inst);
     if(old_score != MainApp_score)
     {
-        me-&gt;active_tetromino.speed -= 2;
-        if(me-&gt;active_tetromino.speed &lt; 10)
-        {
-            me-&gt;active_tetromino.speed = 10;
-        }
-        if(MainApp_score &gt;= 4)
+        if(MainApp_score &gt;= 1)
         {
             QEvt *e = Q_NEW(QEvt, WON_TETRIS_SIG);
             QACTIVE_POST(AO_Main_App, e, me);
@@ -422,10 +429,6 @@ if( col ||  !(move_down(&amp;me-&gt;board_inst, &amp;me-&gt;active_tetromino)) )
     }
     MainApp_spawn_tetromino(me);
 }
-
-
-
-
 
 
 draw_board(&amp;me-&gt;board_inst, &amp;me-&gt;active_tetromino, MainApp_score);
@@ -502,6 +505,7 @@ else
         me-&gt;line_x0 + me-&gt;line_h , me-&gt;line_y0 + me-&gt;line_w );
 }
 
+ssd1306_UpdateScreen();
 static QEvt const e = {DRAW_OUTLINE_SIG, 0U, 0U};
 QACTIVE_POST(AO_Main_App, &amp;e, me);
 </entry>
@@ -544,6 +548,8 @@ if (!me-&gt;board_inst.rotate_90) {
         me-&gt;line_x0 + me-&gt;line_h , me-&gt;line_y0 + me-&gt;line_w,
         me-&gt;line_x0 , me-&gt;line_y0 + me-&gt;line_w);
 }
+
+ssd1306_UpdateScreen();
 
 static QEvt const e = {DRAW_OUTLINE_SIG, 0U, 0U};
 QACTIVE_POST(AO_Main_App, &amp;e, me);
@@ -589,6 +595,8 @@ if (!me-&gt;board_inst.rotate_90) {
         me-&gt;line_x0, me-&gt;line_y0
     );
 }
+
+ssd1306_UpdateScreen();
 static QEvt const e = {DRAW_OUTLINE_SIG, 0U, 0U};
 QACTIVE_POST(AO_Main_App, &amp;e, me);
 
@@ -630,7 +638,7 @@ if (!me-&gt;board_inst.rotate_90) {
         me-&gt;line_x0 + me-&gt;line_h, me-&gt;line_y0
     );
 }
-
+ssd1306_UpdateScreen();
 static QEvt const e = {DRAW_OUTLINE_SIG, 0U, 0U};
 QACTIVE_POST(AO_Main_App, &amp;e, me);
 
@@ -663,7 +671,7 @@ QACTIVE_POST(AO_Main_App, &amp;e, me);
      <state name="gameover_screen">
       <entry>//display_tetris_gameover();
 QTimeEvt_disarm(&amp;me-&gt;dryTimerEvt);
-QTimeEvt_armX(&amp;me-&gt;dryTimerEvt, 400U , 0U);</entry>
+QTimeEvt_armX(&amp;me-&gt;dryTimerEvt, 4000U , 0U);</entry>
       <exit>QTimeEvt_disarm(&amp;me-&gt;dryTimerEvt);</exit>
       <state_glyph node="134,20,27,14">
        <entry box="0,3,6,2"/>
@@ -674,7 +682,7 @@ QTimeEvt_armX(&amp;me-&gt;dryTimerEvt, 400U , 0U);</entry>
      <state name="win_sceen">
       <entry>display_win();
 QTimeEvt_disarm(&amp;me-&gt;dryTimerEvt);
-QTimeEvt_armX(&amp;me-&gt;dryTimerEvt, 400U , 0U);</entry>
+QTimeEvt_armX(&amp;me-&gt;dryTimerEvt, 4000U , 0U);</entry>
       <exit>QTimeEvt_disarm(&amp;me-&gt;dryTimerEvt);</exit>
       <state_glyph node="134,38,27,13">
        <entry box="0,3,6,2"/>
@@ -743,14 +751,14 @@ return adc_value;</code>
    <statechart properties="0x00">
     <!--${AOs::Sensor::SM::initial}-->
     <initial target="../1">
-     <initial_glyph conn="60,16,4,0,15">
+     <initial_glyph conn="72,24,5,0,7,7">
       <action box="0,-2,10,2"/>
      </initial_glyph>
     </initial>
     <!--${AOs::Sensor::SM::waiting}-->
     <state name="waiting">
      <entry>QTimeEvt_disarm(&amp;me-&gt;resetEvt);
-</entry>
+//allowDeepSleep = true;</entry>
      <!--${AOs::Sensor::SM::waiting::START_SENSOR}-->
      <tran trig="START_SENSOR" target="../../3">
       <tran_glyph conn="76,62,4,0,13">
@@ -810,13 +818,13 @@ for(uint8_t i = 0; i &lt; TIMESTAMP_SIZE; i++)
             if (me-&gt;byte_index &gt;= 5) {
                 // Verify checksum
                 uint8_t checksum = me-&gt;bits[0] + me-&gt;bits[1] + me-&gt;bits[2] + me-&gt;bits[3];
-                printf(&quot;5 sending data&quot;);
                 if (checksum == me-&gt;bits[4]) {
                     uint16_t dryness_val = Sensor_get_adc_dryness();
 
                     SensorEvent *evt = Q_NEW(SensorEvent, SENSOR_DONE_SIG);
                     evt-&gt;dryness = dryness_val;
                     evt-&gt;temperature = me-&gt;bits[2];
+                    allowDeepSleep = true;
 
                     QACTIVE_POST(AO_Main_App, &amp;evt-&gt;super, NULL);
                     status_ = Q_TRAN(&amp;Sensor_waiting);
@@ -848,7 +856,9 @@ for(uint8_t i = 0; i &lt; TIMESTAMP_SIZE; i++)
     </state>
     <!--${AOs::Sensor::SM::start_dht}-->
     <state name="start_dht">
-     <entry>for(int i=0;i&lt;5;i++) me-&gt;bits[i]=0;
+     <entry>allowDeepSleep = false;
+
+for(int i=0;i&lt;5;i++) me-&gt;bits[i]=0;
 me-&gt;bit_index = 0;
 me-&gt;byte_index = 0;
 
@@ -858,7 +868,7 @@ QTimeEvt_armX(&amp;me-&gt;resetEvt, DHT11_RESET_TIME, 0U);
 // Pull DHT11 LOW ≥18ms
 DHT11_SetPinOutput();
 HAL_GPIO_WritePin(DHT11_PORT, DHT11_PIN, GPIO_PIN_RESET);
-QTimeEvt_armX(&amp;me-&gt;dht11StartEvt, 2U, 0U); // 20ms</entry>
+QTimeEvt_armX(&amp;me-&gt;dht11StartEvt, 20U, 0U); // 20ms</entry>
      <!--${AOs::Sensor::SM::start_dht::DHT11_START}-->
      <tran trig="DHT11_START" target="../../2">
       <action>//printf(&quot;3 transition to input \n&quot;);
@@ -1053,13 +1063,17 @@ $declare${AOs::RFButton}
    <text>
 
 #include &quot;main_app.h&quot;
+#include &quot;main.h&quot;
 #include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
 #include &quot;app_config.h&quot;
 #include &quot;NRF_chip.h&quot;
-#include &quot;main.h&quot;;
 #include &quot;tetris_input_handler.h&quot;
 #include &quot;tetris_shapes.h&quot;
 #include &quot;bsp.h&quot;
+
+#include &quot;accelerometer.h&quot;
+
 
 //DMA buffer
 static __attribute__((section(&quot;.bss&quot;))) __attribute__((aligned(4))) volatile uint32_t Sensor_dht11_dma_buffer[DHT11_MAX_EDGES];
@@ -1079,6 +1093,7 @@ $define${Shared}
 #include &quot;app_config.h&quot;
 #include &quot;temp_sensor.h&quot;
 #include &quot;stm32c0xx_ll_adc.h&quot;
+#include &quot;bsp.h&quot;
 //extern ADC_HandleTypeDef hadc1;
 //extern TIM_HandleTypeDef htim3;
 //extern DMA_HandleTypeDef hdma;

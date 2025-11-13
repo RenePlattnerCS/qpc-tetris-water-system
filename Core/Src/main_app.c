@@ -38,13 +38,17 @@
 
 
 #include "main_app.h"
+#include "main.h"
 #include <stdio.h>
+#include <stdlib.h>
 #include "app_config.h"
 #include "NRF_chip.h"
-#include "main.h";
 #include "tetris_input_handler.h"
 #include "tetris_shapes.h"
 #include "bsp.h"
+
+#include "accelerometer.h"
+
 
 //DMA buffer
 static __attribute__((section(".bss"))) __attribute__((aligned(4))) volatile uint32_t Sensor_dht11_dma_buffer[DHT11_MAX_EDGES];
@@ -113,9 +117,9 @@ void MainApp_spawn_tetromino(MainApp * const me) {
     {
         rand = 0;
     }
-    if(rand > 7 )
+    if(rand >= 7 ) //more shance for a I type
     {
-        rand = 7;
+        rand = 0;
     }
 
     me->active_tetromino.type = rand;
@@ -123,7 +127,7 @@ void MainApp_spawn_tetromino(MainApp * const me) {
     memcpy(me->active_tetromino.grid4x4, shapes[me->active_tetromino.type ], sizeof(me->active_tetromino.grid4x4));
     int top = tetro_top(&me->active_tetromino);
     me->active_tetromino.x = (me->board_inst.width / 2) - 2;
-    me->active_tetromino.y = me->board_inst.height - 5 - top;
+    me->active_tetromino.y = me->board_inst.height - 4 - top;
 
 
     bool col = collision_on_spawn(&me->board_inst, &me->active_tetromino);
@@ -143,6 +147,7 @@ void MainApp_tetris_init(void) {
 //${AOs::MainApp::SM} ........................................................
 QState MainApp_initial(MainApp * const me, void const * const par) {
     //${AOs::MainApp::SM::initial}
+    allowDeepSleep = false;
     return Q_TRAN(&MainApp_display);
 }
 
@@ -153,12 +158,13 @@ QState MainApp_display(MainApp * const me, QEvt const * const e) {
         //${AOs::MainApp::SM::display}
         case Q_ENTRY_SIG: {
             HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_RESET);
+            LL_GPIO_SetOutputPin(GPIOA, GPIO_PIN_15);
+
             status_ = Q_HANDLED();
             break;
         }
         //${AOs::MainApp::SM::display}
         case Q_EXIT_SIG: {
-            QTimeEvt_disarm(&me->tempPollEvt);
             QTimeEvt_disarm(&me->longPressEvt);
             status_ = Q_HANDLED();
             break;
@@ -170,12 +176,6 @@ QState MainApp_display(MainApp * const me, QEvt const * const e) {
         }
         //${AOs::MainApp::SM::display::SENSOR_DONE}
         case SENSOR_DONE_SIG: {
-            //QTimeEvt_disarm(&me->tempPollEvt);
-            //QTimeEvt_armX(&me->tempPollEvt,
-            //              20000U,    // Fire after 10 seconds
-            //              20000U);   // Then repeat every 10 seconds
-
-
             SensorEvent const *sensorEvt = (SensorEvent const *)e;
 
             me->currentTemp = sensorEvt->temperature;
@@ -207,11 +207,13 @@ QState MainApp_display(MainApp * const me, QEvt const * const e) {
 
             }
 
+            allowDeepSleep = true;
             status_ = Q_HANDLED();
             break;
         }
         //${AOs::MainApp::SM::display::POLL_SENSOR}
         case POLL_SENSOR_SIG: {
+            allowDeepSleep = false;
             static QEvt const ADC_Start_Evt = {START_SENSOR_SIG, 0U, 0U};
             QACTIVE_POST(AO_Sensor,&ADC_Start_Evt, me);
 
@@ -221,6 +223,7 @@ QState MainApp_display(MainApp * const me, QEvt const * const e) {
         }
         //${AOs::MainApp::SM::display::BUTTON_PRESS}
         case BUTTON_PRESS_SIG: {
+            allowDeepSleep = false;
             QTimeEvt_disarm(&me->longPressEvt);
             QTimeEvt_armX(&me->longPressEvt, LONG_PRESS_TIME_MS / 10, 0U);
 
@@ -229,6 +232,7 @@ QState MainApp_display(MainApp * const me, QEvt const * const e) {
         }
         //${AOs::MainApp::SM::display::BUTTON_LONG}
         case BUTTON_LONG_SIG: {
+            allowDeepSleep = false;
             status_ = Q_TRAN(&MainApp_pump);
             break;
         }
@@ -245,12 +249,13 @@ QState MainApp_display(MainApp * const me, QEvt const * const e) {
                 currentState = TEMPERATURE;
                 display_temp(me->currentTemp);
             }
+
+            allowDeepSleep = true;
             status_ = Q_HANDLED();
             break;
         }
         //${AOs::MainApp::SM::display::START_TETRIS}
         case START_TETRIS_SIG: {
-            QTimeEvt_disarm(&me->tempPollEvt);
             QTimeEvt_disarm(&me->longPressEvt);
 
             currentState = TETRIS;
@@ -272,12 +277,11 @@ QState MainApp_display_stats(MainApp * const me, QEvt const * const e) {
         //${AOs::MainApp::SM::display::display_stats}
         case Q_ENTRY_SIG: {
             display_temp(me->currentTemp);
-            QTimeEvt_disarm(&me->tempPollEvt);
-            QTimeEvt_armX(&me->tempPollEvt,
-                          200U,    // Fire after 10 seconds
-                          2000U);   // Then repeat every 10 seconds
 
             init_accelerometer(); //tap/shake detection
+
+            //RTC_setWakeIntervalSeconds(POLL_INTERVALL_SECONDS);
+            allowDeepSleep = true;
 
             status_ = Q_HANDLED();
             break;
@@ -301,6 +305,7 @@ QState MainApp_dry_alert(MainApp * const me, QEvt const * const e) {
     switch (e->sig) {
         //${AOs::MainApp::SM::display::dry_alert}
         case Q_ENTRY_SIG: {
+            allowDeepSleep = false;
             QTimeEvt_armX(&me->dryTimerEvt, DRY_TIMEOUT , 0U);
 
             status_ = Q_HANDLED();
@@ -308,16 +313,14 @@ QState MainApp_dry_alert(MainApp * const me, QEvt const * const e) {
         }
         //${AOs::MainApp::SM::display::dry_alert}
         case Q_EXIT_SIG: {
-            //QTimeEvt_disarm(&me->dryTimerEvt);
-            QTimeEvt_disarm(&me->tempPollEvt);
-
+            QTimeEvt_disarm(&me->dryTimerEvt);
+            //QTimeEvt_disarm(&me->tempPollEvt);
             status_ = Q_HANDLED();
             break;
         }
         //${AOs::MainApp::SM::display::dry_alert::WATER_PLANT}
         case WATER_PLANT_SIG: {
             QTimeEvt_disarm(&me->dryTimerEvt);
-            //QTimeEvt_armX(&me->dryTimerEvt, 300U , 0U);
 
 
             status_ = Q_TRAN(&MainApp_pump);
@@ -337,13 +340,14 @@ QState MainApp_pump(MainApp * const me, QEvt const * const e) {
     switch (e->sig) {
         //${AOs::MainApp::SM::pump}
         case Q_ENTRY_SIG: {
+            allowDeepSleep = false;
+
             QTimeEvt_disarm(&me->longPressEvt);
             HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_SET);
 
             QTimeEvt_disarm(&me->dryTimerEvt);
-            QTimeEvt_armX(&me->dryTimerEvt, 300U , 0U);
+            QTimeEvt_armX(&me->dryTimerEvt, PUMP_TIMEOUT , 0U);
 
-            QTimeEvt_disarm(&me->tempPollEvt);
             status_ = Q_HANDLED();
             break;
         }
@@ -357,6 +361,7 @@ QState MainApp_pump(MainApp * const me, QEvt const * const e) {
         }
         //${AOs::MainApp::SM::pump::BUTTON_RELEASE}
         case BUTTON_RELEASE_SIG: {
+            allowDeepSleep = true;
             status_ = Q_TRAN(&MainApp_display_stats);
             break;
         }
@@ -364,6 +369,9 @@ QState MainApp_pump(MainApp * const me, QEvt const * const e) {
         case WATER_PLANT_SIG: {
             QTimeEvt_disarm(&me->dryTimerEvt);
             HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_RESET);
+
+
+            allowDeepSleep = true;
             status_ = Q_TRAN(&MainApp_display);
             break;
         }
@@ -405,7 +413,7 @@ QState MainApp_game(MainApp * const me, QEvt const * const e) {
         //${AOs::MainApp::SM::tetris::game}
         case Q_ENTRY_SIG: {
             QTimeEvt_disarm(&me->dryTimerEvt);
-            QTimeEvt_armX(&me->dryTimerEvt, MainApp_delta_time / 10U , MainApp_delta_time / 10U);
+            QTimeEvt_armX(&me->dryTimerEvt, MainApp_delta_time , MainApp_delta_time);
 
             Tetromino_ctor(&me->active_tetromino, TETRO_L);
             int top = tetro_top(&me->active_tetromino);
@@ -425,8 +433,6 @@ QState MainApp_game(MainApp * const me, QEvt const * const e) {
         case WATER_PLANT_SIG: {
             bool col = false;
 
-
-
             int xtilt = 0;
             int ytilt = 0;
             read_accelerometer_tilt(&xtilt, &ytilt);
@@ -435,16 +441,17 @@ QState MainApp_game(MainApp * const me, QEvt const * const e) {
             if( col ||  !(move_down(&me->board_inst, &me->active_tetromino)) )
             {
                 Board_placeTetromino( &me->board_inst, &me->active_tetromino);
+                me->active_tetromino.speed -= 1;
+                if(me->active_tetromino.speed < 10)
+                {
+                    me->active_tetromino.speed = 10;
+                }
+
                 uint8_t old_score = MainApp_score;
                 MainApp_score += check_and_clear_lines(&me->board_inst);
                 if(old_score != MainApp_score)
                 {
-                    me->active_tetromino.speed -= 2;
-                    if(me->active_tetromino.speed < 10)
-                    {
-                        me->active_tetromino.speed = 10;
-                    }
-                    if(MainApp_score >= 4)
+                    if(MainApp_score >= 1)
                     {
                         QEvt *e = Q_NEW(QEvt, WON_TETRIS_SIG);
                         QACTIVE_POST(AO_Main_App, e, me);
@@ -452,10 +459,6 @@ QState MainApp_game(MainApp * const me, QEvt const * const e) {
                 }
                 MainApp_spawn_tetromino(me);
             }
-
-
-
-
 
 
             draw_board(&me->board_inst, &me->active_tetromino, MainApp_score);
@@ -550,6 +553,7 @@ QState MainApp_top_border(MainApp * const me, QEvt const * const e) {
                     me->line_x0 + me->line_h , me->line_y0 + me->line_w );
             }
 
+            ssd1306_UpdateScreen();
             static QEvt const e = {DRAW_OUTLINE_SIG, 0U, 0U};
             QACTIVE_POST(AO_Main_App, &e, me);
 
@@ -601,6 +605,8 @@ QState MainApp_left_border(MainApp * const me, QEvt const * const e) {
                     me->line_x0 + me->line_h , me->line_y0 + me->line_w,
                     me->line_x0 , me->line_y0 + me->line_w);
             }
+
+            ssd1306_UpdateScreen();
 
             static QEvt const e = {DRAW_OUTLINE_SIG, 0U, 0U};
             QACTIVE_POST(AO_Main_App, &e, me);
@@ -655,6 +661,8 @@ QState MainApp_btm_border(MainApp * const me, QEvt const * const e) {
                     me->line_x0, me->line_y0
                 );
             }
+
+            ssd1306_UpdateScreen();
             static QEvt const e = {DRAW_OUTLINE_SIG, 0U, 0U};
             QACTIVE_POST(AO_Main_App, &e, me);
 
@@ -705,7 +713,7 @@ QState MainApp_right_border(MainApp * const me, QEvt const * const e) {
                     me->line_x0 + me->line_h, me->line_y0
                 );
             }
-
+            ssd1306_UpdateScreen();
             static QEvt const e = {DRAW_OUTLINE_SIG, 0U, 0U};
             QACTIVE_POST(AO_Main_App, &e, me);
 
@@ -743,7 +751,7 @@ QState MainApp_gameover_screen(MainApp * const me, QEvt const * const e) {
         case Q_ENTRY_SIG: {
             //display_tetris_gameover();
             QTimeEvt_disarm(&me->dryTimerEvt);
-            QTimeEvt_armX(&me->dryTimerEvt, 400U , 0U);
+            QTimeEvt_armX(&me->dryTimerEvt, 4000U , 0U);
             status_ = Q_HANDLED();
             break;
         }
@@ -769,7 +777,7 @@ QState MainApp_win_sceen(MainApp * const me, QEvt const * const e) {
         case Q_ENTRY_SIG: {
             display_win();
             QTimeEvt_disarm(&me->dryTimerEvt);
-            QTimeEvt_armX(&me->dryTimerEvt, 400U , 0U);
+            QTimeEvt_armX(&me->dryTimerEvt, 4000U , 0U);
             status_ = Q_HANDLED();
             break;
         }
@@ -828,6 +836,9 @@ void RFButton_ctor(RFButton * const me) {
 
 //${Shared::currentState} ....................................................
 display_states currentState = TEMPERATURE;
+
+//${Shared::allowDeepSleep } .................................................
+ volatile bool allowDeepSleep  = false;
 //$enddef${Shared} ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 
