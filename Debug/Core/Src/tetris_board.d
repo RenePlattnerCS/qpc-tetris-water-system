@@ -29,8 +29,6 @@ Core/Src/tetris_board.o: ../Core/Src/tetris_board.c ../Core/Inc/display.h \
  ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_i2c_ex.h \
  ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_pwr.h \
  ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_pwr_ex.h \
- ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_rtc.h \
- ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_rtc_ex.h \
  M:/embedded/stm32C0_Nucleus/qpc-tetris-water-system/libraries/OLED_SSD1306/include/ssd1306_conf.h \
  M:/embedded/stm32C0_Nucleus/qpc-tetris-water-system/libraries/OLED_SSD1306/include/ssd1306_fonts.h \
  M:/embedded/stm32C0_Nucleus/qpc-tetris-water-system/libraries/OLED_SSD1306/include/ssd1306.h \
@@ -67,8 +65,6 @@ M:/embedded/stm32C0_Nucleus/qpc-tetris-water-system/libraries/OLED_SSD1306/inclu
 ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_i2c_ex.h:
 ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_pwr.h:
 ../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_pwr_ex.h:
-../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_rtc.h:
-../Drivers/STM32C0xx_HAL_Driver/Inc/stm32c0xx_hal_rtc_ex.h:
 M:/embedded/stm32C0_Nucleus/qpc-tetris-water-system/libraries/OLED_SSD1306/include/ssd1306_conf.h:
 M:/embedded/stm32C0_Nucleus/qpc-tetris-water-system/libraries/OLED_SSD1306/include/ssd1306_fonts.h:
 M:/embedded/stm32C0_Nucleus/qpc-tetris-water-system/libraries/OLED_SSD1306/include/ssd1306.h:

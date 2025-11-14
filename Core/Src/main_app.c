@@ -355,7 +355,7 @@ QState MainApp_pump(MainApp * const me, QEvt const * const e) {
         case Q_EXIT_SIG: {
             HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_RESET);
             QTimeEvt_disarm(&me->dryTimerEvt);
-
+            RTC_setWakeIntervalSeconds(POLL_INTERVALL_SECONDS);
             status_ = Q_HANDLED();
             break;
         }
@@ -395,6 +395,7 @@ QState MainApp_tetris(MainApp * const me, QEvt const * const e) {
         //${AOs::MainApp::SM::tetris::WATER_PLANT}
         case WATER_PLANT_SIG: {
             currentState = TEMPERATURE;
+            RTC_setWakeIntervalSeconds(POLL_INTERVALL_SECONDS);
             status_ = Q_TRAN(&MainApp_display);
             break;
         }

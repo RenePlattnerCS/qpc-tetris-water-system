@@ -344,7 +344,7 @@ QTimeEvt_armX(&amp;me-&gt;dryTimerEvt, PUMP_TIMEOUT , 0U);
 </entry>
      <exit brief="OFF">HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_RESET);
 QTimeEvt_disarm(&amp;me-&gt;dryTimerEvt);
-</exit>
+RTC_setWakeIntervalSeconds(POLL_INTERVALL_SECONDS);</exit>
      <!--${AOs::MainApp::SM::pump::BUTTON_RELEASE}-->
      <tran trig="BUTTON_RELEASE" target="../../1/7">
       <action>allowDeepSleep = true;</action>
@@ -378,7 +378,8 @@ allowDeepSleep = true;</action>
      </initial>
      <!--${AOs::MainApp::SM::tetris::WATER_PLANT}-->
      <tran trig="WATER_PLANT" target="../../1">
-      <action>currentState = TEMPERATURE;</action>
+      <action>currentState = TEMPERATURE;
+RTC_setWakeIntervalSeconds(POLL_INTERVALL_SECONDS);</action>
       <tran_glyph conn="129,26,3,1,-23">
        <action box="-17,-2,10,2"/>
       </tran_glyph>

@@ -243,6 +243,7 @@ void HAL_GPIO_EXTI_Rising_Callback(uint16_t GPIO_Pin)
 
 void RTC_IRQHandler(void)
 {
+	QK_ISR_ENTRY();
     /* Alarm A event occurred? */
     if (LL_RTC_IsActiveFlag_ALRA(RTC))
     {
@@ -251,12 +252,15 @@ void RTC_IRQHandler(void)
 
         /* clear EXTI line 17 flag */
         LL_EXTI_ClearRisingFlag_0_31(LL_EXTI_LINE_19);
+        LL_EXTI_ClearFallingFlag_0_31(LL_EXTI_LINE_19);
+
 
         RTC_setWakeIntervalSeconds(POLL_INTERVALL_SECONDS);
 
         static QEvt const pollSensorEvt = QEVT_INITIALIZER(POLL_SENSOR_SIG);
 		QACTIVE_POST(AO_Main_App, &pollSensorEvt, (void*)0);
     }
+    QK_ISR_EXIT();
 }
 
 
@@ -487,6 +491,7 @@ void RTC_setWakeIntervalSeconds(uint32_t seconds)
         day += hour / 24;
         hour %= 24;
 
+        seconds += 1;
         /* Handle day/month/year wraparound */
         while (day > getDaysInMonth(month, year)) {
             day -= getDaysInMonth(month, year);
