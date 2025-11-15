@@ -85,6 +85,7 @@ uint8_t MainApp_calc_dryness_percent(uint16_t dryness) {
 
     percent = ((dryness - MAX_WET) * 100) / (MAX_DRY - MAX_WET);
 
+
     return percent;
 }
 
@@ -182,7 +183,16 @@ QState MainApp_display(MainApp * const me, QEvt const * const e) {
 
             uint16_t tempDry = sensorEvt->dryness;
             uint8_t p = MainApp_calc_dryness_percent(tempDry);
-            me->currentDryness = p;
+
+            //adjust percent for display to use the THREASHOLD for the max value:
+            uint16_t percent_th = (p * 100) / PLANT_DRY_THREASHOLD;
+
+            if(percent_th > 100)
+            {
+                percent_th = 100;
+            }
+
+            me->currentDryness = percent_th;
 
             if (p > PLANT_DRY_THREASHOLD)
             {
@@ -199,7 +209,7 @@ QState MainApp_display(MainApp * const me, QEvt const * const e) {
 
                 case DRYNESS:
 
-                    display_dry(p);
+                    display_dry(me->currentDryness);
                 break;
                 default:
                         // error
@@ -249,8 +259,9 @@ QState MainApp_display(MainApp * const me, QEvt const * const e) {
                 currentState = TEMPERATURE;
                 display_temp(me->currentTemp);
             }
-
-            allowDeepSleep = true;
+            static QEvt const pollSensorEvt = QEVT_INITIALIZER(POLL_SENSOR_SIG);
+                    QACTIVE_POST(AO_Main_App, &pollSensorEvt, (void*)0);
+            allowDeepSleep = false;
             status_ = Q_HANDLED();
             break;
         }
@@ -750,7 +761,7 @@ QState MainApp_gameover_screen(MainApp * const me, QEvt const * const e) {
     switch (e->sig) {
         //${AOs::MainApp::SM::tetris::gameover_screen}
         case Q_ENTRY_SIG: {
-            //display_tetris_gameover();
+            display_tetris_gameover();
             QTimeEvt_disarm(&me->dryTimerEvt);
             QTimeEvt_armX(&me->dryTimerEvt, 4000U , 0U);
             status_ = Q_HANDLED();

@@ -8,8 +8,8 @@
 #define DHT11_RESET_PIN			GPIO_PIN_1
 #define DHT11_RESET_PORT		GPIOA
 
-#define MAX_DRY 			 	(2000U) 	//for the dryness plant sensor
-#define MAX_WET 			 	(1100U)
+#define MAX_DRY 			 	(1700U) 	//for the dryness plant sensor
+#define MAX_WET 			 	(1350U)
 #define PLANT_DRY_THREASHOLD 	(40U) 		//percent
 #define DRY_TIMEOUT			 	(80U)
 #define PUMP_TIMEOUT			(6000U)
@@ -20,7 +20,7 @@
 #define FPS						(20U) 		//20fps tetris
 #define MS_PER_SEC		 		(1000U)
 
-#define POLL_INTERVALL_SECONDS	(60U)
+#define POLL_INTERVALL_SECONDS	(40U)
 
 #define POLL_HOUR_INTERVALL		(3)
 #endif /* INC_APP_CONFIG_H_ */

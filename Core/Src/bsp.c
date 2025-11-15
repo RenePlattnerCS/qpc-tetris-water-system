@@ -250,7 +250,7 @@ void RTC_IRQHandler(void)
         /* Clear the Alarm A flag */
         LL_RTC_ClearFlag_ALRA(RTC);
 
-        /* clear EXTI line 17 flag */
+        /* clear EXTI line 19 flag */
         LL_EXTI_ClearRisingFlag_0_31(LL_EXTI_LINE_19);
         LL_EXTI_ClearFallingFlag_0_31(LL_EXTI_LINE_19);
 
@@ -469,16 +469,59 @@ static void RTC_setWakeInterval(uint32_t hours , uint32_t minutes, uint32_t seco
     LL_RTC_EnableWriteProtection(RTC);
 }
 
+
 void RTC_setWakeIntervalSeconds(uint32_t seconds)
 {
+
+    uint8_t hour, min, sec;
+    RTC_ReadTime(&hour, &min, &sec);
+
+    sec += seconds;
+
+    // For intervals >= 60 seconds, we need to handle minutes too
+    if (sec >= 60) {
+        min += sec / 60;
+        sec %= 60;
+    }
+    if (min >= 60) {
+        hour += min / 60;
+        min %= 60;
+    }
+    hour %= 24;
+
+    /* Convert to BCD */
+    uint32_t alrmar =
+        ((hour / 10) << RTC_ALRMAR_HT_Pos) | ((hour % 10) << RTC_ALRMAR_HU_Pos) |
+        ((min  / 10) << RTC_ALRMAR_MNT_Pos) | ((min  % 10) << RTC_ALRMAR_MNU_Pos) |
+        ((sec  / 10) << RTC_ALRMAR_ST_Pos)  | ((sec  % 10) << RTC_ALRMAR_SU_Pos) |
+        RTC_ALRMAR_MSK4;  // Mask date/weekday
+
+    LL_RTC_DisableWriteProtection(RTC);
+    LL_RTC_ALMA_Disable(RTC);
+    while(!LL_RTC_IsActiveFlag_ALRAW(RTC));
+
+    LL_RTC_WriteReg(RTC, ALRMAR, alrmar);
+    LL_RTC_ClearFlag_ALRA(RTC);
+    LL_EXTI_ClearRisingFlag_0_31(LL_EXTI_LINE_19);
+
+    LL_RTC_ALMA_Enable(RTC);
+    LL_RTC_EnableWriteProtection(RTC);
+}
+
+
+/*
+void RTC_setWakeIntervalSeconds(uint32_t seconds)
+{
+	seconds += 1;
     uint8_t hour, min, sec;
     uint8_t day, month, year;
 
     RTC_ReadTime(&hour, &min, &sec);
     RTC_ReadDate(&day, &month, &year);
 
-    /* Add seconds */
+    // Add seconds //
     sec += seconds;
+
     if (sec >= 60) {
         min += sec / 60;
         sec %= 60;
@@ -491,8 +534,8 @@ void RTC_setWakeIntervalSeconds(uint32_t seconds)
         day += hour / 24;
         hour %= 24;
 
-        seconds += 1;
-        /* Handle day/month/year wraparound */
+
+        // Handle day/month/year wraparound //
         while (day > getDaysInMonth(month, year)) {
             day -= getDaysInMonth(month, year);
             month++;
@@ -506,7 +549,7 @@ void RTC_setWakeIntervalSeconds(uint32_t seconds)
         }
     }
 
-    /* Convert back to BCD */
+    // Convert back to BCD //
     uint32_t tr =
         ((hour / 10) << RTC_TR_HT_Pos) | ((hour % 10) << RTC_TR_HU_Pos) |
         ((min  / 10) << RTC_TR_MNT_Pos) | ((min  % 10) << RTC_TR_MNU_Pos) |
@@ -514,7 +557,7 @@ void RTC_setWakeIntervalSeconds(uint32_t seconds)
 
     uint32_t alrmar =tr | ((day / 10) << RTC_ALRMAR_DT_Pos) | ((day % 10) << RTC_ALRMAR_DU_Pos);
 
-    /* Program Alarm A */
+    // Program Alarm A
     LL_RTC_DisableWriteProtection(RTC);
 
     LL_RTC_ALMA_Disable(RTC);
@@ -526,6 +569,7 @@ void RTC_setWakeIntervalSeconds(uint32_t seconds)
 
     LL_RTC_EnableWriteProtection(RTC);
 }
+*/
 
 static void RTC_ReadDate(uint8_t *day, uint8_t *month, uint8_t *year)
 {
@@ -697,6 +741,10 @@ void QK_onIdle(void) {
 		// === Woke from RTC alarm ===
 		SystemClock_Config();
 		SysTick->CTRL |= SysTick_CTRL_ENABLE_Msk;
+
+		// RE-ENABLE EXTI CONFIGURATION AFTER WAKE
+		LL_EXTI_EnableIT_0_31(LL_EXTI_LINE_19);
+		LL_EXTI_EnableRisingTrig_0_31(LL_EXTI_LINE_19);
 
 		// Don't allow deep sleep during sensor sequence
 		allowDeepSleep = false;

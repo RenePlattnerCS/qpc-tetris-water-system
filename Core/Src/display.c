@@ -21,7 +21,7 @@ void display_score(uint16_t score)
 {
 	char buffer[16];
 	sprintf(buffer, "%u", score);
-	//display_text(buffer, 100, 4 );
+	display_text(buffer, 100, 4 );
 }
 void display_win(void)
 {
@@ -133,7 +133,7 @@ static void RectangleFill(uint8_t percent) {
 
 
 
-/*
+
 uint8_t tetris_gameover128x32[] = {
 	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -206,12 +206,7 @@ uint8_t tetris_winscreen128x32[] = {
 };
 */
 /*
-void display_tetris_gameover(void)
-{
-	ssd1306_Fill(Black);
-	ssd1306_DrawBitmap(0,0,tetris_gameover128x32,128,64,White);
-	ssd1306_UpdateScreen();
-}
+
 */
 //void display_tetris_won(void)
 //{
@@ -220,4 +215,9 @@ void display_tetris_gameover(void)
 //	ssd1306_UpdateScreen();
 //}
 
-
+void display_tetris_gameover(void)
+{
+	ssd1306_Fill(Black);
+	ssd1306_DrawBitmap(0,0,tetris_gameover128x32,128,64,White);
+	ssd1306_UpdateScreen();
+}
