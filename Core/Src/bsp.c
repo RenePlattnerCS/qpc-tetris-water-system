@@ -508,6 +508,24 @@ void RTC_setWakeIntervalSeconds(uint32_t seconds)
     LL_RTC_EnableWriteProtection(RTC);
 }
 
+void RTC_disarmAlarm(void)
+{
+    LL_RTC_DisableWriteProtection(RTC);
+
+    // Disable the alarm
+    LL_RTC_ALMA_Disable(RTC);
+
+    // Wait until alarm can be modified
+    while(!LL_RTC_IsActiveFlag_ALRAW(RTC));
+
+    // Clear alarm flag
+    LL_RTC_ClearFlag_ALRA(RTC);
+
+    // Clear EXTI flag
+    LL_EXTI_ClearRisingFlag_0_31(LL_EXTI_LINE_19);
+
+    LL_RTC_EnableWriteProtection(RTC);
+}
 
 /*
 void RTC_setWakeIntervalSeconds(uint32_t seconds)
